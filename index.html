@@ -700,7 +700,9 @@ const DEFAULT_SETTINGS={slowDays:45,targetCars:5,targetSales:0,interestRate:9.5,
 let settings={...DEFAULT_SETTINGS}, buyers=[], admins=[], installPrompt=null;
 const thisMonth=()=>new Date().toISOString().slice(0,7);
 const waLink=(phone,text)=>{ const d=String(phone||'').replace(/\D/g,''); if(!d) return ''; const n=d.length===10?'91'+d:d; return 'https://wa.me/'+n+(text?'?text='+encodeURIComponent(text):''); };
-const carLink=c=>location.origin+location.pathname+'#car-'+c.id;
+const PUBLIC_URL='https://subash-v-15473.github.io/revora-app/';
+const isNative=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const carLink=c=>PUBLIC_URL+'#car-'+c.id;
 function matchesBuyer(b,c){ if(!c.listing?.price) return false; const price=+c.listing.price; if(b.budgetMax&&price>+b.budgetMax*1.05) return false; if(b.budgetMin&&price<+b.budgetMin*0.9) return false;
   if(b.fuel&&c.fuel&&b.fuel!==c.fuel) return false; if(b.transmission&&c.transmission&&b.transmission!==c.transmission) return false;
   if(b.prefs){ const words=b.prefs.toLowerCase().split(/[,\s]+/).filter(w=>w.length>2); if(words.length&&!words.some(w=>(c.title||'').toLowerCase().includes(w))) return false; } return true; }
@@ -971,10 +973,10 @@ function viewSettings(){
       <p style="margin:0">Download a copy of all cars, customers, appointments, buyers and settings as a file. Photos and documents are not included to keep it small.</p>
       <div class="frow"><button class="btn" data-act="backup" style="flex:0 0 auto">${I(P.doc)}Download backup</button><button class="btn" data-act="exportCsv" style="flex:0 0 auto">${I(P.doc)}Sales CSV</button></div>
       <p style="margin:0"><b>${cars.length}</b> cars · <b>${cars.reduce((a,c)=>a+photos(c).length,0)}</b> photos · <b>${cars.reduce((a,c)=>a+docsOf(c).length,0)}</b> documents · <b>${appts.length}</b> appointments.</p></div></section>
-    <section class="card"><div class="hd"><h2>Install as an app</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
+    ${isNative()?"":`<section class="card"><div class="hd"><h2>Install as an app</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
       <div class="installbox"><span class="avatar" style="width:40px;height:40px;border-radius:12px">${I(P.car,2.2)}</span><div><b>Revora on your home screen</b><br>Opens full screen, loads instantly, and shows the last data even offline.</div></div>
       ${installPrompt?`<div class="frow"><button class="btn primary" data-act="installApp" style="flex:0 0 auto">Install Revora</button></div>`:`<p style="margin:0"><b>iPhone:</b> Share → Add to Home Screen. <b>Android (Chrome):</b> menu ⋮ → Add to Home screen / Install app. <b>Desktop Chrome:</b> the install icon at the right of the address bar.</p>`}
-      <p style="margin:0">Signed in as <b>${esc(me.name||'Admin')}</b> · ${esc(me.email||ADMIN_EMAIL)}. Change passwords in Firebase Console → Authentication → Users.</p></div></section>
+      <p style="margin:0">Signed in as <b>${esc(me.name||'Admin')}</b> · ${esc(me.email||ADMIN_EMAIL)}. Change passwords in Firebase Console → Authentication → Users.</p></div></section>`}
   </div>`;
 }
 function renderView(){
@@ -1504,7 +1506,7 @@ $('#bell').addEventListener('click',()=>{ view='dashboard'; renderNav(); renderV
 window.addEventListener('resize',()=>{ if(sheetOpen) renderPanel(); });
 window.addEventListener('hashchange',()=>{ if(mode==='store'){ storeSel=readHash(); storePh=0; renderStore(); } });
 window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installPrompt=e; if(mode==='admin'&&view==='settings') renderView(); });
-if('serviceWorker' in navigator&&location.protocol==='https:'){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
+if('serviceWorker' in navigator&&location.protocol==='https:'&&!isNative()){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
 let toastT; function toast(msg){ const el=$('#toast'); el.textContent=msg; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,2800); }
 
 // ---------- boot ----------

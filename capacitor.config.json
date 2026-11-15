@@ -1,0 +1,15 @@
+{
+  "appId": "com.revora.app",
+  "appName": "Revora",
+  "webDir": "www",
+  "server": {
+    "url": "https://subash-v-15473.github.io/revora-app/",
+    "allowNavigation": ["subash-v-15473.github.io", "*.firebaseapp.com", "*.googleapis.com"]
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#f3f5f9",
+    "allowsLinkPreview": false,
+    "scrollEnabled": true
+  }
+}

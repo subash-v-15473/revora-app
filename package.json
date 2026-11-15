@@ -10,5 +10,10 @@
   "devDependencies": {
     "firebase": "^10.14.1",
     "firebase-tools": "^13.29.1"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^6.2.3",
+    "@capacitor/core": "^6.2.3",
+    "@capacitor/ios": "^6.2.3"
   }
 }
