@@ -2,19 +2,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'revoraadmin@revora.com';
+      return request.auth != null && (
+        request.auth.token.email == 'revoraadmin@revora.com'
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
     }
-    // Cars: anyone can browse; only the admin can add or change.
-    match /cars/{carId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    // Photos: stored as compressed data URLs; anyone can view, only the admin can add or remove.
-    match /photos/{photoId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    // Appointments: anyone can book (create) with a sane shape; only the admin can read, change or delete.
+    match /cars/{carId}     { allow read: if true; allow write: if isAdmin(); }
+    match /photos/{photoId} { allow read: if true; allow write: if isAdmin(); }
+    match /settings/{id}    { allow read: if true; allow write: if isAdmin(); }
+    match /admins/{uid}     { allow read, write: if isAdmin(); }
+    match /buyers/{id}      { allow read, write: if isAdmin(); }
     match /appointments/{apptId} {
       allow create: if request.resource.data.keys().hasAll(['carId','carTitle','name','phone','date','time','status','createdAt'])
                     && request.resource.data.status == 'new'

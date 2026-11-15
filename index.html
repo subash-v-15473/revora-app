@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Revora">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="description" content="Revora used car business: browse cars for sale and book a visit. Admin dashboard for purchase, listing, payment, sale and RC transfer tracking.">
 <title>Revora</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232563eb'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 16h-.5a1 1 0 0 1-1-1v-3l1.8-4.1A1.5 1.5 0 0 1 7.7 7h8.6a1.5 1.5 0 0 1 1.4.9L19.5 12v3a1 1 0 0 1-1 1H18'/%3E%3Ccircle cx='8' cy='16' r='1.6'/%3E%3Ccircle cx='16' cy='16' r='1.6'/%3E%3Cpath d='M9.6 16h4.8M4.5 12h15'/%3E%3C/g%3E%3C/svg%3E">
@@ -259,7 +265,7 @@ body.boot .pstage{animation:pop .4s both} body.boot .pstage:nth-of-type(2){anima
 .empty h3{color:var(--fg);font-size:16px;margin-bottom:4px}
 
 /* widgets row */
-.widgets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.widgets{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
 @media (max-width:1000px){ .widgets{grid-template-columns:1fr!important} }
 .feed{display:flex;flex-direction:column;gap:12px}
 .feed .f{display:flex;gap:10px;align-items:flex-start}
@@ -512,6 +518,74 @@ details summary::-webkit-details-marker{display:none}
 .appt.conv{opacity:.75}
 .pill.new{background:var(--orange-soft);color:var(--orange)} .pill.confirmed{background:var(--blue-soft);color:var(--blue)} .pill.converted{background:var(--green-soft);color:var(--green)} .pill.cancelled{background:var(--red-soft);color:var(--red)}
 @media (max-width:700px){ .appt{grid-template-columns:auto minmax(0,1fr)} .appt .ac{grid-column:1/-1;justify-content:flex-start} }
+/* ledger, expenses, docs, targets, matches */
+.ledger{display:flex;flex-direction:column}
+.ledger .r{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}
+.ledger .r:first-child{border-top:0}
+.ledger .r b{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ledger .r small{color:var(--muted);font-size:11.5px;display:block}
+.ledger .amt{font-weight:700;white-space:nowrap}
+.ledger .x{color:var(--faint);width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
+.ledger .x:hover{color:var(--red);background:var(--red-soft)}
+.ledger .x svg{width:14px;height:14px}
+.sumrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sumrow div{background:var(--surface-2);border-radius:10px;padding:8px 10px;min-width:0}
+.sumrow .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.sumrow .v{font-size:15px;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+.sumrow .v.g{color:var(--green)} .sumrow .v.r{color:var(--red)} .sumrow .v.o{color:var(--orange)}
+.pbar{height:8px;border-radius:4px;background:var(--surface-3);overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.target{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:700px){ .target{grid-template-columns:1fr} }
+.target .t{display:flex;flex-direction:column;gap:8px}
+.target .t .hd2{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.target .t .hd2 b{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.target .t .hd2 span{font-size:12.5px;color:var(--muted)}
+.fu{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.fu .tx{flex:1;min-width:0}
+.fu b{display:block;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fu small{color:var(--muted);font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fu.late{border-color:var(--red-soft);background:var(--red-soft)}
+.fu.late small{color:var(--red)}
+.docs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.doc{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.doc .th{aspect-ratio:4/3;background:var(--surface-3);border-radius:8px;overflow:hidden;display:grid;place-items:center;color:var(--faint);cursor:pointer}
+.doc .th img{width:100%;height:100%;object-fit:cover}
+.doc .th svg{width:30px;height:30px}
+.doc b{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc small{font-size:11.5px;color:var(--muted)}
+.doc small.late{color:var(--red);font-weight:700} .doc small.soon{color:var(--amber);font-weight:700}
+.doc .acts{display:flex;gap:6px}
+.match{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.match:first-of-type{border-top:0}
+.match b{display:block}
+.match small{color:var(--muted);font-size:12px;display:block}
+.wa{background:#25d366!important;border-color:#25d366!important;color:#fff!important}
+.wa:hover{filter:brightness(1.05)}
+.phead .tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.emi{display:flex;flex-direction:column;gap:10px}
+.emi .out{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:var(--blue-soft);border-radius:12px;padding:12px 14px}
+.emi .out b{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--blue)}
+.emi .out span{font-size:12.5px;color:var(--fg-2)}
+.emi input[type=range]{width:100%;padding:0;border:0;box-shadow:none;background:transparent}
+.emi .lbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);font-weight:600}
+.emi .lbl b{color:var(--fg)}
+.soldstrip{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.soldstrip::-webkit-scrollbar{display:none}
+.soldcard{flex:0 0 200px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
+.soldcard .img{aspect-ratio:4/3;background:var(--surface-3);overflow:hidden;filter:saturate(.6)}
+.soldcard .img img{width:100%;height:100%;object-fit:cover}
+.soldcard .tag{position:absolute;left:8px;top:8px;background:var(--fg);color:var(--bg);font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.soldcard .b{padding:10px 12px;font-size:13px;font-weight:600}
+.soldcard .b small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+.stitle{font-size:18px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.stitle span{font-size:12.5px;color:var(--muted);font-weight:500}
+.team{display:flex;flex-direction:column}
+.team .m{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
+.team .m:first-child{border-top:0}
+.team .m b{display:block} .team .m small{color:var(--muted);font-size:12px}
+.installbox{display:flex;gap:12px;align-items:center;background:var(--blue-soft);border-radius:12px;padding:12px 14px;font-size:13px}
+@media print{ .side,.topbar,#panelCol,.fab,.toast,#sheet,#overlay,.btn,.chips,.pipe{display:none!important} .app{display:block} .main{padding:0;gap:14px} .card,.kpi{box-shadow:none;break-inside:avoid} body{background:#fff;color:#000} .greet h1{font-size:20px} }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
 </style>
 </head>
@@ -592,7 +666,7 @@ const VIEWS=[['dashboard','Dashboard','home'],['inventory','Inventory','car'],['
 const ADMIN_EMAIL='revoraadmin@revora.com';
 const APPT_STATUS={new:'New',confirmed:'Confirmed',converted:'Visited',cancelled:'Cancelled'};
 
-let appts=[],mode='store',storeSel=null,storePh=0,booked=null,bookFail=null,authReady=false;
+let appts=[],mode='store',storeSel=(location.hash.match(/^#car-([A-Za-z0-9_-]+)$/)||[])[1]||null,storePh=0,booked=null,bookFail=null,authReady=false;
 let db=null,user=null,assets=null,cars=[],view='dashboard',filter='all',search='',selId=null,tab='overview',photoIdx=0,lbIdx=-1,confirmKey=null,names={},me={name:'',avatar:'',email:''},myId=null,canWrite=true,loaded=false,uploading=false,sheetOpen=false;
 const PH_BLANK='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 const photoCache={}, photoPending=new Set(); let photoTimer=null;
@@ -605,8 +679,33 @@ const narrow=()=>window.matchMedia('(max-width:1180px)').matches;
 const sel=()=>cars.find(x=>x.id===selId);
 
 // ---------- derived ----------
-const profitOf=c=>(+c.sale?.price||0)-(+c.purchase?.price||0);
-const estProfit=c=>stageIdx(c.stage)>=stageIdx('sold')?profitOf(c):((+c.payment?.amount||+c.listing?.price||0)-(+c.purchase?.price||0));
+const expensesOf=c=>Array.isArray(c.expenses)?c.expenses:[];
+const expTotal=c=>expensesOf(c).reduce((a,e)=>a+(+e.amount||0),0);
+const costOf=c=>(+c.purchase?.price||0)+expTotal(c);
+const paymentsOf=c=>Array.isArray(c.payments)?c.payments:[];
+const paidTotal=c=>paymentsOf(c).reduce((a,p)=>a+(+p.amount||0),0);
+const docsOf=c=>Array.isArray(c.docs)?c.docs:[];
+const tdOf=c=>Array.isArray(c.testDrives)?c.testDrives:[];
+const priceHist=c=>Array.isArray(c.priceHistory)?c.priceHistory:(c.listing?.price?[{price:c.listing.price,date:c.listing.date||'',platform:c.listing.platform||''}]:[]);
+const brandOf=c=>(c.title||'').trim().split(/\s+/)[0]||'';
+const modelOf=c=>(c.title||'').trim().split(/\s+/).slice(0,2).join(' ');
+const profitOf=c=>(+c.sale?.price||0)-costOf(c);
+const estProfit=c=>stageIdx(c.stage)>=stageIdx('sold')?profitOf(c):((+c.payment?.amount||+c.listing?.price||0)-costOf(c));
+const daysInStock=c=>Math.max(0,Math.floor((new Date(stageIdx(c.stage)>=stageIdx('sold')&&c.sale?.date?c.sale.date:Date.now())-new Date(c.purchase?.date||c.createdAt||Date.now()))/86400000));
+const EXP_TYPES=['Refurbishment','Insurance','RC / RTO fees','Transport','Commission','Detailing','Other'];
+const DOC_TYPES=['RC copy','Insurance','PUC','Service record','NOC','Form 29/30','Invoice','Other'];
+const PAY_MODES=['Cash','UPI','Bank transfer','Loan disbursal','Cheque'];
+const DEFAULT_SETTINGS={slowDays:45,targetCars:5,targetSales:0,interestRate:9.5,whatsapp:'',commissionPct:0,callbackHours:'10 AM to 7 PM'};
+let settings={...DEFAULT_SETTINGS}, buyers=[], admins=[], installPrompt=null;
+const thisMonth=()=>new Date().toISOString().slice(0,7);
+const waLink=(phone,text)=>{ const d=String(phone||'').replace(/\D/g,''); if(!d) return ''; const n=d.length===10?'91'+d:d; return 'https://wa.me/'+n+(text?'?text='+encodeURIComponent(text):''); };
+const carLink=c=>location.origin+location.pathname+'#car-'+c.id;
+function matchesBuyer(b,c){ if(!c.listing?.price) return false; const price=+c.listing.price; if(b.budgetMax&&price>+b.budgetMax*1.05) return false; if(b.budgetMin&&price<+b.budgetMin*0.9) return false;
+  if(b.fuel&&c.fuel&&b.fuel!==c.fuel) return false; if(b.transmission&&c.transmission&&b.transmission!==c.transmission) return false;
+  if(b.prefs){ const words=b.prefs.toLowerCase().split(/[,\s]+/).filter(w=>w.length>2); if(words.length&&!words.some(w=>(c.title||'').toLowerCase().includes(w))) return false; } return true; }
+const matchingBuyers=c=>buyers.filter(b=>b.status!=='converted'&&matchesBuyer(b,c));
+const similarSold=c=>cars.filter(x=>x.id!==c.id&&stageIdx(x.stage)>=stageIdx('sold')&&x.sale?.price&&(modelOf(x).toLowerCase()===modelOf(c).toLowerCase()||brandOf(x).toLowerCase()===brandOf(c).toLowerCase())).sort((a,b)=>(modelOf(b).toLowerCase()===modelOf(c).toLowerCase())-(modelOf(a).toLowerCase()===modelOf(c).toLowerCase()));
+const docExpiry=d=>{ if(!d.expiry) return null; const du=daysUntil(d.expiry); return du<0?{cls:'late',t:'Expired '+fmtDate(d.expiry)}:du<=15?{cls:'soon',t:'Expires in '+du+' day'+(du===1?'':'s')}:{cls:'',t:'Valid till '+fmtDate(d.expiry)}; };
 const rcLabel=c=>(RC_STEPS.find(r=>r[0]===(c.rc?.status||'pending'))||RC_STEPS[0])[1];
 function needsAttention(c){
   const days=Math.floor((Date.now()-new Date(c.updatedAt||c.createdAt||Date.now()))/86400000);
@@ -615,7 +714,7 @@ function needsAttention(c){
   if(c.stage==='sold') return {t:'RC transfer for '+c.title,s:'Not started yet',ic:'doc',c:'purple'};
   if(c.stage==='rc') return {t:'RC transfer for '+c.title,s:rcLabel(c)+' · '+days+' days',ic:'doc',c:'purple'};
   if(c.stage==='purchased'&&days>3) return {t:'List '+c.title,s:'Bought '+days+' days ago, not listed',ic:'tag',c:'amber'};
-  if(c.stage==='listed'&&days>30) return {t:'Review price of '+c.title,s:'Listed '+days+' days, no buyer',ic:'tag',c:'amber'};
+  if((c.stage==='listed'||c.stage==='purchased')&&daysInStock(c)>settings.slowDays) return {t:'Slow mover: '+c.title,s:daysInStock(c)+' days in stock, review the price',ic:'tag',c:'amber'};
   if(c.stage==='customer'&&days>5) return {t:'Follow up '+(c.customer?.name||'customer'),s:c.title+' · enquiry '+days+' days old',ic:'users',c:'purple'};
   return null;
 }
@@ -646,8 +745,8 @@ function visible(list){
     .filter(c=>!q||[c.title,c.reg,c.customer?.name,c.customer?.phone,c.listing?.platform,c.city].some(v=>String(v||'').toLowerCase().includes(q)))
     .sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
 }
-const apptText=a=>`${a.name} has scheduled an appointment to check the ${a.carTitle} on ${fmtApptDT(a)}`;
-const fmtApptDT=a=>{ const d=new Date(a.date+'T'+(a.time||'10:00')); return isNaN(d)?a.date+' '+(a.time||''):d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}); };
+const apptText=a=>a.type==='callback'?`${a.name} requested a call back about the ${a.carTitle}`:`${a.name} has scheduled an appointment to check the ${a.carTitle} on ${fmtApptDT(a)}`;
+const fmtApptDT=a=>{ if(!a.date) return 'call back'; const d=new Date(a.date+'T'+(a.time||'10:00')); return isNaN(d)?a.date+' '+(a.time||''):d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}); };
 // ---------- leads: customers interested in a car ----------
 const LEAD_STATUS={enquired:'Enquired',negotiating:'Negotiating',payment:'Deal agreed',won:'Bought',lost:'Lost'};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -676,7 +775,11 @@ function chance(l,c){
   return {pct:p,label:p>=70?'Hot':p>=40?'Warm':'Cold',cls:p>=70?'hot':p>=40?'warm':'cold',why};
 }
 const bestLead=c=>activeLeads(c).map(l=>({l,ch:chance(l,c)})).sort((a,b)=>b.ch.pct-a.ch.pct)[0]||null;
-const pendings=()=>[...appts.filter(a=>a.status==='new'||a.status==='confirmed').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(a=>({appt:a,a:{t:(a.status==='new'?'New appointment: ':'Visit: ')+a.name,s:apptText(a).replace(a.name+' has scheduled an appointment to check ','')+(a.phone?' · '+a.phone:''),ic:'cal',c:a.status==='new'?'orange':'blue'}})),...cars.flatMap(c=>activeLeads(c).filter(l=>c.stage!=='payment'||l.status!=='payment').map(l=>{ const du=daysUntil(l.expectedBy); if(l.mode==='loan'&&l.loanStatus==='applied'&&daysSince(l.lastContact||l.createdAt)>5) return {c,a:{t:'Follow up '+(l.bank||'bank')+' for '+l.name,s:c.title+' · loan applied '+daysSince(l.createdAt)+' days ago',ic:'bank',c:'blue'}}; if(du!=null&&du<0) return {c,a:{t:'Payment overdue: '+l.name,s:c.title+' · expected '+fmtDate(l.expectedBy),ic:'wallet',c:'orange'}}; return null; }).filter(Boolean)),...cars.map(c=>({c,a:needsAttention(c)})).filter(x=>x.a)];
+const followUps=()=>cars.flatMap(c=>activeLeads(c).filter(l=>l.nextFollowUp&&l.nextFollowUp<=today()).map(l=>({c,l,late:l.nextFollowUp<today()}))).sort((a,b)=>a.l.nextFollowUp.localeCompare(b.l.nextFollowUp));
+const docAlerts=()=>cars.filter(c=>c.stage!=='done').flatMap(c=>docsOf(c).map(d=>({c,d,e:docExpiry(d)})).filter(x=>x.e&&x.e.cls));
+const pendings=()=>[...followUps().map(({c,l,late})=>({c,a:{t:(late?'Overdue follow-up: ':'Follow up today: ')+l.name,s:c.title+(l.phone?' · '+l.phone:''),ic:'users',c:late?'red':'purple'}})),
+  ...docAlerts().map(({c,d,e})=>({c,a:{t:d.type+' · '+c.title,s:e.t,ic:'doc',c:e.cls==='late'?'red':'amber'}})),
+  ...appts.filter(a=>a.status==='new'||a.status==='confirmed').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(a=>({appt:a,a:{t:(a.type==='callback'?'Call back: ':a.status==='new'?'New appointment: ':'Visit: ')+a.name,s:apptText(a).replace(a.name+' has scheduled an appointment to check ','')+(a.phone?' · '+a.phone:''),ic:'cal',c:a.status==='new'?'orange':'blue'}})),...cars.flatMap(c=>activeLeads(c).filter(l=>c.stage!=='payment'||l.status!=='payment').map(l=>{ const du=daysUntil(l.expectedBy); if(l.mode==='loan'&&l.loanStatus==='applied'&&daysSince(l.lastContact||l.createdAt)>5) return {c,a:{t:'Follow up '+(l.bank||'bank')+' for '+l.name,s:c.title+' · loan applied '+daysSince(l.createdAt)+' days ago',ic:'bank',c:'blue'}}; if(du!=null&&du<0) return {c,a:{t:'Payment overdue: '+l.name,s:c.title+' · expected '+fmtDate(l.expectedBy),ic:'wallet',c:'orange'}}; return null; }).filter(Boolean)),...cars.map(c=>({c,a:needsAttention(c)})).filter(x=>x.a)];
 
 // ---------- status / nav ----------
 function setLive(kind,text){ const el=$('#live'); el.className='live '+kind; $('#liveText').textContent=text; }
@@ -714,8 +817,9 @@ function greeting(){ const h=new Date().getHours(); return h<12?'Good Morning':h
 
 function viewDashboard(){
   const active=cars.filter(c=>c.stage!=='done');
-  const invested=active.reduce((a,c)=>a+(+c.purchase?.price||0),0);
+  const invested=active.reduce((a,c)=>a+costOf(c),0);
   const potential=cars.reduce((a,c)=>a+Math.max(0,estProfit(c)),0);
+  const fus=followUps();
   const booked=cars.filter(c=>stageIdx(c.stage)>=stageIdx('sold')).reduce((a,c)=>a+profitOf(c),0);
   const rcPend=cars.filter(c=>c.stage==='sold'||c.stage==='rc').length;
   const added7=cars.filter(c=>c.createdAt&&(Date.now()-new Date(c.createdAt))<7*86400000).length;
@@ -727,12 +831,25 @@ function viewDashboard(){
   return `<div class="greet"><div><h1>${greeting()}, ${esc((me.name||'Admin').split(' ')[0])}! 👋</h1><p>Here's what's happening with your car business today.</p></div><span class="btn" style="cursor:default">${I(P.cal)}${new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</span></div>
   <div class="kpis">${kpis.map(([c,ic,v,l,d])=>`<div class="kpi"><span class="ic ${c}">${I(P[ic])}</span><div style="min-width:0"><div class="v num">${v}</div><div class="l">${l}${d}</div></div></div>`).join('')}</div>
   <section class="card"><div class="hd"><h2>Business Pipeline</h2>${filter!=='all'?`<button class="btn link" data-f="all">Clear filter</button>`:''}</div><div class="pipe">${pipe}</div></section>
+  ${targetCard()}
   ${carsCard(cars.filter(c=>c.stage!=='done'),'My Cars',{viewAll:true})}
   <div class="widgets">
+    <section class="card"><div class="hd"><h2>Follow-ups ${fus.length?`<span class="cnt" style="background:${fus.some(f=>f.late)?'var(--red)':'var(--purple)'}">${fus.length}</span>`:''}</h2><span class="hint">Due today or earlier</span></div><div class="bd" style="display:flex;flex-direction:column;gap:8px">${fus.length?fus.slice(0,6).map(({c,l,late})=>`<div class="fu ${late?'late':''}"><div class="tx"><b>${esc(l.name)} · ${esc(c.title)}</b><small>${late?'Was due '+fmtDate(l.nextFollowUp):'Due today'}${l.phone?' · '+esc(l.phone):''}${l.mode==='loan'?' · loan '+esc(l.loanStatus||'applied'):l.mode==='cash'?' · cash':''}</small></div>${l.phone?`<a class="btn sm wa" href="${waLink(l.phone,'Hi '+l.name+', Revora here about the '+c.title+'. ')}" target="_blank" rel="noopener">WA</a>`:''}<button class="btn sm" data-sel="${esc(c.id)}">Open</button><button class="btn sm ok" data-fu="${esc(c.id)}|${esc(l.id)}|done" title="Mark followed up">${I(P.check,3)}</button></div>`).join(''):'<span class="muted">Nothing due. Set a next follow-up date on any interested customer.</span>'}</div></section>
     <section class="card"><div class="hd"><h2>Recent Activity</h2></div><div class="bd feed">${feed.length?feed.map(l=>{ const nm=l.who||(l.by&&names[l.by])||'Admin'; return `<div class="f"><span class="av c-${['blue','purple','orange','teal'][initials(nm).charCodeAt(0)%4]}">${esc(initials(nm))}</span><div style="min-width:0"><b>${esc(nm)}: ${esc(l.text)}</b><small>${esc(l.car)} · ${esc(ago(l.at))}</small></div></div>`; }).join(''):'<span class="muted">No activity yet.</span>'}</div></section>
     <section class="card"><div class="hd"><h2>Sales Summary</h2><span class="hint">Last 30 days</span></div><div class="bd">${salesChart()}</div></section>
     <section class="card"><div class="hd"><h2>Pending Actions ${pend.length?`<span class="cnt">${pendings().length}</span>`:''}</h2></div><div class="bd pend">${pend.length?pend.map(({c,a})=>`<div class="p"><span class="ic c-${a.c}">${I(P[a.ic])}</span><div class="tx"><b>${esc(a.t)}</b><small>${esc(a.s)}</small></div>${c?`<button class="btn sm" data-sel="${esc(c.id)}">View ${I(P.arrow,2.2)}</button>`:`<button class="btn sm" data-view="appointments">View ${I(P.arrow,2.2)}</button>`}</div>`).join(''):`<div class="banner" style="margin:0"><b>Business on Track!</b><small>No pending actions right now.</small><span class="ok">${I(P.check,3)}</span></div>`}</div></section>
   </div>`;
+}
+function targetCard(){
+  const m=thisMonth(); const soldM=cars.filter(c=>c.sale?.date&&String(c.sale.date).slice(0,7)===m);
+  const n=soldM.length, rev=soldM.reduce((a,c)=>a+(+c.sale.price||0),0), prof=soldM.reduce((a,c)=>a+profitOf(c),0);
+  const tc=+settings.targetCars||0, ts=+settings.targetSales||0; if(!tc&&!ts) return '';
+  const pc=tc?Math.min(100,Math.round(n/tc*100)):0, ps=ts?Math.min(100,Math.round(rev/ts*100)):0;
+  const mon=new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  return `<section class="card"><div class="hd"><h2>${mon} target</h2><span class="hint">Profit so far <b class="num" style="color:${prof<0?'var(--red)':'var(--green)'}">${lakh(prof)}</b>${settings.commissionPct?` · commission <b class="num">${lakh(prof>0?prof*settings.commissionPct/100:0)}</b>`:''}</span></div><div class="bd target">
+    ${tc?`<div class="t"><div class="hd2"><b class="num">${n} <span style="font-size:14px;font-weight:600;color:var(--muted)">of ${tc} cars</span></b><span>${pc}%${n>=tc?' · target met':''}</span></div><div class="pbar"><i style="width:${pc}%"></i></div></div>`:''}
+    ${ts?`<div class="t"><div class="hd2"><b class="num">${lakh(rev)} <span style="font-size:14px;font-weight:600;color:var(--muted)">of ${lakh(ts)}</span></b><span>${ps}%${rev>=ts?' · target met':''}</span></div><div class="pbar"><i style="width:${ps}%"></i></div></div>`:''}
+  </div></section>`;
 }
 function salesChart(){
   const days=30, now=new Date(); now.setHours(0,0,0,0);
@@ -776,45 +893,87 @@ function viewCustomers(){
   <div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><span class="ic blue">${I(P.users)}</span><div><div class="v num">${act.length}</div><div class="l">Active buyers</div></div></div><div class="kpi"><span class="ic green">${I(P.trend)}</span><div><div class="v num">${act.filter(r=>r.ch.pct>=70).length}</div><div class="l">Hot (70%+)</div></div></div><div class="kpi"><span class="ic orange">${I(P.bank)}</span><div><div class="v num">${act.filter(r=>r.l.mode==='loan'&&r.l.loanStatus!=='approved').length}</div><div class="l">Loans awaiting bank</div></div></div><div class="kpi"><span class="ic purple">${I(P.check)}</span><div><div class="v num">${rows.filter(r=>r.l.status==='won').length}</div><div class="l">Bought</div></div></div></div>
   <section class="card"><div class="tscroll"><table class="table"><thead><tr><th>Customer</th><th>Car</th><th>Payment</th><th>Expected by</th><th>Chance</th><th>Status</th></tr></thead><tbody>
   ${v.length?v.map(({l,c,ch})=>`<tr class="clk" data-sel="${esc(c.id)}"><td><b>${esc(l.name)}</b><div class="muted num" style="font-size:12px">${esc(l.phone||'—')}</div></td><td>${esc(c.title)}<div class="muted" style="font-size:12px">${esc(stageOf(c.stage).label)}</div></td><td>${l.mode==='cash'?'Cash':l.mode==='loan'?'Loan · '+esc(l.bank||'bank')+' · '+esc(l.loanStatus||'applied'):'<span class="muted">Not decided</span>'}${l.offer?'<div class="muted num" style="font-size:12px">Offer '+lakh(l.offer)+'</div>':''}</td><td class="num">${l.expectedBy?fmtDate(l.expectedBy):'—'}</td><td><span class="minichance ${ch.cls}"><i style="--w:${ch.pct}%"></i>${ch.pct}%</span><div class="muted" style="font-size:11.5px">${ch.label}</div></td><td><span class="pill ${l.status==='won'?'done':l.status==='lost'?'fail':l.status==='payment'?'payment':'customer'}">${LEAD_STATUS[l.status]||l.status}</span></td></tr>`).join(''):`<tr><td colspan="6"><div class="empty"><h3>No customers yet</h3>Customers appear here once an enquiry is recorded on a car.</div></td></tr>`}
-  </tbody></table></div></section>`;
+  </tbody></table></div></section>
+  <section class="card"><div class="hd"><h2>Looking for a car ${buyers.filter(b=>b.status!=='converted').length?`<span class="cnt" style="background:var(--purple)">${buyers.filter(b=>b.status!=='converted').length}</span>`:''}</h2>${canWrite?`<button class="btn primary sm" data-act="buyerNew">${I(P.plus,2.6)}Add buyer</button>`:''}</div>
+    <div class="bd" style="padding-top:6px"><span class="hint">Buyers with a budget and preferences but no car yet. When a matching car is listed, it shows on that car's panel.</span></div>
+    <div class="tscroll"><table class="table"><thead><tr><th>Buyer</th><th>Budget</th><th>Wants</th><th>Matching cars</th><th>Added</th><th></th></tr></thead><tbody>
+    ${buyers.length?buyers.filter(b=>b.status!=='converted').map(b=>{ const m=cars.filter(c=>(c.stage==='listed'||c.stage==='customer')&&matchesBuyer(b,c)); return `<tr><td><b>${esc(b.name)}</b><div class="muted num" style="font-size:12px">${esc(b.phone||'—')}</div></td><td class="num">${b.budgetMin?lakh(b.budgetMin)+' – ':'up to '}${lakh(b.budgetMax||0)}</td><td>${[b.prefs,b.fuel,b.transmission,b.mode==='loan'?'loan':b.mode==='cash'?'cash':''].filter(Boolean).map(esc).join(' · ')||'<span class="muted">Any</span>'}${b.note?'<div class="muted" style="font-size:12px">'+esc(b.note)+'</div>':''}</td><td>${m.length?m.map(c=>`<button class="btn sm" data-sel="${esc(c.id)}" style="margin:2px 4px 2px 0">${esc(c.title)}</button>`).join(''):'<span class="muted">None yet</span>'}</td><td class="muted">${esc(fmtDate(b.createdAt))}</td><td style="white-space:nowrap">${b.phone?`<a class="btn sm wa" href="${waLink(b.phone,'Hi '+b.name+', Revora here. ')}" target="_blank" rel="noopener">WA</a>`:''} ${canWrite?`<button class="btn sm ghost" data-buyerdel="${esc(b.id)}">${I(P.trash)}</button>`:''}</td></tr>`; }).join(''):`<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">No general buyers yet. When a customer walks away from a car, use “Keep as a buyer” on their card.</td></tr>`}
+    </tbody></table></div></section>`;
+}
+function openBuyerForm(pre={}){
+  const ov=$('#overlay'); ov.hidden=false; const s=(id,list,cur)=>`<select id="${id}"><option value="">Any</option>${list.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
+  ov.innerHTML=`<div class="scrim" data-close><div class="modal" role="dialog" aria-label="Add buyer" data-stop><div style="display:flex;justify-content:space-between;align-items:center"><h2>Buyer looking for a car</h2><button class="iconbtn" data-close aria-label="Close">${I(P.x,2.4)}</button></div>
+    <div class="form"><label>Name<input id="by_name" value="${esc(pre.name||'')}"></label><label>Phone<input id="by_phone" inputmode="tel" value="${esc(pre.phone||'')}"></label>
+    <label>Budget from (₹)<input id="by_min" type="number" inputmode="numeric" value="${esc(pre.budgetMin||'')}" placeholder="optional"></label><label>Budget up to (₹)<input id="by_max" type="number" inputmode="numeric" value="${esc(pre.budgetMax||'')}" placeholder="900000"></label>
+    <label>Fuel${s('by_fuel',FUELS,pre.fuel||'')}</label><label>Transmission${s('by_trans',TRANS,pre.transmission||'')}</label>
+    <label>Paying by<select id="by_mode"><option value="">Not decided</option><option value="cash" ${pre.mode==='cash'?'selected':''}>Cash</option><option value="loan" ${pre.mode==='loan'?'selected':''}>Loan</option></select></label><label>Brands / models<input id="by_prefs" value="${esc(pre.prefs||'')}" placeholder="e.g. Creta, Seltos, Hyundai"></label>
+    <label class="full">Note<input id="by_note" value="${esc(pre.note||'')}"></label></div><div class="hint err" id="formErr" hidden></div>
+    <div class="frow"><button class="btn primary" data-act="buyerSave">Save buyer</button><button class="btn" data-close style="flex:0 0 auto">Cancel</button></div></div></div>`;
 }
 function viewReports(){
   const sold=cars.filter(c=>stageIdx(c.stage)>=stageIdx('sold')).sort((a,b)=>String(b.sale?.date||'').localeCompare(String(a.sale?.date||'')));
-  const rev=sold.reduce((a,c)=>a+(+c.sale?.price||0),0), cost=sold.reduce((a,c)=>a+(+c.purchase?.price||0),0), profit=rev-cost;
-  const byMonth={}; sold.forEach(c=>{ const k=(c.sale?.date||'').slice(0,7); if(!k) return; byMonth[k]=byMonth[k]||{n:0,rev:0,profit:0}; byMonth[k].n++; byMonth[k].rev+=+c.sale.price||0; byMonth[k].profit+=profitOf(c); });
+  const rev=sold.reduce((a,c)=>a+(+c.sale?.price||0),0), cost=sold.reduce((a,c)=>a+costOf(c),0), exp=sold.reduce((a,c)=>a+expTotal(c),0), profit=rev-cost;
+  const comm=settings.commissionPct?sold.reduce((a,c)=>a+Math.max(0,profitOf(c))*settings.commissionPct/100,0):0;
+  const byMonth={}; sold.forEach(c=>{ const k=(c.sale?.date||'').slice(0,7); if(!k) return; byMonth[k]=byMonth[k]||{n:0,rev:0,profit:0,days:0}; byMonth[k].n++; byMonth[k].rev+=+c.sale.price||0; byMonth[k].profit+=profitOf(c); byMonth[k].days+=daysInStock(c); });
   const months=Object.keys(byMonth).sort().reverse();
-  const avgDays=sold.length?Math.round(sold.reduce((a,c)=>a+Math.max(0,(new Date(c.sale.date)-new Date(c.purchase?.date||c.sale.date))/86400000),0)/sold.length):0;
+  const avgDays=sold.length?Math.round(sold.reduce((a,c)=>a+daysInStock(c),0)/sold.length):0;
   const pc=v=>v<0?'var(--red)':'var(--green)';
-  return `<div class="greet"><div><h1>Reports</h1><p>What the business has earned so far.</p></div></div>
-  <div class="kpis"><div class="kpi"><span class="ic blue">${I(P.rupee)}</span><div><div class="v num">${lakh(rev)}</div><div class="l">Total sales</div></div></div><div class="kpi"><span class="ic green">${I(P.trend)}</span><div><div class="v num" style="color:${profit<0?'var(--red)':'inherit'}">${lakh(profit)}</div><div class="l">Profit booked${rev?` <span class="delta ${profit<0?'neg':''}">${(profit/rev*100).toFixed(1)}% margin</span>`:''}</div></div></div><div class="kpi"><span class="ic orange">${I(P.car)}</span><div><div class="v num">${sold.length}</div><div class="l">Cars sold</div></div></div><div class="kpi"><span class="ic purple">${I(P.clock)}</span><div><div class="v num">${avgDays}</div><div class="l">Avg days to sell</div></div></div></div>
+  // pricing guide by model
+  const byModel={}; sold.forEach(c=>{ const k=modelOf(c); byModel[k]=byModel[k]||{n:0,ask:0,askN:0,sold:0,days:0,cost:0}; const m=byModel[k]; m.n++; m.sold+=+c.sale.price||0; m.days+=daysInStock(c); m.cost+=costOf(c); if(c.listing?.price){ m.ask+=+c.listing.price; m.askN++; } });
+  const models=Object.entries(byModel).sort((a,b)=>b[1].n-a[1].n);
+  // brand days
+  const byBrand={}; sold.forEach(c=>{ const k=brandOf(c); byBrand[k]=byBrand[k]||{n:0,days:0,profit:0}; byBrand[k].n++; byBrand[k].days+=daysInStock(c); byBrand[k].profit+=profitOf(c); });
+  // bank performance from leads
+  const banks={}; cars.forEach(c=>leadsOf(c).forEach(l=>{ if(l.mode!=='loan') return; const k=(l.bank||'Unknown bank').trim(); banks[k]=banks[k]||{applied:0,approved:0,rejected:0,days:[],won:0}; const b=banks[k]; b.applied++; if(l.loanStatus==='approved'||l.status==='won'){ b.approved++; if(l.loanApprovedAt&&l.createdAt) b.days.push(Math.max(0,(new Date(l.loanApprovedAt)-new Date(l.createdAt))/86400000)); } if(l.loanStatus==='rejected') b.rejected++; if(l.status==='won') b.won++; }));
+  const bankRows=Object.entries(banks).sort((a,b)=>b[1].applied-a[1].applied);
+  return `<div class="greet"><div><h1>Reports</h1><p>What the business has earned so far, after expenses.</p></div><div class="frow"><button class="btn" data-act="exportCsv">${I(P.doc)}Download CSV</button><button class="btn" data-act="printReport">${I(P.doc)}Print / PDF</button></div></div>
+  <div class="kpis"><div class="kpi"><span class="ic blue">${I(P.rupee)}</span><div><div class="v num">${lakh(rev)}</div><div class="l">Total sales</div></div></div><div class="kpi"><span class="ic green">${I(P.trend)}</span><div><div class="v num" style="color:${profit<0?'var(--red)':'inherit'}">${lakh(profit)}</div><div class="l">True profit${rev?` <span class="delta ${profit<0?'neg':''}">${(profit/rev*100).toFixed(1)}% margin</span>`:''}</div></div></div><div class="kpi"><span class="ic orange">${I(P.wallet)}</span><div><div class="v num">${lakh(exp)}</div><div class="l">Expenses on sold cars${comm?` <span class="delta neg">commission ${lakh(comm)}</span>`:''}</div></div></div><div class="kpi"><span class="ic purple">${I(P.clock)}</span><div><div class="v num">${avgDays}</div><div class="l">Avg days to sell · ${sold.length} sold</div></div></div></div>
   <div class="widgets" style="grid-template-columns:1fr 2fr">
-    <section class="card"><div class="hd"><h2>By Month</h2></div><div class="tscroll"><table class="table"><thead><tr><th>Month</th><th>Cars</th><th>Sales</th><th>Profit</th></tr></thead><tbody>${months.length?months.map(k=>`<tr><td><b>${new Date(k+'-01').toLocaleDateString('en-IN',{month:'short',year:'numeric'})}</b></td><td class="num">${byMonth[k].n}</td><td class="num">${lakh(byMonth[k].rev)}</td><td class="num" style="color:${pc(byMonth[k].profit)};font-weight:700">${lakh(byMonth[k].profit)}</td></tr>`).join(''):'<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">No sales yet.</td></tr>'}</tbody></table></div></section>
-    <section class="card"><div class="hd"><h2>Sold Cars</h2></div><div class="tscroll"><table class="table"><thead><tr><th>Car</th><th>Bought</th><th>Sold</th><th>Profit</th><th>Buyer</th><th>Mode</th><th>RC</th></tr></thead><tbody>${sold.length?sold.map(c=>`<tr class="clk" data-sel="${esc(c.id)}"><td><b>${esc(c.title)}</b><div class="muted" style="font-size:12px">${esc(c.reg||'')}</div></td><td class="num">${lakh(c.purchase?.price)}<div class="muted" style="font-size:11.5px">${fmtDate(c.purchase?.date)}</div></td><td class="num">${lakh(c.sale?.price)}<div class="muted" style="font-size:11.5px">${fmtDate(c.sale?.date)}</div></td><td class="num" style="font-weight:700;color:${pc(profitOf(c))}">${lakh(profitOf(c))}</td><td>${esc(c.customer?.name||'—')}</td><td>${c.payment?.mode==='loan'?'Loan · '+esc(c.payment.bank||''):'Cash'}</td><td><span class="pill ${c.stage==='done'?'done':'rc'}">${rcLabel(c)}</span></td></tr>`).join(''):'<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No sales yet.</td></tr>'}</tbody></table></div></section>
+    <section class="card"><div class="hd"><h2>By Month</h2></div><div class="tscroll"><table class="table"><thead><tr><th>Month</th><th>Cars</th><th>Sales</th><th>Profit</th><th>Avg days</th></tr></thead><tbody>${months.length?months.map(k=>`<tr><td><b>${new Date(k+'-01').toLocaleDateString('en-IN',{month:'short',year:'numeric'})}</b></td><td class="num">${byMonth[k].n}</td><td class="num">${lakh(byMonth[k].rev)}</td><td class="num" style="color:${pc(byMonth[k].profit)};font-weight:700">${lakh(byMonth[k].profit)}</td><td class="num">${Math.round(byMonth[k].days/byMonth[k].n)}</td></tr>`).join(''):'<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">No sales yet.</td></tr>'}</tbody></table></div></section>
+    <section class="card"><div class="hd"><h2>Sold Cars</h2></div><div class="tscroll"><table class="table"><thead><tr><th>Car</th><th>Cost</th><th>Sold</th><th>Profit</th><th>Days</th><th>Buyer</th><th>Mode</th><th>RC</th></tr></thead><tbody>${sold.length?sold.map(c=>`<tr class="clk" data-sel="${esc(c.id)}"><td><b>${esc(c.title)}</b><div class="muted" style="font-size:12px">${esc(c.reg||'')}</div></td><td class="num">${lakh(costOf(c))}<div class="muted" style="font-size:11.5px">${expTotal(c)?'incl. '+lakh(expTotal(c))+' exp.':fmtDate(c.purchase?.date)}</div></td><td class="num">${lakh(c.sale?.price)}<div class="muted" style="font-size:11.5px">${fmtDate(c.sale?.date)}</div></td><td class="num" style="font-weight:700;color:${pc(profitOf(c))}">${lakh(profitOf(c))}${settings.commissionPct&&profitOf(c)>0?`<div class="muted" style="font-size:11.5px;font-weight:500">comm. ${lakh(profitOf(c)*settings.commissionPct/100)}</div>`:''}</td><td class="num">${daysInStock(c)}</td><td>${esc(c.customer?.name||'—')}</td><td>${c.payment?.mode==='loan'?'Loan · '+esc(c.payment.bank||''):'Cash'}</td><td><span class="pill ${c.stage==='done'?'done':'rc'}">${rcLabel(c)}</span></td></tr>`).join(''):'<tr><td colspan="8" class="muted" style="text-align:center;padding:24px">No sales yet.</td></tr>'}</tbody></table></div></section>
+  </div>
+  <div class="widgets" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <section class="card"><div class="hd"><h2>Pricing guide</h2><span class="hint">What similar cars actually fetched</span></div><div class="tscroll"><table class="table"><thead><tr><th>Model</th><th>Sold</th><th>Avg ask</th><th>Avg sold</th><th>Gap</th><th>Avg days</th><th>Avg profit</th></tr></thead><tbody>${models.length?models.map(([k,m])=>{ const ask=m.askN?m.ask/m.askN:0, avg=m.sold/m.n, gap=ask?Math.round((avg-ask)/ask*100):null; return `<tr><td><b>${esc(k)}</b></td><td class="num">${m.n}</td><td class="num">${ask?lakh(ask):'—'}</td><td class="num">${lakh(avg)}</td><td class="num" style="color:${gap==null?'inherit':gap<0?'var(--red)':'var(--green)'}">${gap==null?'—':(gap>0?'+':'')+gap+'%'}</td><td class="num">${Math.round(m.days/m.n)}</td><td class="num" style="color:${pc((m.sold-m.cost)/m.n)}">${lakh((m.sold-m.cost)/m.n)}</td></tr>`; }).join(''):'<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">Appears after your first sales.</td></tr>'}</tbody></table></div></section>
+    <section class="card"><div class="hd"><h2>Bank performance</h2><span class="hint">From every loan customer</span></div><div class="tscroll"><table class="table"><thead><tr><th>Bank</th><th>Applied</th><th>Approved</th><th>Rejected</th><th>Approval rate</th><th>Avg days</th><th>Bought</th></tr></thead><tbody>${bankRows.length?bankRows.map(([k,b])=>`<tr><td><b>${esc(k)}</b></td><td class="num">${b.applied}</td><td class="num">${b.approved}</td><td class="num">${b.rejected}</td><td class="num" style="font-weight:700;color:${b.approved/b.applied>=0.6?'var(--green)':b.rejected?'var(--red)':'inherit'}">${Math.round(b.approved/b.applied*100)}%</td><td class="num">${b.days.length?Math.round(b.days.reduce((a,x)=>a+x,0)/b.days.length):'—'}</td><td class="num">${b.won}</td></tr>`).join(''):'<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No loan customers yet.</td></tr>'}</tbody></table></div></section>
+    <section class="card"><div class="hd"><h2>Days to sell by brand</h2></div><div class="tscroll"><table class="table"><thead><tr><th>Brand</th><th>Sold</th><th>Avg days</th><th>Avg profit</th></tr></thead><tbody>${Object.keys(byBrand).length?Object.entries(byBrand).sort((a,b)=>a[1].days/a[1].n-b[1].days/b[1].n).map(([k,b])=>`<tr><td><b>${esc(k)}</b></td><td class="num">${b.n}</td><td class="num">${Math.round(b.days/b.n)}</td><td class="num" style="color:${pc(b.profit/b.n)}">${lakh(b.profit/b.n)}</td></tr>`).join(''):'<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">Appears after your first sales.</td></tr>'}</tbody></table></div></section>
   </div>`;
 }
 function viewAppointments(){
   const list=[...appts].sort((a,b)=>{ const o={new:0,confirmed:1,converted:2,cancelled:3}; return (o[a.status]-o[b.status])||(a.date+a.time).localeCompare(b.date+b.time); });
   const q=search.trim().toLowerCase(); const v=list.filter(a=>!q||[a.name,a.phone,a.carTitle].some(x=>String(x||'').toLowerCase().includes(q)));
   const n=appts.filter(a=>a.status==='new').length, up=appts.filter(a=>a.status==='confirmed').length;
-  return `<div class="greet"><div><h1>Appointments</h1><p>Customers who booked a visit from the public car list.</p></div></div>
+  return `<div class="greet"><div><h1>Appointments</h1><p>Visit bookings and call-back requests from the public car list.</p></div></div>
   <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span class="ic orange">${I(P.cal)}</span><div><div class="v num">${n}</div><div class="l">New requests</div></div></div><div class="kpi"><span class="ic blue">${I(P.users)}</span><div><div class="v num">${up}</div><div class="l">Confirmed visits</div></div></div><div class="kpi"><span class="ic green">${I(P.check)}</span><div><div class="v num">${appts.filter(a=>a.status==='converted').length}</div><div class="l">Visited</div></div></div></div>
   <section class="card"><div class="hd"><h2>All appointments</h2></div><div class="rows">${v.length?v.map(a=>{ const d=new Date(a.date+'T00:00'); const car=cars.find(c=>c.id===a.carId);
-    return `<div class="appt ${a.status==='converted'||a.status==='cancelled'?'conv':''}"><div class="when"><small>${isNaN(d)?'':d.toLocaleDateString('en-IN',{month:'short'})}</small><b>${isNaN(d)?'—':d.getDate()}</b><span class="t">${esc(a.time||'')}</span></div>
+    return `<div class="appt ${a.status==='converted'||a.status==='cancelled'?'conv':''}"><div class="when" ${a.type==='callback'?'style="background:var(--purple-soft);color:var(--purple)"':''}>${a.type==='callback'?`<small>Call</small><b style="font-size:13px;line-height:1.2;margin-top:4px">back</b>`:`<small>${isNaN(d)?'':d.toLocaleDateString('en-IN',{month:'short'})}</small><b>${isNaN(d)?'—':d.getDate()}</b><span class="t">${esc(a.time||'')}</span>`}</div>
       <div class="tx"><b>${esc(a.name)} <span class="pill ${a.status}" style="margin-left:6px;font-size:11px">${APPT_STATUS[a.status]||a.status}</span></b><div class="s">${esc(apptText(a))}${a.phone?' · <b>'+esc(a.phone)+'</b>':''}${a.note?'<br>“'+esc(a.note)+'”':''}<br><span class="muted">Booked ${esc(ago(a.createdAt))}${car?'':' · car no longer listed'}</span></div></div>
-      <div class="ac">${car?`<button class="btn sm" data-sel="${esc(car.id)}">Car</button>`:''}${a.status==='new'?`<button class="btn sm primary" data-appt="confirm" data-id="${esc(a.id)}">Confirm</button>`:''}${(a.status==='new'||a.status==='confirmed')&&car?`<button class="btn sm ok" data-appt="convert" data-id="${esc(a.id)}">Customer visited</button>`:''}${a.status==='new'||a.status==='confirmed'?`<button class="btn sm bad" data-appt="cancel" data-id="${esc(a.id)}">Cancel</button>`:`<button class="btn sm ghost" data-appt="remove" data-id="${esc(a.id)}">${I(P.trash)}</button>`}</div></div>`; }).join(''):`<div class="empty"><h3>No appointments yet</h3>When a customer books a visit from the shared car list, it appears here and in Pending Actions.</div>`}</div></section>`;
+      <div class="ac">${a.phone?`<a class="btn sm wa" href="${waLink(a.phone,'Hi '+a.name+', Revora here about your '+(a.type==='callback'?'enquiry':'visit')+' for the '+a.carTitle+'. ')}" target="_blank" rel="noopener">WhatsApp</a>`:''}${car?`<button class="btn sm" data-sel="${esc(car.id)}">Car</button>`:''}${a.status==='new'?`<button class="btn sm primary" data-appt="confirm" data-id="${esc(a.id)}">Confirm</button>`:''}${(a.status==='new'||a.status==='confirmed')&&car?`<button class="btn sm ok" data-appt="convert" data-id="${esc(a.id)}">Customer visited</button>`:''}${a.status==='new'||a.status==='confirmed'?`<button class="btn sm bad" data-appt="cancel" data-id="${esc(a.id)}">Cancel</button>`:`<button class="btn sm ghost" data-appt="remove" data-id="${esc(a.id)}">${I(P.trash)}</button>`}</div></div>`; }).join(''):`<div class="empty"><h3>No appointments yet</h3>When a customer books a visit from the shared car list, it appears here and in Pending Actions.</div>`}</div></section>`;
 }
 function viewSettings(){
-  return `<div class="greet"><div><h1>Settings</h1><p>How this tracker is shared and stored.</p></div></div>
-  <div class="widgets" style="grid-template-columns:1fr 1fr">
-    <section class="card"><div class="hd"><h2>Sharing with your partner</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
-      <p style="margin:0">Anyone who opens the link sees the <b>customer view</b>: cars listed for sale and a booking form. The admin dashboard opens only after signing in with the Revora admin email and password. Share those with your partner.</p>
-      <p style="margin:0">Customers do not need any account: they can browse cars and book a visit straight away. Only the admin login can change cars, photos and appointments. To change the admin password, use Firebase Console → Authentication → Users.</p>
-      <p style="margin:0">Every change either of you makes is saved instantly and appears live for the other. Recent Activity and each car's History show who made each update.</p>
-      <p style="margin:0">Signed in as <b>${esc(me.email||ADMIN_EMAIL)}</b>.</p></div></section>
-    <section class="card"><div class="hd"><h2>Data</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
-      <p style="margin:0"><b>${cars.length}</b> cars tracked · <b>${cars.reduce((a,c)=>a+photos(c).length,0)}</b> photos stored.</p>
-      <p style="margin:0">Photos are compressed to about 1280px before saving so the free database plan is enough. Deleting a car also deletes its photos. Completed deals stay in Reports.</p>
-      <p style="margin:0">Stages: Purchased → Listed → Customer Enquiry → Payment Pending (cash or bank loan) → Sale Completed → RC Transfer → Completed. A failed deal sends the car back to Listed and is logged under the car.</p></div></section>
+  const s=settings;
+  return `<div class="greet"><div><h1>Settings</h1><p>Business rules, team access, backup and install.</p></div></div>
+  <div class="widgets" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <section class="card"><div class="hd"><h2>Business settings</h2></div><div class="bd form">
+      <label>WhatsApp number for customers<input id="st_wa" inputmode="tel" value="${esc(s.whatsapp||'')}" placeholder="98xxxxxxxx"></label>
+      <label>Call-back hours shown to customers<input id="st_hours" value="${esc(s.callbackHours||'')}" placeholder="10 AM to 7 PM"></label>
+      <label>Loan interest rate for EMI (%)<input id="st_rate" type="number" step="0.1" inputmode="decimal" value="${esc(s.interestRate)}"></label>
+      <label>Slow-mover alert after (days)<input id="st_slow" type="number" inputmode="numeric" value="${esc(s.slowDays)}"></label>
+      <label>Monthly target (cars)<input id="st_tc" type="number" inputmode="numeric" value="${esc(s.targetCars||'')}" placeholder="5"></label>
+      <label>Monthly target (sales ₹)<input id="st_ts" type="number" inputmode="numeric" value="${esc(s.targetSales||'')}" placeholder="4000000"></label>
+      <label>Commission on profit (%)<input id="st_comm" type="number" step="0.5" inputmode="decimal" value="${esc(s.commissionPct||'')}" placeholder="0"></label>
+      <div class="full frow"><button class="btn primary" data-act="settingsSave" style="flex:0 0 auto">Save settings</button></div></div></section>
+    <section class="card"><div class="hd"><h2>Team</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:12px">
+      <div class="team">${admins.length?admins.map(a=>`<div class="m"><span class="avatar" style="width:32px;height:32px;font-size:11px">${esc(initials(a.name))}</span><div style="flex:1;min-width:0"><b>${esc(a.name)}${a.id===myId?' <span class="muted" style="font-weight:500">(you)</span>':''}</b><small>${esc(a.email||'')}</small></div>${canWrite&&a.id!==myId?`<button class="btn sm ghost" data-act="teamRemove" data-id="${esc(a.id)}">Remove</button>`:''}</div>`).join(''):`<div class="m"><span class="avatar" style="width:32px;height:32px;font-size:11px">A</span><div><b>Revora admin</b><small>${ADMIN_EMAIL}</small></div></div>`}</div>
+      <div class="form" style="border-top:1px dashed var(--line);padding-top:12px"><label>Partner's name<input id="tm_name" placeholder="Name"></label><label>Login email<input id="tm_email" type="email" placeholder="partner@revora.com"></label><label class="full">Password (6+ characters)<input id="tm_pass" type="password" autocomplete="new-password"></label><div class="hint err" id="tm_err" hidden></div><div class="full frow"><button class="btn primary sm" data-act="teamAdd" style="flex:0 0 auto">Add team member</button></div></div>
+      <span class="hint">Each person gets their own login, and history shows who did what. The original admin account always keeps access.</span></div></section>
+    <section class="card"><div class="hd"><h2>Backup</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
+      <p style="margin:0">Download a copy of all cars, customers, appointments, buyers and settings as a file. Photos and documents are not included to keep it small.</p>
+      <div class="frow"><button class="btn" data-act="backup" style="flex:0 0 auto">${I(P.doc)}Download backup</button><button class="btn" data-act="exportCsv" style="flex:0 0 auto">${I(P.doc)}Sales CSV</button></div>
+      <p style="margin:0"><b>${cars.length}</b> cars · <b>${cars.reduce((a,c)=>a+photos(c).length,0)}</b> photos · <b>${cars.reduce((a,c)=>a+docsOf(c).length,0)}</b> documents · <b>${appts.length}</b> appointments.</p></div></section>
+    <section class="card"><div class="hd"><h2>Install as an app</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
+      <div class="installbox"><span class="avatar" style="width:40px;height:40px;border-radius:12px">${I(P.car,2.2)}</span><div><b>Revora on your home screen</b><br>Opens full screen, loads instantly, and shows the last data even offline.</div></div>
+      ${installPrompt?`<div class="frow"><button class="btn primary" data-act="installApp" style="flex:0 0 auto">Install Revora</button></div>`:`<p style="margin:0"><b>iPhone:</b> Share → Add to Home Screen. <b>Android (Chrome):</b> menu ⋮ → Add to Home screen / Install app. <b>Desktop Chrome:</b> the install icon at the right of the address bar.</p>`}
+      <p style="margin:0">Signed in as <b>${esc(me.name||'Admin')}</b> · ${esc(me.email||ADMIN_EMAIL)}. Change passwords in Firebase Console → Authentication → Users.</p></div></section>
   </div>`;
 }
 function renderView(){
@@ -840,35 +999,43 @@ function panelHTML(){
   const soldish=stageIdx(c.stage)>=stageIdx('sold');
   const selling=soldish?c.sale?.price:(c.payment?.amount||c.listing?.price);
   const est=estProfit(c);
-  const over=`<div class="prices"><div><div class="k">Purchase Price</div><div class="v num">${money(c.purchase?.price)}</div></div><div><div class="k">${soldish?'Sold Price':c.stage==='payment'?'Agreed Price':'Selling Price'}</div><div class="v num">${money(selling)}</div></div><div><div class="k">Profit ${soldish?'':'(Est.)'}</div><div class="v num ${est>0?'g':est<0?'r':''}">${selling?money(est):'—'}</div></div><div><div class="k">Updated</div><div class="v">${esc(ago(c.updatedAt))}</div></div></div>
+  const over=`<div class="prices"><div><div class="k">Purchase Price</div><div class="v num">${money(c.purchase?.price)}</div></div><div><div class="k">${soldish?'Sold Price':c.stage==='payment'?'Agreed Price':'Selling Price'}</div><div class="v num">${money(selling)}</div></div><div><div class="k">Profit ${soldish?'':'(Est.)'}</div><div class="v num ${est>0?'g':est<0?'r':''}">${selling?money(est):'—'}</div></div><div><div class="k">Days in stock</div><div class="v num ${daysInStock(c)>settings.slowDays&&!soldish?'r':''}">${daysInStock(c)}${daysInStock(c)>settings.slowDays&&!soldish?' · slow':''}</div></div></div>
+    ${expTotal(c)?`<div class="hint">Total cost incl. expenses: <b class="num">${money(costOf(c))}</b> · updated ${esc(ago(c.updatedAt))}</div>`:`<div class="hint">Updated ${esc(ago(c.updatedAt))}</div>`}
     <div class="stagebox"><div class="it"><span class="ic">${I(P.tag,2.4)}</span><div><small>Current Stage</small><b>${st.label}</b><span class="sub">${esc(stageSub(c))}${c.listing?.link&&c.stage==='listed'?' · '+esc(c.listing.link):''}</span></div></div><div class="it"><span class="ic g">${I(P.arrow,2.4)}</span><div><small>Next Step</small><b style="font-weight:600;font-size:13px">${esc(nextStep(c))}</b></div></div></div>
     ${(()=>{ const as=appts.filter(a=>a.carId===c.id&&(a.status==='new'||a.status==='confirmed')); return as.length?`<div class="box" style="border-left:3px solid var(--orange)"><h3>Upcoming visits</h3>${as.map(a=>`<div class="hint" style="color:var(--fg-2)"><b>${esc(a.name)}</b> · ${esc(fmtApptDT(a))}${a.phone?' · '+esc(a.phone):''} <span class="pill ${a.status}" style="font-size:11px">${APPT_STATUS[a.status]}</span></div>`).join('')}<div class="frow"><button class="btn sm" data-view="appointments">Manage appointments</button></div></div>`:''; })()}
     ${leadsBox(c)}
     ${actionsFor(c)}
+    ${paymentsBox(c)}
+    ${expensesBox(c)}
+    ${pricingBox(c)}
+    ${buyersBox(c)}
     <div class="box"><h3 class="cap">Car details</h3><div class="kv">${[['Year',c.year],['Kms',kmF(c.km)],['Fuel',c.fuel],['Transmission',c.transmission],['Owner',c.owners],['Colour',c.colour],['Location',c.city],['Bought on',fmtDate(c.purchase?.date)],['Bought from',c.purchase?.from]].filter(x=>x[1]&&x[1]!=='—').map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>
       ${canWrite?`<details><summary>Edit car details</summary><div style="margin-top:10px">${carFields(c)}<div class="hint err" id="formErr" hidden></div><div class="frow" style="margin-top:10px"><button class="btn primary sm" data-act="saveDetails" style="flex:0 0 auto">Save details</button></div></div></details>`:''}</div>
     <div class="box"><h3 class="cap">Deal facts</h3><div class="kv">${facts(c).map(([k,v])=>`<div><div class="k">${k}</div><div class="v ${/₹/.test(v)?'num':''}">${esc(v)}</div></div>`).join('')}</div></div>
     ${(c.attempts||[]).length&&!Array.isArray(c.leads)?`<div class="box"><h3 class="cap">Failed deals</h3>${c.attempts.map(a=>`<div class="attempt"><span>${esc(a.customer||'Customer')} · ${a.mode==='loan'?'loan':a.mode==='cash'?'cash':'visit'} · ${esc(a.reason||'no reason')}</span><span class="num">${esc(fmtDate(a.date))}</span></div>`).join('')}</div>`:''}
     ${canWrite?`<div class="box" style="border-style:dashed">${confirmKey==='delete'?`<span class="hint err">Deletes the car, its photos and history for both of you.</span><div class="frow"><button class="btn bad sm" data-act="deleteYes">Yes, delete</button><button class="btn sm" data-act="cancelConfirm">Keep</button></div>`:`<button class="btn ghost sm" data-act="deleteAsk" style="align-self:flex-start">${I(P.trash)}Delete this car</button>`}</div>`:''}`;
-  const hist=`<div class="box"><h3 class="cap">Timeline</h3><div class="tl">${(c.log||[]).map((l,i)=>`<div class="e ${i===0?'b':'g'}"><span class="d">${i===0?'':I(P.check,3)}</span><div><b>${esc(l.text)}</b><small>${esc(fmtDT(l.at))}${l.by&&names[l.by]?' · '+esc(names[l.by]):''}</small></div></div>`).join('')||'<span class="muted">No history yet.</span>'}</div></div>
+  const hist=`${tdOf(c).length?`<div class="box"><h3 class="cap">Test drives</h3><div class="ledger">${tdOf(c).map(t=>`<div class="r"><div><b>${esc(t.name||'Customer')}</b><small>${esc(fmtDate(t.date))} · DL ${esc(t.licence||'—')} · ${t.startKm&&t.endKm?(t.endKm-t.startKm)+' km driven':'—'}${t.note?' · '+esc(t.note):''}</small></div><span></span><span></span></div>`).join('')}</div></div>`:''}
+    ${priceHist(c).length>1?`<div class="box"><h3 class="cap">Price history</h3><div class="ledger">${priceHist(c).map(p=>`<div class="r"><div><b class="num">${money(p.price)}</b><small>${esc(fmtDate(p.date))}${p.platform?' · '+esc(p.platform):''}</small></div><span></span><span></span></div>`).join('')}</div></div>`:''}
+    <div class="box"><h3 class="cap">Timeline</h3><div class="tl">${(c.log||[]).map((l,i)=>`<div class="e ${i===0?'b':'g'}"><span class="d">${i===0?'':I(P.check,3)}</span><div><b>${esc(l.text)}</b><small>${esc(fmtDT(l.at))}${l.by&&names[l.by]?' · '+esc(names[l.by]):''}</small></div></div>`).join('')||'<span class="muted">No history yet.</span>'}</div></div>
     ${canWrite?`<div class="box"><h3 class="cap">Add a note</h3><div class="frow"><input id="noteIn" placeholder="e.g. Customer bringing mechanic on Sunday" style="flex:1 1 160px"><button class="btn primary sm" data-act="note" style="flex:0 0 auto">Save</button></div></div>`:''}`;
   const canUp=!!assets&&canWrite;
   const phot=`<div class="pgrid">${ph.map((id,i)=>`<button class="${i===photoIdx?'on':''}" data-thumb="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy">${i===0?'<span class="cov">Cover</span>':''}</button>`).join('')}${canUp?`<button class="add" data-act="addPhotos" ${uploading?'disabled':''}>${uploading?'Uploading…':I(P.plus,2.4)+'Add photos'}</button>`:''}</div>
     ${ph.length?`<div class="frow"><button class="btn sm" data-lb="${photoIdx}">View full screen</button>${canUp&&photoIdx>0?`<button class="btn sm" data-act="cover">Make cover</button>`:''}${canUp?(confirmKey==='photo'?`<button class="btn sm bad" data-act="deletePhotoYes">Remove this photo</button><button class="btn sm" data-act="cancelConfirm">Keep</button>`:`<button class="btn sm ghost" data-act="deletePhotoAsk">${I(P.trash)}Remove</button>`):''}</div>`:`<span class="hint">${canUp?'Add photos so your partner can see the car.':'No photos yet.'}</span>`}`;
   return `<div class="ph">${ph.length?`<img src="${blob(ph[photoIdx])}" alt="${esc(c.title)}" data-lb="${photoIdx}">${ph.length>1?`<button class="arr l" data-ph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-ph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${photoIdx+1}/${ph.length}</span>`:''}`:`<div class="none"><div>${I(P.cam,1.6)}No photos yet</div></div>`}<button class="x" data-unsel aria-label="Close">${I(P.x,2.6)}</button></div>
-  <div class="phead"><div class="tt"><h2>${esc(c.title)}${c.year?' '+esc(c.year):''}</h2><span class="pill ${st.id}">${st.short}</span></div><span class="reg">${esc(c.reg||'No reg no')}${c.reg?`<button data-act="copyReg" aria-label="Copy reg number">${I(P.copy)}</button>`:''}</span></div>
-  <div class="tabs">${[['overview','Overview'],['history','History'],['photos','Photos'+(ph.length?' ('+ph.length+')':'')]].map(([id,l])=>`<button class="${tab===id?'on':''}" data-tab="${id}">${l}</button>`).join('')}</div>
-  <div class="pbody">${tab==='overview'?over:tab==='history'?hist:phot}</div>`;
+  <div class="phead"><div class="tt"><h2>${esc(c.title)}${c.year?' '+esc(c.year):''}</h2><span class="pill ${st.id}">${st.short}</span></div><span class="reg">${esc(c.reg||'No reg no')}${c.reg?`<button data-act="copyReg" aria-label="Copy reg number">${I(P.copy)}</button>`:''}</span>
+    <div class="tools"><button class="btn sm" data-act="copyLink">${I(P.copy)}Copy car link</button>${c.customer?.phone&&stageIdx(c.stage)>=stageIdx('customer')?`<a class="btn sm wa" href="${waLink(c.customer.phone,'Hi '+c.customer.name+', this is Revora about the '+c.title+'.')}" target="_blank" rel="noopener">WhatsApp ${esc(c.customer.name.split(' ')[0])}</a>`:''}</div></div>
+  <div class="tabs">${[['overview','Overview'],['history','History'],['photos','Photos'+(ph.length?' ('+ph.length+')':'')],['docs','Docs'+(docsOf(c).length?' ('+docsOf(c).length+')':'')]].map(([id,l])=>`<button class="${tab===id?'on':''}" data-tab="${id}">${l}</button>`).join('')}</div>
+  <div class="pbody">${tab==='overview'?over:tab==='history'?hist:tab==='docs'?docsTab(c):phot}</div>`;
 }
 function renderPanel(){
   const html=panelHTML(); $('#panel').innerHTML=html; const sh=$('#sheet');
   if(sheetOpen&&sel()&&narrow()){ sh.hidden=false; sh.innerHTML=`<div class="sheetwrap" data-unsel><div class="panel" data-stop>${html}</div></div>`; }
   else { sh.hidden=true; sh.innerHTML=''; }
 }
-function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; editLead=null; addingLead=false; sheetOpen=true; renderView(); renderPanel(); }
+function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; editLead=null; addingLead=false; addingExp=false; addingPay=false; addingDoc=false; tdLead=null; sheetOpen=true; renderView(); renderPanel(); }
 function unselect(){ selId=null; sheetOpen=false; renderView(); renderPanel(); }
 
-let editLead=null, addingLead=false;
+let editLead=null, addingLead=false, pendingDoc=null, lbDoc=null;
 function leadsBox(c){
   const all=leadsOf(c); if(stageIdx(c.stage)<stageIdx('listed')) return '';
   const rows=all.map(l=>({l,ch:chance(l,c)})).sort((a,b)=>{ const o=x=>x.l.status==='won'?-1:x.l.status==='lost'?2:x.l.status==='payment'?0:1; return o(a)-o(b)||b.ch.pct-a.ch.pct; });
@@ -888,7 +1055,10 @@ function leadsBox(c){
         <div class="chance ${ch.cls}"><b>${ch.pct}%</b><div class="bar"><i style="width:${ch.pct}%"></i></div><small>${ch.label}</small></div></div>
       ${tags?`<div class="tags">${tags}</div>`:''}
       <div class="why">${esc(ch.why.join(' · '))}${l.note?' · “'+esc(l.note)+'”':''}</div>
-      ${canAct&&!closed?`<div class="acts">${!isP?`<button class="btn sm primary" data-lead="${esc(l.id)}" data-lact="deal">Deal agreed</button>`:''}<button class="btn sm" data-lead="${esc(l.id)}" data-lact="edit">${editing?'Close':'Update'}</button>${!isP?`<button class="btn sm bad" data-lead="${esc(l.id)}" data-lact="lost">Lost</button>`:''}</div>`:''}
+      ${l.nextFollowUp&&!closed?`<div class="why" style="color:${l.nextFollowUp<today()?'var(--red)':l.nextFollowUp===today()?'var(--amber)':'var(--muted)'};font-weight:600">${l.nextFollowUp<today()?'Follow-up overdue since ':l.nextFollowUp===today()?'Follow up today, ':'Next follow-up '}${esc(fmtDate(l.nextFollowUp))}</div>`:''}
+      ${canAct&&!closed?`<div class="acts">${!isP?`<button class="btn sm primary" data-lead="${esc(l.id)}" data-lact="deal">Deal agreed</button>`:''}<button class="btn sm" data-lead="${esc(l.id)}" data-lact="edit">${editing?'Close':'Update'}</button>${l.phone?`<a class="btn sm wa" href="${waLink(l.phone,'Hi '+l.name+', this is Revora about the '+c.title+' '+(c.year||'')+'. ')}" target="_blank" rel="noopener">WhatsApp</a>`:''}<button class="btn sm" data-lead="${esc(l.id)}" data-lact="td">${tdLead===l.id?'Close':'Test drive'}</button>${!isP?`<button class="btn sm bad" data-lead="${esc(l.id)}" data-lact="lost">Lost</button>`:''}</div>`:''}
+      ${closed&&l.status==='lost'&&canWrite&&!buyers.some(b=>b.name.toLowerCase()===l.name.toLowerCase()&&b.status!=='converted')?`<div class="acts"><button class="btn sm" data-lead="${esc(l.id)}" data-lact="keep">Keep as a buyer for other cars</button></div>`:''}
+      ${tdLead===l.id&&canAct?`<div class="edit form"><label>Date<input id="td_date" type="date" value="${today()}"></label><label>Driving licence no<input id="td_lic" placeholder="TN09 2019 0012345"></label><label>Start km<input id="td_s" type="number" inputmode="numeric" value="${esc(c.km||'')}"></label><label>End km<input id="td_e" type="number" inputmode="numeric"></label><label class="full">Notes<input id="td_note" placeholder="e.g. liked the pickup, asked about tyres"></label><div class="full frow"><button class="btn sm primary" data-lead="${esc(l.id)}" data-lact="tdSave" style="flex:0 0 auto">Save test drive</button></div></div>`:''}
       ${editing?`<div class="edit form">
         <label>Status<select id="le_status">${['enquired','negotiating'].map(s=>`<option value="${s}" ${l.status===s?'selected':''}>${LEAD_STATUS[s]}</option>`).join('')}</select></label>
         <label>Paying by<select id="le_mode"><option value="" ${!l.mode?'selected':''}>Not decided</option><option value="cash" ${l.mode==='cash'?'selected':''}>Ready cash</option><option value="loan" ${l.mode==='loan'?'selected':''}>Bank loan</option></select></label>
@@ -898,6 +1068,7 @@ function leadsBox(c){
         <label>Expected payment by<input id="le_by" type="date" value="${esc(l.expectedBy||'')}"></label>
         <label>Phone<input id="le_phone" value="${esc(l.phone||'')}"></label>
         <label>Note<input id="le_note" value="${esc(l.note||'')}" placeholder="e.g. wants a service record"></label>
+        <label>Next follow-up<input id="le_fu" type="date" value="${esc(l.nextFollowUp||'')}"></label>
         <div class="full frow"><button class="btn sm primary" data-lead="${esc(l.id)}" data-lact="save" style="flex:0 0 auto">Save & mark contacted</button></div></div>`:''}
     </div>`; };
   return `<div class="box"><h3 class="cap">Customers interested <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">· ${act.length} active${all.length>act.length?', '+(all.length-act.length)+' closed':''}</span></h3>
@@ -905,6 +1076,45 @@ function leadsBox(c){
     ${rows.length?rows.map(row).join(''):'<span class="hint">No customers yet. Add the first enquiry below.</span>'}
     ${canAct?(addingLead?`<div class="form" style="border-top:1px dashed var(--line);padding-top:10px"><label>Customer name<input id="nl_name" placeholder="Name" autofocus></label><label>Phone<input id="nl_phone" inputmode="tel" placeholder="98xxxxxxxx"></label><label>Paying by<select id="nl_mode"><option value="">Not decided</option><option value="cash">Ready cash</option><option value="loan">Bank loan</option></select></label><label>Offer (₹, optional)<input id="nl_offer" type="number" inputmode="numeric" placeholder="${ask||''}"></label><label class="full">Note<input id="nl_note" placeholder="optional"></label><div class="full frow"><button class="btn sm primary" data-act="leadAdd" style="flex:0 0 auto">Add customer</button><button class="btn sm" data-act="leadAddCancel" style="flex:0 0 auto">Cancel</button></div></div>`:`<div class="frow"><button class="btn sm" data-act="leadAddOpen" style="flex:0 0 auto">${I(P.plus,2.4)}Add interested customer</button></div>`):''}
   </div>`;
+}
+let addingExp=false, addingPay=false, addingDoc=false, tdLead=null;
+function expensesBox(c){
+  const list=expensesOf(c); const canAct=canWrite;
+  return `<div class="box"><h3 class="cap">Expenses <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">· ${list.length?money(expTotal(c))+' on '+list.length:'none yet'}</span></h3>
+    ${list.length?`<div class="ledger">${list.map(e=>`<div class="r"><div><b>${esc(e.type)}</b><small>${esc(fmtDate(e.date))}${e.note?' · '+esc(e.note):''}</small></div><span class="amt num">${money(e.amount)}</span>${canAct?`<button class="x" data-exp="${esc(e.id)}" aria-label="Remove">${I(P.x,2.4)}</button>`:'<span></span>'}</div>`).join('')}</div>`:''}
+    ${canAct?(addingExp?`<div class="form" style="border-top:1px dashed var(--line);padding-top:10px"><label>Type<select id="ex_type">${EXP_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></label><label>Amount (₹)<input id="ex_amt" type="number" inputmode="numeric" placeholder="12000"></label><label>Date<input id="ex_date" type="date" value="${today()}"></label><label>Note<input id="ex_note" placeholder="e.g. new tyres, Apollo"></label><div class="full frow"><button class="btn sm primary" data-act="expAdd" style="flex:0 0 auto">Add expense</button><button class="btn sm" data-act="expCancel" style="flex:0 0 auto">Cancel</button></div></div>`
+      :`<div class="frow"><button class="btn sm" data-act="expOpen" style="flex:0 0 auto">${I(P.plus,2.4)}Add expense</button></div>`):''}</div>`;
+}
+function paymentsBox(c){
+  if(stageIdx(c.stage)<stageIdx('payment')) return '';
+  const list=paymentsOf(c), agreed=+c.payment?.amount||+c.sale?.price||0, paid=paidTotal(c), bal=agreed-paid; const canAct=canWrite&&stageIdx(c.stage)<stageIdx('done');
+  return `<div class="box"><h3 class="cap">Payment ledger</h3>
+    <div class="sumrow"><div><div class="k">Agreed</div><div class="v num">${lakh(agreed)}</div></div><div><div class="k">Received</div><div class="v num g">${lakh(paid)}</div></div><div><div class="k">Balance</div><div class="v num ${bal>0?'o':'g'}">${bal>0?lakh(bal):'Nil'}</div></div></div>
+    ${agreed?`<div class="pbar"><i style="width:${Math.min(100,Math.round(paid/agreed*100))}%"></i></div>`:''}
+    ${list.length?`<div class="ledger">${list.map(e=>`<div class="r"><div><b>${esc(e.mode)}</b><small>${esc(fmtDate(e.date))}${e.note?' · '+esc(e.note):''}</small></div><span class="amt num">${money(e.amount)}</span>${canAct?`<button class="x" data-pay="${esc(e.id)}" aria-label="Remove">${I(P.x,2.4)}</button>`:'<span></span>'}</div>`).join('')}</div>`:'<span class="hint">No payments recorded yet. Record the token advance, part payments and the balance here.</span>'}
+    ${canAct?(addingPay?`<div class="form" style="border-top:1px dashed var(--line);padding-top:10px"><label>Amount (₹)<input id="py_amt" type="number" inputmode="numeric" value="${bal>0?bal:''}"></label><label>Mode<select id="py_mode">${PAY_MODES.map(t=>`<option ${c.payment?.mode==='loan'&&t==='Loan disbursal'?'selected':''}>${t}</option>`).join('')}</select></label><label>Date<input id="py_date" type="date" value="${today()}"></label><label>Note / receipt no<input id="py_note" placeholder="optional"></label><div class="full frow"><button class="btn sm primary" data-act="payAdd" style="flex:0 0 auto">Record payment</button><button class="btn sm" data-act="payCancel" style="flex:0 0 auto">Cancel</button></div></div>`
+      :`<div class="frow"><button class="btn sm" data-act="payOpen" style="flex:0 0 auto">${I(P.plus,2.4)}Record a payment</button></div>`):''}</div>`;
+}
+function pricingBox(c){
+  if(!(c.stage==='purchased'||c.stage==='listed')) return '';
+  const sim=similarSold(c).slice(0,5); if(!sim.length) return '';
+  const avg=Math.round(sim.reduce((a,x)=>a+(+x.sale.price),0)/sim.length), avgDays=Math.round(sim.reduce((a,x)=>a+daysInStock(x),0)/sim.length);
+  return `<div class="box"><h3 class="cap">Pricing guide <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">· from your past sales</span></h3>
+    <div class="sumrow"><div><div class="k">Avg sold</div><div class="v num">${lakh(avg)}</div></div><div><div class="k">Avg days</div><div class="v num">${avgDays}</div></div><div><div class="k">Your ask</div><div class="v num">${c.listing?.price?lakh(c.listing.price):'—'}</div></div></div>
+    <div class="ledger">${sim.map(x=>{ const ask=+x.listing?.price||0, gap=ask?Math.round((x.sale.price-ask)/ask*100):null; return `<div class="r"><div><b>${esc(x.title)} ${esc(x.year||'')}</b><small>${esc(fmtDate(x.sale.date))} · ${daysInStock(x)} days${gap!=null?' · '+(gap>=0?'+':'')+gap+'% vs ask':''}</small></div><span class="amt num">${lakh(x.sale.price)}</span><span></span></div>`; }).join('')}</div></div>`;
+}
+function buyersBox(c){
+  if(!(c.stage==='listed'||c.stage==='customer')) return '';
+  const m=matchingBuyers(c).filter(b=>!leadsOf(c).some(l=>l.name.toLowerCase()===b.name.toLowerCase()&&l.status!=='lost')); if(!m.length) return '';
+  return `<div class="box" style="border-left:3px solid var(--purple)"><h3>${m.length} buyer${m.length>1?'s':''} looking for a car like this</h3>
+    ${m.map(b=>`<div class="match"><div><b>${esc(b.name)}</b><small>${esc(b.phone||'')} · budget ${b.budgetMin?lakh(b.budgetMin)+' – ':'up to '}${lakh(b.budgetMax||0)}${b.prefs?' · '+esc(b.prefs):''}</small></div><div class="frow" style="flex:0 0 auto">${b.phone?`<a class="btn sm wa" href="${waLink(b.phone,'Hi '+b.name+', Revora here. A '+c.title+' '+(c.year||'')+' just came in at '+lakh(c.listing?.price)+'. Interested? '+carLink(c))}" target="_blank" rel="noopener">WhatsApp</a>`:''}${canWrite?`<button class="btn sm primary" data-act="buyerToLead" data-id="${esc(b.id)}">Add as interested</button>`:''}</div></div>`).join('')}</div>`;
+}
+function docsTab(c){
+  const list=docsOf(c); const canUp=!!assets&&canWrite;
+  return `<div class="box"><h3 class="cap">Documents <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">· RC, insurance, PUC, service records</span></h3>
+    ${list.length?`<div class="docs">${list.map(d=>{ const e=docExpiry(d); const isPdf=(d.mime||'').includes('pdf'); return `<div class="doc"><div class="th" data-docopen="${esc(d.id)}">${isPdf?I(P.doc,1.6):`<img src="${blob(d.fileId)}" alt="" loading="lazy">`}</div><b>${esc(d.type)}${d.note?' · '+esc(d.note):''}</b>${e?`<small class="${e.cls}">${e.t}</small>`:'<small>No expiry</small>'}<div class="acts"><button class="btn sm" data-docopen="${esc(d.id)}">Open</button>${canUp?`<button class="btn sm ghost" data-docdel="${esc(d.id)}">Remove</button>`:''}</div></div>`; }).join('')}</div>`:'<span class="hint">No documents yet.</span>'}
+    ${canUp?(addingDoc?`<div class="form" style="border-top:1px dashed var(--line);padding-top:10px"><label>Document type<select id="dc_type">${DOC_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></label><label>Expiry date (if any)<input id="dc_exp" type="date"></label><label class="full">Note<input id="dc_note" placeholder="e.g. Policy no. 4432"></label><div class="full frow"><button class="btn sm primary" data-act="docPick" style="flex:0 0 auto" ${uploading?'disabled':''}>${uploading?'Uploading…':'Choose photo or PDF'}</button><button class="btn sm" data-act="docCancel" style="flex:0 0 auto">Cancel</button></div><span class="full hint">Photos are compressed. PDFs up to about 700 KB.</span></div>`
+      :`<div class="frow"><button class="btn sm" data-act="docOpenForm" style="flex:0 0 auto">${I(P.plus,2.4)}Add document</button></div>`):''}</div>`;
 }
 function facts(c){
   const f=[];
@@ -940,8 +1150,10 @@ function actionsFor(c){
   if(s==='payment'){ const loan=c.payment?.mode==='loan';
     return wrap(loan?'Bank loan in progress':'Waiting for cash',`
     ${loan?`<div class="hint">Loan with <b>${esc(c.payment.bank||'bank')}</b> · <b>${esc({applied:'applied, waiting for approval',approved:'approved, disbursement pending',rejected:'rejected'}[c.payment.loanStatus]||'applied, waiting')}</b></div>${c.payment.loanStatus!=='approved'?`<div class="frow"><button class="btn" data-act="loanApproved">Bank approved the loan</button></div>`:''}`:''}
-    <div class="form"><label>Amount received (₹)<input id="f_recv" type="number" inputmode="numeric" value="${esc(c.payment?.amount||'')}"></label><label>Received on<input id="f_recvdate" type="date" value="${today()}"></label></div>
-    <div class="frow"><button class="btn ok" data-act="sold">${loan?'Loan credited, mark sold':'Cash received, mark sold'}</button></div>
+    ${(()=>{ const agreed=+c.payment?.amount||0, paid=paidTotal(c), bal=agreed-paid; return paymentsOf(c).length?`<div class="hint">Received <b class="num">${money(paid)}</b> of <b class="num">${money(agreed)}</b>${bal>0?`, balance <b class="num">${money(bal)}</b>. Record payments in the ledger below.`:'. Fully paid.'}</div>
+    <div class="frow">${bal<=0?`<button class="btn ok" data-act="sold">Fully paid, mark sold</button>`:`<button class="btn ok" data-act="soldBalance">Record balance ${lakh(bal)} received & mark sold</button>`}</div>`
+      :`<div class="form"><label>Amount received (₹)<input id="f_recv" type="number" inputmode="numeric" value="${esc(c.payment?.amount||'')}"></label><label>Received on<input id="f_recvdate" type="date" value="${today()}"></label></div>
+    <div class="frow"><button class="btn ok" data-act="sold">${loan?'Loan credited, mark sold':'Cash received, mark sold'}</button></div><span class="hint">Took a token or part payment? Use <b>Record a payment</b> below instead and mark sold when the balance is nil.</span>`; })()}
     <div class="form"><label class="full">If the deal failed, why?<input id="f_reason" placeholder="${loan?'e.g. loan rejected, low CIBIL':'e.g. customer backed out'}"></label></div>
     <div class="frow"><button class="btn bad" data-act="fail">${loan?'Loan rejected, deal failed':'Deal failed'}</button></div>${activeLeads(c).filter(l=>l.status!=='payment').length?`<span class="hint">${activeLeads(c).filter(l=>l.status!=='payment').length} other customer${activeLeads(c).filter(l=>l.status!=='payment').length>1?'s are':' is'} still interested, so a failed deal goes back to them instead of relisting.</span>`:''}`); }
   if(s==='sold'||s==='rc'){ const cur=c.rc?.status||'pending';
@@ -981,7 +1193,9 @@ function openAdd(){ const ov=$('#overlay'); ov.hidden=false; ov.innerHTML=`<div 
   <div class="frow"><button class="btn primary" data-act="create">Add car</button><button class="btn" data-close style="flex:0 0 auto">Cancel</button></div></div></div>`; }
 function closeOverlay(){ $('#overlay').hidden=true; $('#overlay').innerHTML=''; }
 function renderLightbox(){
-  const c=sel(); const ph=c?photos(c):[]; const lb=$('#lightbox');
+  const lb=$('#lightbox');
+  if(lbDoc){ lb.hidden=false; lb.innerHTML=`<div class="lb"><div class="top"><span>Document</span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div><div class="view"><img src="${blob(lbDoc)}" alt="Document"></div></div>`; return; }
+  const c=sel(); const ph=c?photos(c):[];
   if(!c||!ph.length||lbIdx<0){ lbIdx=-1; lb.hidden=true; lb.innerHTML=''; return; }
   if(lbIdx>=ph.length) lbIdx=ph.length-1; lb.hidden=false;
   lb.innerHTML=`<div class="lb"><div class="top"><span>${esc(c.title)} · <span class="num">${lbIdx+1} / ${ph.length}</span></span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div>
@@ -1020,12 +1234,20 @@ async function uploadPhotos(files){
   if(ids.length){ const cur=sel(); if(cur){ photoIdx=photos(cur).length; await write(cur.id,{photos:[...photos(cur),...ids]},ids.length+' photo'+(ids.length>1?'s':'')+' added'); } }
   if(failed) toast(failed+' photo'+(failed>1?'s':'')+' could not be uploaded.'); renderPanel();
 }
+async function uploadDoc(f,meta){
+  const c=sel(); if(!c||!assets) return; uploading=true; renderPanel();
+  try{ let b=f, mime=f.type||'application/octet-stream'; if(f.type.startsWith('image/')){ try{ b=await shrink(f); mime='image/jpeg'; }catch(_){} }
+    else if(f.type==='application/pdf'){ if(f.size>700000) throw {code:'too_large'}; } else throw {code:'unsupported_type'};
+    const r=await assets.upload(b,{type:mime}); const d={id:uid(),type:meta.type||'Other',expiry:meta.expiry||'',note:meta.note||'',fileId:r.id,mime,addedAt:new Date().toISOString()};
+    uploading=false; addingDoc=false; await write(c.id,{docs:[...docsOf(c),d]},`Document added: ${d.type}${d.expiry?' · valid till '+fmtDate(d.expiry):''}`); }
+  catch(e){ uploading=false; console.error(e); toast(e&&e.code==='too_large'?'File too large. Keep PDFs under 700 KB.':e&&e.code==='unsupported_type'?'Only photos and PDF files are supported.':'Could not upload the document.'); renderPanel(); }
+}
 const val=id=>{ const el=$(id,activePanel()); return el?el.value.trim():''; };
 const actions={
   openAdd, create:createCar,
   saveDetails(c){ const root=activePanel(); const r=readCarFields(root); const errEl=$('#formErr',root); if(r.err){ errEl.hidden=false; errEl.textContent=r.err; return; } write(c.id,r.data,'Car details updated'); },
-  list(c){ const price=Number(val('#f_price')); if(!price) return toast('Enter the asking price.'); write(c.id,{stage:'listed',listing:{platform:val('#f_platform'),price,date:val('#f_date')||today(),link:val('#f_link')}},`Listed on ${val('#f_platform')} at ${money(price)}`); },
-  relist(c){ const price=Number(val('#f_price2')); if(!price) return toast('Enter the asking price.'); write(c.id,{listing:{...c.listing,platform:val('#f_platform2'),price}},`Listing changed: ${val('#f_platform2')}, ${money(price)}`); },
+  list(c){ const price=Number(val('#f_price')); if(!price) return toast('Enter the asking price.'); const d=val('#f_date')||today(); write(c.id,{stage:'listed',listing:{platform:val('#f_platform'),price,date:d,link:val('#f_link')},priceHistory:[...priceHist(c).filter(x=>x.price!==price),{price,date:d,platform:val('#f_platform')}]},`Listed on ${val('#f_platform')} at ${money(price)}`); },
+  relist(c){ const price=Number(val('#f_price2')); if(!price) return toast('Enter the asking price.'); const hist=priceHist(c); write(c.id,{listing:{...c.listing,platform:val('#f_platform2'),price},priceHistory:price!==+c.listing?.price?[...hist,{price,date:today(),platform:val('#f_platform2')}]:hist},`Listing changed: ${val('#f_platform2')}, ${money(price)}`); },
   customer(c){ const name=val('#f_name'); if(!name) return toast('Enter the customer name.'); const now=new Date().toISOString(); const mode=val('#f_lmode')||null;
     const lead={id:uid(),name,phone:val('#f_phone'),status:'enquired',mode,bank:'',loanStatus:mode==='loan'?'applied':null,offer:Number(val('#f_loffer'))||null,expectedBy:'',note:'',createdAt:now,lastContact:now,source:'walk-in'};
     write(c.id,{stage:'customer',leads:[...leadsOf(c),lead],customer:c.customer?.name?c.customer:{name,phone:lead.phone}},`${name} enquired and came to check`); },
@@ -1038,14 +1260,15 @@ const actions={
   payment(c){ const mode=val('#f_mode'),amount=Number(val('#f_amount')),bank=val('#f_bank'); if(!amount) return toast('Enter the agreed price.'); if(mode==='loan'&&!bank) return toast('Enter the bank name.');
     write(c.id,{stage:'payment',payment:{mode,amount,bank,loanStatus:mode==='loan'?'applied':null}},mode==='loan'?`Deal agreed at ${money(amount)}, loan applied with ${bank}`:`Deal agreed at ${money(amount)}, cash payment pending`); },
   walk(c){ actions.relistAll(c); },
-  loanApproved(c){ const now=new Date().toISOString(); write(c.id,{payment:{...c.payment,loanStatus:'approved'},leads:leadsOf(c).map(l=>l.status==='payment'?{...l,loanStatus:'approved',lastContact:now}:l)},`${c.payment.bank||'Bank'} approved the loan, waiting for amount`); },
-  sold(c){ const price=Number(val('#f_recv')); if(!price) return toast('Enter the amount received.'); const leads=leadsOf(c).map(l=>l.status==='payment'?{...l,status:'won',offer:price}:(l.status==='won'||l.status==='lost')?l:{...l,status:'lost',lostReason:'Car sold to another customer'}); write(c.id,{stage:'sold',leads,sale:{price,date:val('#f_recvdate')||today()},payment:{...c.payment,loanStatus:c.payment?.mode==='loan'?'approved':null},rc:{status:'pending'}},`Sold to ${c.customer?.name||'customer'} for ${money(price)}${c.payment?.mode==='loan'?' (loan credited)':' (cash)'}`); },
+  loanApproved(c){ const now=new Date().toISOString(); write(c.id,{payment:{...c.payment,loanStatus:'approved'},leads:leadsOf(c).map(l=>l.status==='payment'?{...l,loanStatus:'approved',loanApprovedAt:now,lastContact:now}:l)},`${c.payment.bank||'Bank'} approved the loan, waiting for amount`); },
+  soldBalance(c){ const agreed=+c.payment?.amount||0, bal=agreed-paidTotal(c); if(bal<=0) return actions.sold(c); const pay={id:uid(),amount:bal,mode:c.payment?.mode==='loan'?'Loan disbursal':'Cash',date:today(),note:'Balance on handover'}; c={...c,payments:[...paymentsOf(c),pay]}; actions.sold(c,true); },
+  sold(c,fromLedger){ const ledger=paymentsOf(c).length?paidTotal(c):0; const price=ledger||Number(val('#f_recv')); if(!price) return toast('Enter the amount received.'); const leads=leadsOf(c).map(l=>l.status==='payment'?{...l,status:'won',offer:price}:(l.status==='won'||l.status==='lost')?l:{...l,status:'lost',lostReason:'Car sold to another customer'}); write(c.id,{stage:'sold',leads,payments:paymentsOf(c).length?paymentsOf(c):[{id:uid(),amount:price,mode:c.payment?.mode==='loan'?'Loan disbursal':'Cash',date:val('#f_recvdate')||today(),note:'Full payment'}],sale:{price,date:(paymentsOf(c).length?paymentsOf(c).slice(-1)[0].date:val('#f_recvdate'))||today()},payment:{...c.payment,loanStatus:c.payment?.mode==='loan'?'approved':null},rc:{status:'pending'}},`Sold to ${c.customer?.name||'customer'} for ${money(price)}${c.payment?.mode==='loan'?' (loan credited)':' (cash)'}`); },
   fail(c){ const reason=val('#f_reason'); const leads=leadsOf(c).map(l=>l.status==='payment'?{...l,status:'lost',lostReason:reason||'Deal failed',loanStatus:l.mode==='loan'&&/reject/i.test(reason)?'rejected':l.loanStatus}:l);
     const others=leads.filter(l=>l.status!=='won'&&l.status!=='lost'); const next=others.length?'customer':'listed'; const nb=others[0];
     write(c.id,{stage:next,leads,customer:nb?{name:nb.name,phone:nb.phone||''}:{},payment:{},attempts:[...(c.attempts||[]),{customer:c.customer?.name,mode:c.payment?.mode,reason,date:today()}]},`Deal with ${c.customer?.name||'customer'} failed${reason?': '+reason:''}. ${others.length?others.length+' other customer'+(others.length>1?'s':'')+' still interested':'Back to listed'}`); },
   // per-lead actions
   leadEdit(c,id){ editLead=editLead===id?null:id; renderPanel(); },
-  leadSave(c,id){ const now=new Date().toISOString(); const mode=val('#le_mode')||null; const leads=leadsOf(c).map(l=>l.id!==id?l:{...l,status:val('#le_status')||l.status,mode,bank:val('#le_bank'),loanStatus:mode==='loan'?(val('#le_loan')||'applied'):null,offer:Number(val('#le_offer'))||null,expectedBy:val('#le_by'),phone:val('#le_phone'),note:val('#le_note'),lastContact:now});
+  leadSave(c,id){ const now=new Date().toISOString(); const mode=val('#le_mode')||null; const leads=leadsOf(c).map(l=>{ if(l.id!==id) return l; const ls=mode==='loan'?(val('#le_loan')||'applied'):null; return {...l,status:val('#le_status')||l.status,mode,bank:val('#le_bank'),loanStatus:ls,loanApprovedAt:ls==='approved'?(l.loanApprovedAt||now):null,offer:Number(val('#le_offer'))||null,expectedBy:val('#le_by'),phone:val('#le_phone'),note:val('#le_note'),nextFollowUp:val('#le_fu'),lastContact:now}; });
     const l=leads.find(x=>x.id===id); editLead=null; write(c.id,{leads},`Updated ${l.name}: ${LEAD_STATUS[l.status]}${l.mode?' · '+(l.mode==='loan'?'loan '+(l.loanStatus||'applied')+(l.bank?' with '+l.bank:''):'cash'):''}${l.expectedBy?' · pays by '+fmtDate(l.expectedBy):''}`); },
   leadLost(c,id){ const leads=leadsOf(c).map(l=>l.id!==id?l:{...l,status:'lost',lostReason:'Walked away'}); const l=leadsOf(c).find(x=>x.id===id); const others=leads.filter(x=>x.status!=='won'&&x.status!=='lost');
     const patch={leads}; if(c.stage==='customer'){ if(!others.length){ patch.stage='listed'; patch.customer={}; } else if(c.customer?.name===l.name){ patch.customer={name:others[0].name,phone:others[0].phone||''}; } }
@@ -1056,7 +1279,7 @@ const actions={
     write(c.id,{stage:'payment',leads,customer:{name:l.name,phone:l.phone||''},payment:{mode:l.mode,amount,bank:l.bank||'',loanStatus:l.mode==='loan'?(l.loanStatus||'applied'):null}},l.mode==='loan'?`Deal agreed with ${l.name} at ${money(amount)}, loan ${l.loanStatus==='approved'?'already approved':'applied'} with ${l.bank}`:`Deal agreed with ${l.name} at ${money(amount)}, cash payment pending`); },
   rc(c){ const status=val('#f_rc'),label=(RC_STEPS.find(r=>r[0]===status)||RC_STEPS[0])[1],note=val('#f_rcnote'); write(c.id,{stage:status==='done'?'done':'rc',rc:{status,date:val('#f_rcdate')||today(),note}},`RC: ${label}${note?' · '+note:''}`); },
   note(c){ const t=val('#noteIn'); if(!t) return; write(c.id,{},t); },
-  addPhotos(){ if(uploading) return; $('#fileIn').value=''; $('#fileIn').click(); },
+  addPhotos(){ if(uploading) return; pendingDoc=null; const fi=$('#fileIn'); fi.value=''; fi.accept='image/*'; fi.multiple=true; fi.click(); },
   cover(c){ const ph=photos(c); if(photoIdx<=0||photoIdx>=ph.length) return; const id=ph[photoIdx]; photoIdx=0; write(c.id,{photos:[id,...ph.filter(x=>x!==id)]},'Cover photo changed'); },
   deletePhotoAsk(){ confirmKey='photo'; renderPanel(); },
   async deletePhotoYes(c){ const ph=photos(c); const id=ph[photoIdx]; if(!id) return; confirmKey=null; photoIdx=Math.max(0,photoIdx-1); await write(c.id,{photos:ph.filter(x=>x!==id)},'Photo removed'); if(assets){ try{ await assets.delete(id);}catch(e){ console.warn(e); } } },
@@ -1068,6 +1291,46 @@ const actions={
     ov.innerHTML=`<div class="scrim" data-close><div class="modal" role="dialog" aria-label="More" data-stop style="gap:10px"><div style="display:flex;justify-content:space-between;align-items:center"><h2>More</h2><button class="iconbtn" data-close aria-label="Close">${I(P.x,2.4)}</button></div>
       <div class="moremenu">${items.map(([id,l,ic])=>`<button class="${view===id?'on':''}" data-view="${id}">${I(P[ic])}${l}${id==='rc'&&cars.filter(c=>c.stage==='sold'||c.stage==='rc').length?'<span class="cnt" style="margin-left:auto">'+cars.filter(c=>c.stage==='sold'||c.stage==='rc').length+'</span>':''}</button>`).join('')}
       <button class="out" data-act="signOut">${I('<path d="M10 17l5-5-5-5M15 12H3M12 3h7a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-7"/>')}Sign out</button></div></div></div>`; },
+  exportCsv(){ const sold=cars.filter(c=>stageIdx(c.stage)>=stageIdx('sold')); const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const rows=[['Car','Year','Reg no','Purchase date','Purchase price','Expenses','Total cost','Sold date','Sold price','Profit','Days in stock','Buyer','Phone','Payment mode','Bank','RC status','Platform','Asking price'].map(q).join(',')];
+    sold.forEach(c=>rows.push([c.title,c.year,c.reg,c.purchase?.date,c.purchase?.price,expTotal(c),costOf(c),c.sale?.date,c.sale?.price,profitOf(c),daysInStock(c),c.customer?.name,c.customer?.phone,c.payment?.mode,c.payment?.bank,rcLabel(c),c.listing?.platform,c.listing?.price].map(q).join(',')));
+    rows.push(''); rows.push(['Expenses detail'].map(q).join(',')); rows.push(['Car','Type','Date','Amount','Note'].map(q).join(',')); cars.forEach(c=>expensesOf(c).forEach(e=>rows.push([c.title,e.type,e.date,e.amount,e.note].map(q).join(','))));
+    const blobF=new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blobF); a.download='revora-sales-'+today()+'.csv'; document.body.appendChild(a); a.click(); a.remove(); toast('CSV downloaded'); },
+  printReport(){ window.print(); },
+  async backup(){ const dump={exportedAt:new Date().toISOString(),cars,appointments:appts,buyers,settings}; const blobF=new Blob([JSON.stringify(dump,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blobF); a.download='revora-backup-'+today()+'.json'; document.body.appendChild(a); a.click(); a.remove(); toast('Backup downloaded (photos not included)'); },
+  async settingsSave(){ const g=id=>($(id)||{}).value||''; const s={slowDays:Number(g('#st_slow'))||45,targetCars:Number(g('#st_tc'))||0,targetSales:Number(g('#st_ts'))||0,interestRate:Number(g('#st_rate'))||9.5,whatsapp:g('#st_wa').trim(),commissionPct:Number(g('#st_comm'))||0,callbackHours:g('#st_hours').trim()};
+    try{ await db.collection('settings').doc('general').set(s,{merge:true}); toast('Settings saved'); }catch(e){ handleErr(e); } },
+  async teamAdd(){ const g=id=>($(id)||{}).value||''; const name=g('#tm_name').trim(), email=g('#tm_email').trim().toLowerCase(), pw=g('#tm_pass'); const err=$('#tm_err'); err.hidden=true;
+    if(!name||!email||pw.length<6){ err.hidden=false; err.textContent='Name, email and a password of 6+ characters are needed.'; return; }
+    let sec=null; try{ sec=firebase.apps.find(a=>a.name==='secondary')||firebase.initializeApp(window.REVORA_FIREBASE,'secondary'); const cred=await sec.auth().createUserWithEmailAndPassword(email,pw); const uid=cred.user.uid; await sec.auth().signOut();
+      await db.collection('admins').doc(uid).set({name,email,createdAt:new Date().toISOString(),addedBy:myId||null}); toast(name+' can now sign in'); $('#tm_name').value=''; $('#tm_email').value=''; $('#tm_pass').value=''; }
+    catch(e){ console.error(e); err.hidden=false; err.textContent=e.code==='auth/email-already-in-use'?'That email already has a login. Ask them to sign in, then add them below by their account.':e.code==='permission-denied'?'Firestore rules do not allow the admins list yet. Publish the updated rules first.':'Could not add: '+(e.code||e.message); } },
+  async teamRemove(_,uid){ if(uid===myId) return toast('You cannot remove yourself.'); try{ await db.collection('admins').doc(uid).delete(); toast('Access removed. Their login still exists in Firebase Console; delete it there if needed.'); }catch(e){ handleErr(e); } },
+  installApp(){ if(!installPrompt) return; installPrompt.prompt(); installPrompt.userChoice.then(()=>{ installPrompt=null; renderView(); }); },
+  buyerNew(){ openBuyerForm({}); },
+  async buyerSave(){ const g=id=>($(id,$('#overlay'))||{}).value||''; const name=g('#by_name').trim(); const max=Number(g('#by_max')); const err=$('#formErr',$('#overlay')); if(!name){ err.hidden=false; err.textContent='Enter the buyer name.'; return; } if(!max){ err.hidden=false; err.textContent='Enter the maximum budget.'; return; }
+    const b={name,phone:g('#by_phone').trim(),budgetMin:Number(g('#by_min'))||null,budgetMax:max,fuel:g('#by_fuel'),transmission:g('#by_trans'),mode:g('#by_mode')||null,prefs:g('#by_prefs').trim(),note:g('#by_note').trim(),status:'active',createdAt:new Date().toISOString(),by:myId||null};
+    try{ await db.collection('buyers').add(b); closeOverlay(); toast(name+' added to the buyer list'); const m=cars.filter(c=>(c.stage==='listed'||c.stage==='customer')&&matchesBuyer(b,c)); if(m.length) setTimeout(()=>toast(m.length+' car'+(m.length>1?'s':'')+' in stock match '+name.split(' ')[0]),1500); }catch(e){ handleErr(e); } },
+  async buyerDel(id){ try{ await db.collection('buyers').doc(id).delete(); toast('Buyer removed'); }catch(e){ handleErr(e); } },
+  copyLink(c){ const t=carLink(c); if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>toast('Car link copied. Share it on WhatsApp.'),()=>toast(t)); else toast(t); },
+  expOpen(){ addingExp=true; renderPanel(); }, expCancel(){ addingExp=false; renderPanel(); },
+  expAdd(c){ const amount=Number(val('#ex_amt')); if(!amount) return toast('Enter the amount.'); const e={id:uid(),type:val('#ex_type'),amount,date:val('#ex_date')||today(),note:val('#ex_note')}; addingExp=false; write(c.id,{expenses:[...expensesOf(c),e]},`Expense: ${e.type} ${money(amount)}${e.note?' · '+e.note:''}`); },
+  expDel(c,id){ const e=expensesOf(c).find(x=>x.id===id); write(c.id,{expenses:expensesOf(c).filter(x=>x.id!==id)},`Removed expense ${e?e.type+' '+money(e.amount):''}`); },
+  payOpen(){ addingPay=true; renderPanel(); }, payCancel(){ addingPay=false; renderPanel(); },
+  payAdd(c){ const amount=Number(val('#py_amt')); if(!amount) return toast('Enter the amount.'); const e={id:uid(),amount,mode:val('#py_mode'),date:val('#py_date')||today(),note:val('#py_note')}; addingPay=false; const total=paidTotal(c)+amount, agreed=+c.payment?.amount||0; write(c.id,{payments:[...paymentsOf(c),e]},`Received ${money(amount)} by ${e.mode}${agreed?` · ${money(Math.max(0,agreed-total))} balance`:''}`); },
+  payDel(c,id){ const e=paymentsOf(c).find(x=>x.id===id); write(c.id,{payments:paymentsOf(c).filter(x=>x.id!==id)},`Removed payment entry ${e?money(e.amount):''}`); },
+  docOpenForm(){ addingDoc=true; renderPanel(); }, docCancel(){ addingDoc=false; renderPanel(); },
+  docPick(){ if(uploading) return; pendingDoc={type:val('#dc_type'),expiry:val('#dc_exp'),note:val('#dc_note')}; const fi=$('#fileIn'); fi.value=''; fi.accept='image/*,application/pdf'; fi.multiple=false; fi.click(); },
+  docDel(c,id){ const d=docsOf(c).find(x=>x.id===id); write(c.id,{docs:docsOf(c).filter(x=>x.id!==id)},`Removed document ${d?d.type:''}`); if(d&&assets) assets.delete(d.fileId).catch(()=>{}); },
+  async docOpen(c,id){ const d=docsOf(c).find(x=>x.id===id); if(!d) return; let data=photoCache[d.fileId]; if(!data){ try{ const s=await db.collection('photos').doc(d.fileId.slice(3)).get(); data=s.exists?s.data().data:null; if(data) photoCache[d.fileId]=data; }catch(_){} } if(!data) return toast('Could not load the document.');
+    if((d.mime||'').includes('pdf')){ const bin=atob(data.split(',')[1]); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); const url=URL.createObjectURL(new Blob([arr],{type:'application/pdf'})); window.open(url,'_blank'); } else { lbDoc=d.fileId; renderLightbox(); } },
+  leadTd(c,id){ tdLead=tdLead===id?null:id; editLead=null; renderPanel(); },
+  leadTdSave(c,id){ const l=leadsOf(c).find(x=>x.id===id); const t={id:uid(),leadId:id,name:l?l.name:'',date:val('#td_date')||today(),licence:val('#td_lic'),startKm:Number(val('#td_s'))||null,endKm:Number(val('#td_e'))||null,note:val('#td_note')}; tdLead=null; const now=new Date().toISOString(); write(c.id,{testDrives:[...tdOf(c),t],leads:leadsOf(c).map(x=>x.id===id?{...x,lastContact:now,status:x.status==='enquired'?'negotiating':x.status}:x)},`${t.name||'Customer'} took a test drive${t.startKm&&t.endKm?' ('+(t.endKm-t.startKm)+' km)':''}${t.note?' · '+t.note:''}`); },
+  leadKeep(c,id){ const l=leadsOf(c).find(x=>x.id===id); openBuyerForm({name:l?l.name:'',phone:l?l.phone:'',budgetMax:l&&l.offer?l.offer:(+c.listing?.price||''),fuel:c.fuel||'',prefs:brandOf(c),note:'Was interested in '+c.title}); },
+  fuDone(c,id){ const now=new Date().toISOString(); const l=leadsOf(c).find(x=>x.id===id); write(c.id,{leads:leadsOf(c).map(x=>x.id===id?{...x,lastContact:now,nextFollowUp:''}:x)},`Followed up with ${l?l.name:'customer'}`); },
+  fuSnooze(c,id){ const d=new Date(); d.setDate(d.getDate()+2); const nf=d.toISOString().slice(0,10); write(c.id,{leads:leadsOf(c).map(x=>x.id===id?{...x,nextFollowUp:nf}:x)},`Follow-up moved to ${fmtDate(nf)}`); },
+  async buyerToLead(c,id){ const b=buyers.find(x=>x.id===id); if(!b) return; try{ await db.collection('buyers').doc(id).update({status:'converted',convertedTo:c.id}); }catch(_){} const now=new Date().toISOString(); const lead={id:uid(),name:b.name,phone:b.phone||'',status:'enquired',mode:b.mode||null,bank:'',loanStatus:b.mode==='loan'?'applied':null,offer:null,expectedBy:'',note:b.note||'',createdAt:now,lastContact:now,source:'buyer-pool',nextFollowUp:today()};
+    const patch={leads:[...leadsOf(c),lead]}; if(c.stage==='listed'){ patch.stage='customer'; patch.customer={name:b.name,phone:b.phone||''}; } await write(c.id,patch,`${b.name} (from buyer list) matched to this car`); },
   copyReg(c){ const t=c.reg||''; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>toast('Reg number copied'),()=>toast(t)); else toast(t); },
 };
 
@@ -1110,58 +1373,78 @@ const forSale=()=>cars.filter(c=>c.stage==='listed'||c.stage==='customer').sort(
 function storeCard(c){ const ph=photos(c); const sp=[c.year,kmF(c.km),c.fuel,c.transmission].filter(Boolean).join(' · ');
   return `<button class="scard" data-ssel="${esc(c.id)}"><div class="img">${ph.length?`<img src="${blob(ph[0])}" alt="${esc(c.title)}" loading="lazy">`:I(P.car,1.4)}<span class="tag">Available</span>${ph.length>1?`<span class="n">${ph.length} photos</span>`:''}</div>
     <div class="b"><div class="pr num">${lakh(c.listing?.price)}</div><div class="tt">${esc(c.title)}</div><div class="sp">${esc(sp||'Details on request')}${c.owners?' · '+esc(c.owners):''}${c.city?' · '+esc(c.city):''}</div><div class="cta">View details & book a visit ${I(P.arrow,2.4)}</div></div></button>`; }
+let storeTab='visit', emiDown=null, emiMonths=60;
+function emiCalc(price){
+  const rate=+settings.interestRate||9.5; const down=emiDown==null?Math.round(price*0.2):Math.min(price,Math.max(0,emiDown)); const P0=Math.max(0,price-down); const r=rate/1200; const n=emiMonths||60;
+  const emi=P0>0?(r?Math.round(P0*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)):Math.round(P0/n)):0; return {down,P0,emi,n,rate,total:emi*n};
+}
 function renderStore(){
   const q=search.trim().toLowerCase(); const list=forSale().filter(c=>!q||[c.title,c.fuel,c.transmission,c.city,String(c.year)].some(v=>String(v||'').toLowerCase().includes(q)));
+  const wa=settings.whatsapp?waLink(settings.whatsapp,'Hi Revora, I saw your cars online. '):'';
   const head=`<header class="shead"><div class="in"><button class="brand" data-ssel=""><span class="mark" aria-hidden="true">${I(P.car,2.2)}</span><div><b>Revora</b><small>Quality used cars</small></div></button>
     <div class="search" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="ssearch" type="search" placeholder="Search by model, fuel, year…" value="${esc(search)}" aria-label="Search cars"></div>
+    ${wa?`<a class="btn sm wa" href="${wa}" target="_blank" rel="noopener" style="flex:0 0 auto">WhatsApp</a>`:''}
     <button class="admin" data-mode="login">Admin sign in</button></div></header>`;
   let body;
   const c=storeSel?cars.find(x=>x.id===storeSel):null;
   if(c){
     const ph=photos(c); if(storePh>=ph.length) storePh=Math.max(0,ph.length-1);
     const specs=[['Year',c.year],['Kms driven',kmF(c.km)],['Fuel',c.fuel],['Transmission',c.transmission],['Owner',c.owners],['Colour',c.colour],['Location',c.city]].filter(x=>x[1]);
-    const soldOut=!(c.stage==='listed'||c.stage==='customer');
-    const form=booked&&booked.carId===c.id?`<div class="ok-box"><span class="ic">${I(P.check,3)}</span><div><b>Visit booked</b><span>Thanks ${esc(booked.name)}. We will confirm your visit on ${esc(fmtApptDT(booked))} shortly${booked.phone?' on '+esc(booked.phone):''}.</span></div></div>`
-      :bookFail&&bookFail.carId===c.id?`<div class="box"><h3>Almost there</h3><span class="hint">This link is view-only, so the booking could not be saved automatically. Copy the message below and send it to us, and we will confirm your visit.</span><div class="copybox" id="copyTxt">${esc(bookFail.text)}</div><div class="frow"><button class="btn primary sm" data-act="copyReq">Copy message</button><button class="btn sm" data-act="bookAgain">Edit request</button></div></div>`
-      :`<form class="box" id="bookForm" style="border-left:3px solid var(--blue)"><h3>Book a visit to check this car</h3>
-        <div class="form"><label>Your name<input id="b_name" required placeholder="Full name"></label><label>Phone<input id="b_phone" inputmode="tel" required placeholder="98xxxxxxxx"></label>
+    const soldOut=!(c.stage==='listed'||c.stage==='customer'); const price=+c.listing?.price||0; const e=emiCalc(price);
+    const waCar=settings.whatsapp?waLink(settings.whatsapp,'Hi Revora, I am interested in the '+c.title+' '+(c.year||'')+' ('+lakh(price)+'). '+carLink(c)):'';
+    const done=booked&&booked.carId===c.id?`<div class="ok-box"><span class="ic">${I(P.check,3)}</span><div><b>${booked.type==='callback'?'We will call you':'Visit booked'}</b><span>Thanks ${esc(booked.name)}. ${booked.type==='callback'?'We will call you'+(booked.phone?' on '+esc(booked.phone):'')+(settings.callbackHours?' between '+esc(settings.callbackHours):'')+'.':'We will confirm your visit on '+esc(fmtApptDT(booked))+' shortly'+(booked.phone?' on '+esc(booked.phone):'')+'.'}</span></div></div>`:null;
+    const fail=bookFail&&bookFail.carId===c.id?`<div class="box"><h3>Almost there</h3><span class="hint">The request could not be saved right now. Copy the message below and send it to us${wa?' on WhatsApp':''}.</span><div class="copybox" id="copyTxt">${esc(bookFail.text)}</div><div class="frow"><button class="btn primary sm" data-act="copyReq">Copy message</button>${wa?`<a class="btn sm wa" href="${waLink(settings.whatsapp,bookFail.text)}" target="_blank" rel="noopener">Send on WhatsApp</a>`:''}<button class="btn sm" data-act="bookAgain">Edit request</button></div></div>`:null;
+    const forms=`<div class="box" style="border-left:3px solid var(--blue);gap:12px"><div class="tabs" style="padding:0;margin:0"><button class="${storeTab==='visit'?'on':''}" data-stab="visit">Book a visit</button><button class="${storeTab==='call'?'on':''}" data-stab="call">Request a call back</button></div>
+      ${storeTab==='visit'?`<form id="bookForm" style="display:flex;flex-direction:column;gap:10px"><div class="form"><label>Your name<input id="b_name" required placeholder="Full name"></label><label>Phone<input id="b_phone" inputmode="tel" required placeholder="98xxxxxxxx"></label>
         <label>Date<input id="b_date" type="date" required min="${today()}" value="${today()}"></label><label>Time<input id="b_time" type="time" required value="11:00"></label>
         <label class="full">Anything to tell us? (optional)<input id="b_note" placeholder="e.g. I will bring my mechanic"></label></div>
-        <button class="btn primary" type="submit" id="b_btn">${I(P.cal)}Book appointment</button><span class="hint">We will confirm the time with you. No payment needed to book.</span></form>`;
-    body=`<div class="sbody"><button class="btn link" data-ssel="" style="align-self:flex-start">${I(P.l,2.4)} All cars</button>
-      <div class="sdetail"><div class="sgal"><div class="main">${ph.length?`<img src="${blob(ph[storePh])}" alt="${esc(c.title)}" data-slb="${storePh}">${ph.length>1?`<button class="arr l" data-sph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-sph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${storePh+1} / ${ph.length}</span>`:''}`:I(P.car,1.2)}</div>${ph.length>1?`<div class="th">${ph.map((id,i)=>`<button class="${i===storePh?'on':''}" data-sth="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div>
-      <div class="sinfo"><div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:10px"><div class="sprice num">${lakh(c.listing?.price)}<small>asking price</small></div><h2 style="font-size:20px">${esc(c.title)}${c.year?' <span class="muted" style="font-weight:500">'+esc(c.year)+'</span>':''}</h2>${c.reg?`<span class="regplate">${esc(c.reg.replace(/(\d{4})$/,'••••'))}</span>`:''}
+        <button class="btn primary" type="submit" id="b_btn">${I(P.cal)}Book appointment</button><span class="hint">We will confirm the time with you. No payment needed to book.</span></form>`
+      :`<form id="callForm" style="display:flex;flex-direction:column;gap:10px"><div class="form"><label>Your name<input id="cb_name" required placeholder="Full name"></label><label>Phone<input id="cb_phone" inputmode="tel" required placeholder="98xxxxxxxx"></label><label class="full">What would you like to know? (optional)<input id="cb_note" placeholder="e.g. Is the price negotiable? Loan available?"></label></div>
+        <button class="btn primary" type="submit" id="cb_btn">Request a call back</button><span class="hint">We call back${settings.callbackHours?' between '+esc(settings.callbackHours):' during business hours'}.</span></form>`}</div>`;
+    body=`<div class="sbody"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><button class="btn link" data-ssel="">${I(P.l,2.4)} All cars</button><div class="frow"><button class="btn sm" data-act="copyStoreLink">${I(P.copy)}Copy link</button>${waCar?`<a class="btn sm wa" href="${waCar}" target="_blank" rel="noopener">Ask on WhatsApp</a>`:''}</div></div>
+      <div class="sdetail"><div style="display:flex;flex-direction:column;gap:18px;min-width:0"><div class="sgal"><div class="main">${ph.length?`<img src="${blob(ph[storePh])}" alt="${esc(c.title)}" data-slb="${storePh}">${ph.length>1?`<button class="arr l" data-sph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-sph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${storePh+1} / ${ph.length}</span>`:''}`:I(P.car,1.2)}</div>${ph.length>1?`<div class="th">${ph.map((id,i)=>`<button class="${i===storePh?'on':''}" data-sth="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div>
+        ${!soldOut&&price?`<div class="card emi" style="padding:18px 20px"><div class="stitle">EMI calculator <span>at ${e.rate}% p.a.</span></div>
+          <div class="out"><div><b class="num">${inrF.format(e.emi)}</b><span> / month for ${e.n} months</span></div><span>Loan ${lakh(e.P0)}</span></div>
+          <div><div class="lbl"><span>Down payment</span><b class="num">${lakh(e.down)}</b></div><input type="range" id="emi_down" min="0" max="${price}" step="10000" value="${e.down}"></div>
+          <div><div class="lbl"><span>Tenure</span><b>${e.n} months</b></div><input type="range" id="emi_months" min="12" max="84" step="12" value="${e.n}"></div>
+          <span class="hint">Indicative only. Final EMI depends on the bank and your profile. Total payable ${lakh(e.total+e.down)}.</span></div>`:''}</div>
+      <div class="sinfo"><div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:10px"><div class="sprice num">${lakh(price)}<small>asking price</small></div><h2 style="font-size:20px">${esc(c.title)}${c.year?' <span class="muted" style="font-weight:500">'+esc(c.year)+'</span>':''}</h2>${c.reg?`<span class="regplate">${esc(c.reg.replace(/(\d{4})$/,'••••'))}</span>`:''}
         ${soldOut?'<span class="pill sold">Sold</span>':'<span class="pill listed">Available for viewing</span>'}
         <div class="specgrid">${specs.map(([k,v])=>`<div class="spec"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}</div></div>
-        ${soldOut?'<div class="ro">This car has been sold. Browse the other cars we have available.</div>':form}</div></div></div>`;
+        ${soldOut?'<div class="ro">This car has been sold. Browse the other cars we have available.</div>':(done||fail||forms)}</div></div></div>`;
   } else {
-    body=`<div class="sbody"><div class="hero"><div><h1>Find your next car at Revora</h1><p>Hand-picked used cars, checked by us. Browse what is available, then book a time to come and see the car in person.</p></div><span class="pill">${list.length} car${list.length===1?'':'s'} available</span></div>
-      ${!loaded?`<div class="empty"><h3>Loading cars…</h3></div>`:list.length?`<div class="sgrid">${list.map(storeCard).join('')}</div>`:`<div class="card empty"><h3>${q?'No cars match your search':'No cars listed right now'}</h3>${q?'Try a different model or fuel type.':'Please check back soon.'}</div>`}</div>`;
+    const recent=cars.filter(c=>stageIdx(c.stage)>=stageIdx('sold')&&c.sale?.date&&daysSince(c.sale.date)<=90).sort((a,b)=>String(b.sale.date).localeCompare(String(a.sale.date))).slice(0,8);
+    body=`<div class="sbody"><div class="hero"><div><h1>Find your next car at Revora</h1><p>Hand-picked used cars, checked by us. Browse what is available, then book a time to come and see the car in person${settings.whatsapp?', or just WhatsApp us':''}.</p></div><span class="pill">${list.length} car${list.length===1?'':'s'} available</span></div>
+      ${!loaded?`<div class="empty"><h3>Loading cars…</h3></div>`:list.length?`<div class="sgrid">${list.map(storeCard).join('')}</div>`:`<div class="card empty"><h3>${q?'No cars match your search':'No cars listed right now'}</h3>${q?'Try a different model or fuel type.':'Please check back soon.'}</div>`}
+      ${recent.length&&!q?`<div><div class="stitle" style="margin-bottom:10px">Recently sold <span>${recent.length} happy buyer${recent.length>1?'s':''} in the last 3 months</span></div><div class="soldstrip">${recent.map(c=>{ const ph=photos(c); return `<div class="soldcard"><div class="img">${ph.length?`<img src="${blob(ph[0])}" alt="" loading="lazy">`:''}</div><span class="tag">Sold</span><div class="b">${esc(c.title)}<small>${esc(c.year||'')}${c.fuel?' · '+esc(c.fuel):''} · sold ${esc(fmtDate(c.sale.date))}</small></div></div>`; }).join('')}</div></div>`:''}</div>`;
   }
-  $('#store').innerHTML=head+body+`<div class="sfoot">© Revora · Used Car Business · <button data-mode="login">Admin</button></div>`;
+  $('#store').innerHTML=head+body+`<div class="sfoot">© Revora · Used Car Business${settings.whatsapp?' · WhatsApp '+esc(settings.whatsapp):''} · <button data-mode="login">Admin</button></div>`;
 }
-async function bookVisit(){
-  const c=cars.find(x=>x.id===storeSel); if(!c) return;
-  const name=$('#b_name').value.trim(), phone=$('#b_phone').value.trim(), date=$('#b_date').value, time=$('#b_time').value, note=$('#b_note').value.trim();
-  if(!name||!phone||!date||!time) return toast('Please fill your name, phone, date and time.');
-  const a={carId:c.id,carTitle:[c.title,c.year,c.fuel].filter(Boolean).join(' '),name,phone,date,time,note,status:'new',createdAt:new Date().toISOString()};
-  const btn=$('#b_btn'); if(btn){ btn.disabled=true; btn.textContent='Booking…'; }
+async function bookVisit(kind){
+  const c=cars.find(x=>x.id===storeSel); if(!c) return; const cb=kind==='call';
+  const name=(cb?$('#cb_name'):$('#b_name')).value.trim(), phone=(cb?$('#cb_phone'):$('#b_phone')).value.trim(), date=cb?'':$('#b_date').value, time=cb?'':$('#b_time').value, note=(cb?$('#cb_note'):$('#b_note')).value.trim();
+  if(!name||!phone||(!cb&&(!date||!time))) return toast(cb?'Please enter your name and phone.':'Please fill your name, phone, date and time.');
+  const a={carId:c.id,carTitle:[c.title,c.year,c.fuel].filter(Boolean).join(' '),name,phone,date,time,note,type:cb?'callback':'visit',status:'new',createdAt:new Date().toISOString()};
+  const btn=cb?$('#cb_btn'):$('#b_btn'); if(btn){ btn.disabled=true; btn.textContent=cb?'Sending…':'Booking…'; }
   try{ if(!db) throw {code:'not_granted'}; await db.collection('appointments').add(a); booked=a; bookFail=null; }
-  catch(e){ console.warn(e); bookFail={carId:c.id,text:`Hi Revora, I'm ${name} (${phone}). I'd like to visit and check the ${a.carTitle}${c.reg?' ('+c.reg+')':''} on ${fmtApptDT(a)}.${note?' Note: '+note:''}`}; }
+  catch(e){ console.warn(e); bookFail={carId:c.id,text:cb?`Hi Revora, I'm ${name} (${phone}). Please call me back about the ${a.carTitle}.${note?' '+note:''}`:`Hi Revora, I'm ${name} (${phone}). I'd like to visit and check the ${a.carTitle}${c.reg?' ('+c.reg+')':''} on ${fmtApptDT(a)}.${note?' Note: '+note:''}`}; }
   renderStore();
 }
-// ---------- events ----------
+function syncHash(){ const want=storeSel?'#car-'+storeSel:''; if(location.hash!==want){ try{ history.replaceState(null,'',location.pathname+location.search+want); }catch(_){} } }
+function readHash(){ const m=location.hash.match(/^#car-([A-Za-z0-9_-]+)$/); return m?m[1]:null; }
+// ---------- events ----------// ---------- events ----------
 document.addEventListener('click',e=>{
-  const sm=e.target.closest('[data-mode],[data-ssel],[data-sph],[data-sth],[data-slb],[data-appt]');
+  const sm=e.target.closest('[data-mode],[data-ssel],[data-sph],[data-sth],[data-slb],[data-appt],[data-stab]');
   if(sm){
     if(sm.dataset.mode){ mode=sm.dataset.mode; renderMode(); return; }
-    if(sm.dataset.ssel!==undefined){ storeSel=sm.dataset.ssel||null; storePh=0; booked=null; bookFail=null; renderStore(); window.scrollTo(0,0); return; }
+    if(sm.dataset.ssel!==undefined){ storeSel=sm.dataset.ssel||null; storePh=0; booked=null; bookFail=null; emiDown=null; storeTab='visit'; syncHash(); renderStore(); window.scrollTo(0,0); return; }
+    if(sm.dataset.stab){ storeTab=sm.dataset.stab; renderStore(); return; }
     if(sm.dataset.sph){ const n=photos(cars.find(x=>x.id===storeSel)||{}).length; storePh=(storePh+Number(sm.dataset.sph)+n)%n; renderStore(); return; }
     if(sm.dataset.sth!==undefined){ storePh=Number(sm.dataset.sth); renderStore(); return; }
     if(sm.dataset.slb!==undefined){ selId=storeSel; lbIdx=Number(sm.dataset.slb); renderLightbox(); return; }
     if(sm.dataset.appt){ apptAction(sm.dataset.appt,sm.dataset.id); return; }
   }
-  const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-lact],[data-act]'); if(!t) return;
+  const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-lact],[data-exp],[data-pay],[data-docopen],[data-docdel],[data-fu],[data-buyerdel],[data-act]'); if(!t) return;
   const c=sel();
   if(t.dataset.view){ view=t.dataset.view; filter='all'; closeOverlay(); window.scrollTo(0,0); renderNav(); renderView(); return; }
   if(t.dataset.f!==undefined){ filter=(filter===t.dataset.f&&t.classList.contains('pstage'))?'all':t.dataset.f; renderView(); return; }
@@ -1170,34 +1453,47 @@ document.addEventListener('click',e=>{
   if(t.dataset.tab){ tab=t.dataset.tab; confirmKey=null; renderPanel(); return; }
   if(t.dataset.ph){ const n=photos(c).length; photoIdx=(photoIdx+Number(t.dataset.ph)+n)%n; renderPanel(); return; }
   if(t.dataset.thumb!==undefined){ photoIdx=Number(t.dataset.thumb); renderPanel(); return; }
-  if(t.hasAttribute('data-lbclose')){ lbIdx=-1; renderLightbox(); return; }
+  if(t.hasAttribute('data-lbclose')){ lbIdx=-1; lbDoc=null; renderLightbox(); return; }
   if(t.dataset.lbn){ const n=photos(c).length; lbIdx=(lbIdx+Number(t.dataset.lbn)+n)%n; renderLightbox(); return; }
   if(t.dataset.lb!==undefined){ lbIdx=Number(t.dataset.lb); renderLightbox(); return; }
   if(t.dataset.lact){ const fn=actions['lead'+t.dataset.lact[0].toUpperCase()+t.dataset.lact.slice(1)]; if(fn&&c) fn(c,t.dataset.lead); return; }
+  if(t.dataset.exp){ if(c) actions.expDel(c,t.dataset.exp); return; }
+  if(t.dataset.pay){ if(c) actions.payDel(c,t.dataset.pay); return; }
+  if(t.dataset.docopen){ if(c) actions.docOpen(c,t.dataset.docopen); return; }
+  if(t.dataset.docdel){ if(c) actions.docDel(c,t.dataset.docdel); return; }
+  if(t.dataset.fu){ const [cid,lid,what]=t.dataset.fu.split('|'); const car=cars.find(x=>x.id===cid); if(car) actions[what==='snooze'?'fuSnooze':'fuDone'](car,lid); return; }
+  if(t.dataset.buyerdel){ actions.buyerDel(t.dataset.buyerdel); return; }
   if(t.hasAttribute('data-close')){ closeOverlay(); return; }
   if(t.hasAttribute('data-stop')) return;
   if(t.dataset.act==='copyReq'){ const txt=$('#copyTxt')?.textContent||''; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(()=>toast('Message copied'),()=>toast('Select the text and copy it')); else toast('Select the text and copy it'); return; }
   if(t.dataset.act==='bookAgain'){ bookFail=null; renderStore(); return; }
-  if(t.dataset.act){ const fn=actions[t.dataset.act]; if(fn) fn(c); }
+  if(t.dataset.act==='copyStoreLink'){ const c=cars.find(x=>x.id===storeSel); const u=c?carLink(c):location.href; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(()=>toast('Link copied'),()=>toast(u)); else toast(u); return; }
+  if(t.dataset.act){ const fn=actions[t.dataset.act]; if(fn) fn(c,t.dataset.id); }
 });
 document.addEventListener('submit',async e=>{
   if(e.target.id==='loginForm'){ e.preventDefault(); const em=$('#l_email').value.trim().toLowerCase(), pw=$('#l_pass').value; const btn=$('#l_btn'); btn.disabled=true; btn.textContent='Checking…';
     let ok=false, msg='Email or password is incorrect.';
     try{ const cred=await firebase.auth().signInWithEmailAndPassword(em,pw); ok=!!cred.user; }
     catch(err){ ok=false; if(err&&err.code==='auth/network-request-failed') msg='No internet connection. Try again.'; else if(err&&err.code==='auth/too-many-requests') msg='Too many attempts. Wait a few minutes and try again.'; else if(err&&err.code==='auth/operation-not-allowed') msg='Email sign-in is not enabled in Firebase yet.'; console.warn(err); }
-    if(ok){ mode='admin'; view='dashboard'; document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); renderMode(); toast('Welcome back, admin'); }
-    else { btn.disabled=false; btn.textContent='Sign in'; const er=$('#l_err'); er.hidden=false; er.textContent=msg; const card=$('.lcard'); card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); } return; }
-  if(e.target.id==='bookForm'){ e.preventDefault(); bookVisit(); }
+    if(ok){ const u=firebase.auth().currentUser; let allowed=u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL; if(!allowed){ try{ const s=await db.collection('admins').doc(u.uid).get(); allowed=s.exists; }catch(_){} }
+      if(!allowed){ await firebase.auth().signOut(); ok=false; msg='This account is not on the Revora team.'; }
+      else { mode='admin'; view='dashboard'; document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); renderMode(); toast('Welcome back'); } }
+    if(!ok)
+    { btn.disabled=false; btn.textContent='Sign in'; const er=$('#l_err'); er.hidden=false; er.textContent=msg; const card=$('.lcard'); card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); } return; }
+  if(e.target.id==='bookForm'){ e.preventDefault(); bookVisit('visit'); }
+  if(e.target.id==='callForm'){ e.preventDefault(); bookVisit('call'); }
 });
-document.addEventListener('input',e=>{ if(e.target.id==='ssearch'){ search=e.target.value; if(!storeSel){ const grid=$('#store .sgrid, #store .sbody .empty'); renderStore(); const inp=$('#ssearch'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); } } } });
+document.addEventListener('input',e=>{
+  if(e.target.id==='emi_down'||e.target.id==='emi_months'){ if(e.target.id==='emi_down') emiDown=Number(e.target.value); else emiMonths=Number(e.target.value); const c=cars.find(x=>x.id===storeSel); if(!c) return; const ev=emiCalc(+c.listing?.price||0); const box=e.target.closest('.emi'); if(box){ box.querySelector('.out b').textContent=inrF.format(ev.emi); box.querySelector('.out span').textContent=' / month for '+ev.n+' months'; box.querySelectorAll('.out > span')[0].textContent='Loan '+lakh(ev.P0); box.querySelectorAll('.lbl b')[0].textContent=lakh(ev.down); box.querySelectorAll('.lbl b')[1].textContent=ev.n+' months'; box.querySelector('.hint').textContent='Indicative only. Final EMI depends on the bank and your profile. Total payable '+lakh(ev.total+ev.down)+'.'; } return; }
+  if(e.target.id==='ssearch'){ search=e.target.value; if(!storeSel){ const grid=$('#store .sgrid, #store .sbody .empty'); renderStore(); const inp=$('#ssearch'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); } } } });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.closest&&e.target.closest('.row[data-sel]')){ selectCar(e.target.closest('.row').dataset.sel); }
-  if(e.key==='Escape'){ if(lbIdx>=0){ lbIdx=-1; renderLightbox(); } else if(!$('#overlay').hidden) closeOverlay(); else if(sheetOpen&&narrow()){ sheetOpen=false; renderPanel(); } }
+  if(e.key==='Escape'){ if(lbIdx>=0||lbDoc){ lbIdx=-1; lbDoc=null; renderLightbox(); } else if(!$('#overlay').hidden) closeOverlay(); else if(sheetOpen&&narrow()){ sheetOpen=false; renderPanel(); } }
   if(lbIdx>=0&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){ const n=photos(sel()).length; if(n>1){ lbIdx=(lbIdx+(e.key==='ArrowRight'?1:-1)+n)%n; renderLightbox(); } }
   if(e.key==='Enter'&&e.target.id==='noteIn'){ const c=sel(); if(c) actions.note(c); }
 });
 document.addEventListener('change',e=>{ if(e.target.id==='f_mode'){ const w=$('#bankWrap',e.target.closest('.box')); if(w) w.hidden=e.target.value!=='loan'; } });
-$('#fileIn').addEventListener('change',e=>{ const files=[...e.target.files].filter(f=>f.type.startsWith('image/')); if(files.length) uploadPhotos(files); });
+$('#fileIn').addEventListener('change',e=>{ const files=[...e.target.files]; if(pendingDoc){ const f=files[0]; if(f) uploadDoc(f,pendingDoc); pendingDoc=null; return; } const imgs=files.filter(f=>f.type.startsWith('image/')); if(imgs.length) uploadPhotos(imgs); });
 let sx=null,sT=null;
 document.addEventListener('touchstart',e=>{ const t=e.target.closest('#lbView,.panel .ph'); if(t){ sx=e.touches[0].clientX; sT=t.id==='lbView'?'lb':'ph'; } },{passive:true});
 document.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)<40) return; const c=sel(); const n=c?photos(c).length:0; if(n<2) return; const d=dx<0?1:-1;
@@ -1205,6 +1501,9 @@ document.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.change
 $('#search').addEventListener('input',e=>{ search=e.target.value; renderView(); });
 $('#bell').addEventListener('click',()=>{ view='dashboard'; renderNav(); renderView(); const el=document.querySelector('.pend'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); });
 window.addEventListener('resize',()=>{ if(sheetOpen) renderPanel(); });
+window.addEventListener('hashchange',()=>{ if(mode==='store'){ storeSel=readHash(); storePh=0; renderStore(); } });
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installPrompt=e; if(mode==='admin'&&view==='settings') renderView(); });
+if('serviceWorker' in navigator&&location.protocol==='https:'){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
 let toastT; function toast(msg){ const el=$('#toast'); el.textContent=msg; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,2800); }
 
 // ---------- boot ----------
@@ -1221,11 +1520,19 @@ renderMe();
     async upload(b){ const data=await toDataURL(b); if(data.length>950000) throw {code:'too_large',message:'Photo too large'}; const ref=await db.collection('photos').add({data,size:b.size,createdAt:new Date().toISOString()}); const id='fs:'+ref.id; photoCache[id]=data; return {id,url:data,sizeBytes:b.size,contentType:b.type}; },
     async delete(id){ if(String(id).startsWith('fs:')){ await db.collection('photos').doc(String(id).slice(3)).delete(); delete photoCache[id]; } return {deleted:true}; }
   };
-  user={ async id(){ const u=firebase.auth().currentUser; return u?u.uid:null; }, async profiles(ids){ const o={}; ids.forEach(i=>o[i]={name:'Admin'}); return o; } };
-  let apptUnsub=null;
-  firebase.auth().onAuthStateChanged(u=>{
-    const isAdmin=!!(u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL);
-    canWrite=isAdmin; myId=u?u.uid:null; me={name:isAdmin?'Admin':'',avatar:'',email:u?u.email||'':''}; renderMe();
+  user={ async id(){ const u=firebase.auth().currentUser; return u?u.uid:null; }, async profiles(ids){ const o={}; ids.forEach(i=>o[i]={name:names[i]||'Admin'}); return o; } };
+  // settings are public (EMI rate, WhatsApp number); defaults apply until the rules allow reading them
+  db.collection('settings').doc('general').onSnapshot(s=>{ settings={...DEFAULT_SETTINGS,...(s.exists?s.data():{})}; if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); },()=>{});
+  let apptUnsub=null, adminUnsubs=[];
+  firebase.auth().onAuthStateChanged(async u=>{
+    let adminDoc=null; if(u&&u.email){ try{ const s=await db.collection('admins').doc(u.uid).get(); if(s.exists) adminDoc=s.data(); }catch(_){} }
+    const isAdmin=!!(u&&u.email&&(u.email.toLowerCase()===ADMIN_EMAIL||adminDoc));
+    canWrite=isAdmin; myId=u?u.uid:null; me={name:isAdmin?(adminDoc?.name||'Admin'):'',avatar:'',email:u?u.email||'':''}; if(myId&&isAdmin) names[myId]=me.name; renderMe();
+    if(isAdmin&&!adminUnsubs.length){
+      adminUnsubs.push(db.collection('admins').onSnapshot(s=>{ admins=s.docs.map(d=>({id:d.id,...d.data()})); admins.forEach(a=>names[a.id]=a.name||'Admin'); if(mode==='admin') renderAll(); },()=>{}));
+      adminUnsubs.push(db.collection('buyers').onSnapshot(s=>{ buyers=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))); if(mode==='admin') renderAll(); },()=>{}));
+    }
+    if(!isAdmin&&adminUnsubs.length){ adminUnsubs.forEach(f=>f()); adminUnsubs=[]; buyers=[]; admins=[]; }
     // appointments are readable only by the admin, so subscribe after sign-in and drop it on sign-out
     if(isAdmin&&!apptUnsub){ apptUnsub=db.collection('appointments').onSnapshot(snap=>{ appts=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); if(mode==='admin') renderAll(); },err=>{ console.error(err); apptUnsub=null; }); }
     if(!isAdmin&&apptUnsub){ apptUnsub(); apptUnsub=null; appts=[]; }
