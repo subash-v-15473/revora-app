@@ -304,6 +304,7 @@ body.boot .pstage{animation:pop .4s both} body.boot .pstage:nth-of-type(2){anima
 .panel .ph .arr svg{width:16px;height:16px}
 .panel .ph .idx{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px}
 .phead{padding:4px 16px 0;display:flex;flex-direction:column;gap:6px}
+.phead .summary{display:flex;flex-direction:column;gap:12px;margin-top:10px}
 .phead .tt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .phead h2{font-size:17px;font-weight:800}
 .phead .reg{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--fg-2)}
@@ -407,9 +408,10 @@ details summary::-webkit-details-marker{display:none}
   .ptop .phead{padding:6px 0 0}
   .ptop .phead h2{font-size:24px}
   .ptop .phead .tools{margin-top:10px}
-  .ptop .tabs{grid-column:2;padding:0;margin-top:14px;align-self:end}
+  .ptop .tabs{grid-column:1/-1;padding:0;margin-top:16px}
+  .ptop .summary{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+  .ptop .prices{grid-template-columns:repeat(4,1fr)}
   .pbody{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;grid-auto-flow:dense;padding:18px 20px 28px}
-  .pbody>.prices,.pbody>.hint,.pbody>.stagebox{grid-column:1}
   .pbody>.box{min-width:0}
   .pgrid{grid-template-columns:repeat(4,1fr)}
   .docs{grid-template-columns:repeat(3,1fr)}
@@ -1019,10 +1021,10 @@ function panelHTML(){
   const soldish=stageIdx(c.stage)>=stageIdx('sold');
   const selling=soldish?c.sale?.price:(c.payment?.amount||c.listing?.price);
   const est=estProfit(c);
-  const over=`<div class="prices"><div><div class="k">Purchase Price</div><div class="v num">${money(c.purchase?.price)}</div></div><div><div class="k">${soldish?'Sold Price':c.stage==='payment'?'Agreed Price':'Selling Price'}</div><div class="v num">${money(selling)}</div></div><div><div class="k">Profit ${soldish?'':'(Est.)'}</div><div class="v num ${est>0?'g':est<0?'r':''}">${selling?money(est):'—'}</div></div><div><div class="k">Days in stock</div><div class="v num ${daysInStock(c)>settings.slowDays&&!soldish?'r':''}">${daysInStock(c)}${daysInStock(c)>settings.slowDays&&!soldish?' · slow':''}</div></div></div>
+  const summary=`<div class="prices"><div><div class="k">Purchase Price</div><div class="v num">${money(c.purchase?.price)}</div></div><div><div class="k">${soldish?'Sold Price':c.stage==='payment'?'Agreed Price':'Selling Price'}</div><div class="v num">${money(selling)}</div></div><div><div class="k">Profit ${soldish?'':'(Est.)'}</div><div class="v num ${est>0?'g':est<0?'r':''}">${selling?money(est):'—'}</div></div><div><div class="k">Days in stock</div><div class="v num ${daysInStock(c)>settings.slowDays&&!soldish?'r':''}">${daysInStock(c)}${daysInStock(c)>settings.slowDays&&!soldish?' · slow':''}</div></div></div>
     ${expTotal(c)?`<div class="hint">Total cost incl. expenses: <b class="num">${money(costOf(c))}</b> · updated ${esc(ago(c.updatedAt))}</div>`:`<div class="hint">Updated ${esc(ago(c.updatedAt))}</div>`}
-    <div class="stagebox"><div class="it"><span class="ic">${I(P.tag,2.4)}</span><div><small>Current Stage</small><b>${st.label}</b><span class="sub">${esc(stageSub(c))}${c.listing?.link&&c.stage==='listed'?' · '+esc(c.listing.link):''}</span></div></div><div class="it"><span class="ic g">${I(P.arrow,2.4)}</span><div><small>Next Step</small><b style="font-weight:600;font-size:13px">${esc(nextStep(c))}</b></div></div></div>
-    ${(()=>{ const as=appts.filter(a=>a.carId===c.id&&(a.status==='new'||a.status==='confirmed')); return as.length?`<div class="box" style="border-left:3px solid var(--orange)"><h3>Upcoming visits</h3>${as.map(a=>`<div class="hint" style="color:var(--fg-2)"><b>${esc(a.name)}</b> · ${esc(fmtApptDT(a))}${a.phone?' · '+esc(a.phone):''} <span class="pill ${a.status}" style="font-size:11px">${APPT_STATUS[a.status]}</span></div>`).join('')}<div class="frow"><button class="btn sm" data-view="appointments">Manage appointments</button></div></div>`:''; })()}
+    <div class="stagebox"><div class="it"><span class="ic">${I(P.tag,2.4)}</span><div><small>Current Stage</small><b>${st.label}</b><span class="sub">${esc(stageSub(c))}${c.listing?.link&&c.stage==='listed'?' · '+esc(c.listing.link):''}</span></div></div><div class="it"><span class="ic g">${I(P.arrow,2.4)}</span><div><small>Next Step</small><b style="font-weight:600;font-size:13px">${esc(nextStep(c))}</b></div></div></div>`;
+  const over=`${(()=>{ const as=appts.filter(a=>a.carId===c.id&&(a.status==='new'||a.status==='confirmed')); return as.length?`<div class="box" style="border-left:3px solid var(--orange)"><h3>Upcoming visits</h3>${as.map(a=>`<div class="hint" style="color:var(--fg-2)"><b>${esc(a.name)}</b> · ${esc(fmtApptDT(a))}${a.phone?' · '+esc(a.phone):''} <span class="pill ${a.status}" style="font-size:11px">${APPT_STATUS[a.status]}</span></div>`).join('')}<div class="frow"><button class="btn sm" data-view="appointments">Manage appointments</button></div></div>`:''; })()}
     ${leadsBox(c)}
     ${actionsFor(c)}
     ${paymentsBox(c)}
@@ -1043,7 +1045,8 @@ function panelHTML(){
     ${ph.length?`<div class="frow"><button class="btn sm" data-lb="${photoIdx}">View full screen</button>${canUp&&photoIdx>0?`<button class="btn sm" data-act="cover">Make cover</button>`:''}${canUp?(confirmKey==='photo'?`<button class="btn sm bad" data-act="deletePhotoYes">Remove this photo</button><button class="btn sm" data-act="cancelConfirm">Keep</button>`:`<button class="btn sm ghost" data-act="deletePhotoAsk">${I(P.trash)}Remove</button>`):''}</div>`:`<span class="hint">${canUp?'Add photos so your partner can see the car.':'No photos yet.'}</span>`}`;
   return `<div class="ptop"><div class="ph">${ph.length?`<img src="${blob(ph[photoIdx])}" alt="${esc(c.title)}" data-lb="${photoIdx}">${ph.length>1?`<button class="arr l" data-ph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-ph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${photoIdx+1}/${ph.length}</span>`:''}`:`<div class="none"><div>${I(P.cam,1.6)}No photos yet</div></div>`}<button class="x" data-unsel aria-label="Close">${I(P.x,2.6)}</button></div>
   <div class="phead"><div class="tt"><h2>${esc(c.title)}${c.year?' '+esc(c.year):''}</h2><span class="pill ${st.id}">${st.short}</span></div><span class="reg">${esc(c.reg||'No reg no')}${c.reg?`<button data-act="copyReg" aria-label="Copy reg number">${I(P.copy)}</button>`:''}</span>
-    <div class="tools"><button class="btn sm" data-act="copyLink">${I(P.copy)}Copy car link</button>${c.customer?.phone&&stageIdx(c.stage)>=stageIdx('customer')?`<a class="btn sm wa" href="${waLink(c.customer.phone,'Hi '+c.customer.name+', this is Revora about the '+c.title+'.')}" target="_blank" rel="noopener">WhatsApp ${esc(c.customer.name.split(' ')[0])}</a>`:''}</div></div>
+    <div class="tools"><button class="btn sm" data-act="copyLink">${I(P.copy)}Copy car link</button>${c.customer?.phone&&stageIdx(c.stage)>=stageIdx('customer')?`<a class="btn sm wa" href="${waLink(c.customer.phone,'Hi '+c.customer.name+', this is Revora about the '+c.title+'.')}" target="_blank" rel="noopener">WhatsApp ${esc(c.customer.name.split(' ')[0])}</a>`:''}</div>
+    <div class="summary">${summary}</div></div>
   <div class="tabs">${[['overview','Overview'],['history','History'],['photos','Photos'+(ph.length?' ('+ph.length+')':'')],['docs','Docs'+(docsOf(c).length?' ('+docsOf(c).length+')':'')]].map(([id,l])=>`<button class="${tab===id?'on':''}" data-tab="${id}">${l}</button>`).join('')}</div></div>
   <div class="pbody ${tab!=='overview'?'single':''}">${tab==='overview'?over:tab==='history'?hist:tab==='docs'?docsTab(c):phot}</div>`;
 }
