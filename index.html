@@ -95,11 +95,16 @@ svg{display:block}
   .nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .nav button:hover{transform:none}
   .nav button.sec{display:none}
-  .nav .more{display:flex}
+  .side .nav .more{display:flex}
   .nav .n{display:block;position:absolute;top:4px;right:calc(50% - 22px);margin:0;min-width:16px;height:16px;line-height:16px;padding:0 4px;font-size:9.5px;background:var(--red);color:#fff}
   .nav button.on .n{background:#fff;color:var(--blue)}
 }
 .nav .more{display:none}
+.splash{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--fg)}
+.splash .mark{width:56px;height:56px;border-radius:16px;background:var(--blue);color:#fff;display:grid;place-items:center;animation:pulseLogo 1.2s ease-in-out infinite}
+.splash .mark svg{width:32px;height:32px}
+.splash b{font-size:18px;font-weight:800;letter-spacing:-.01em}
+@keyframes pulseLogo{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,.35)}50%{transform:scale(1.06);box-shadow:0 0 0 14px rgba(37,99,235,0)}}
 .moremenu{display:flex;flex-direction:column;gap:4px}
 .moremenu button{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:12px;font-weight:600;font-size:15px;color:var(--fg-2);width:100%}
 .moremenu button:hover,.moremenu button.on{background:var(--blue-soft);color:var(--blue)}
@@ -482,6 +487,7 @@ details summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
+<div id="splash" class="splash" aria-label="Loading"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h-1a1 1 0 0 1-1-1v-4l2.3-5.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.8 1.2L21 12v4a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M3 12h18"/></svg></span><b>Revora</b></div>
 <div id="setup" hidden></div>
 <div id="login" hidden></div>
 <div id="store" class="store" hidden></div>
@@ -975,6 +981,7 @@ function renderLogin(){
   </form></div>`;
 }
 function renderMode(){
+  const sp=$('#splash'); if(sp) sp.hidden=true;
   $('#setup').hidden=mode!=='setup'; $('#login').hidden=mode!=='login'; $('#store').hidden=mode!=='store'; $('#adminApp').hidden=mode!=='admin';
   if(mode==='setup'){ $('#setup').innerHTML=`<div class="login"><div class="lcard"><div class="brand"><span class="mark">${I(P.car,2.2)}</span><div><b>Revora</b><small>Used Car Business</small></div></div><h2>Almost ready</h2><p>The app is deployed but not connected to its database yet. The Firebase configuration file is still empty.</p><p class="hint">Once the config is added, this page will show the car list automatically.</p></div></div>`; return; }
   if(mode==='login') renderLogin(); else if(mode==='store') renderStore(); else renderAll();
