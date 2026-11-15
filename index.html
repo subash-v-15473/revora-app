@@ -353,6 +353,33 @@ details summary::-webkit-details-marker{display:none}
 .pgrid .add svg{width:18px;height:18px;margin:0 auto 2px}
 .pgrid .cov{position:absolute;left:4px;top:4px;background:var(--blue);color:#fff;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:4px}
 .attempt{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:8px 10px;background:var(--red-soft);color:var(--red);border-radius:8px}
+/* leads (interested customers) */
+.lead{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,box-shadow .2s;animation:rise .25s both}
+.lead:hover{border-color:var(--line-strong)}
+.lead.primary{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.lead.closed{opacity:.6}
+.lead .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.lead .nm{font-weight:700;font-size:14px}
+.lead .ph{font-size:12.5px;color:var(--muted)}
+.lead .tags{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px}
+.lead .tag{background:var(--surface-2);color:var(--fg-2);border-radius:6px;padding:2px 8px;font-weight:600}
+.lead .tag.cash{background:var(--green-soft);color:var(--green)} .lead .tag.loan{background:var(--blue-soft);color:var(--blue)} .lead .tag.rej{background:var(--red-soft);color:var(--red)} .lead .tag.appr{background:var(--green-soft);color:var(--green)} .lead .tag.late{background:var(--red-soft);color:var(--red)} .lead .tag.soon{background:var(--amber-soft);color:var(--amber)}
+.chance{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:84px}
+.chance b{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.chance small{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.chance .bar{width:84px;height:6px;border-radius:3px;background:var(--surface-3);overflow:hidden}
+.chance .bar i{display:block;height:100%;border-radius:3px;transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.hot{color:var(--green)} .warm{color:var(--amber)} .cold{color:var(--muted)} .won{color:var(--green)} .lost{color:var(--red)}
+.chance.hot .bar i{background:var(--green)} .chance.warm .bar i{background:var(--amber)} .chance.cold .bar i{background:var(--faint)} .chance.won .bar i{background:var(--green)} .chance.lost .bar i{background:var(--red)}
+.lead .why{font-size:12px;color:var(--muted)}
+.lead .acts{display:flex;gap:6px;flex-wrap:wrap}
+.lead .acts .btn{flex:0 0 auto}
+.lead .edit{border-top:1px dashed var(--line);padding-top:10px}
+.leadsum{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.leadsum b{color:var(--fg)}
+.minichance{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700}
+.minichance i{width:36px;height:5px;border-radius:3px;background:var(--surface-3);position:relative;overflow:hidden;display:inline-block}
+.minichance i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w);background:currentColor;border-radius:3px}
 .ro{background:var(--amber-soft);color:var(--amber);padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600}
 .pempty{padding:40px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px;margin:auto}
 .pempty svg{width:48px;height:48px;color:var(--faint)}
@@ -592,14 +619,14 @@ function needsAttention(c){
 }
 function nextStep(c){
   return {purchased:'List the car on OLX, Cars24 or another platform',listed:'Wait for a customer enquiry, or update the price if slow',
-    customer:'Agree the price and record cash or loan payment',payment:c.payment?.mode==='loan'?'Follow up with '+(c.payment.bank||'the bank')+' on loan approval':'Collect cash from '+(c.customer?.name||'the customer'),
+    customer:(()=>{ const b=bestLead(c); return b?`Close with ${b.l.name} (${b.ch.pct}% chance), or update the other ${Math.max(0,activeLeads(c).length-1)} interested`:'Record who is interested and agree a price'; })(),payment:c.payment?.mode==='loan'?'Follow up with '+(c.payment.bank||'the bank')+' on loan approval':'Collect cash from '+(c.customer?.name||'the customer'),
     sold:'Sign Form 29/30 and start the RC transfer',rc:'Follow up at the RTO until the RC is transferred',done:'Nothing pending. Deal closed.'}[c.stage];
 }
 function stageSub(c){
   const s=c.stage;
   if(s==='purchased') return 'Bought '+fmtDate(c.purchase?.date);
   if(s==='listed') return 'On '+(c.listing?.platform||'market');
-  if(s==='customer') return (c.customer?.name||'Customer')+' checking';
+  if(s==='customer'){ const n=activeLeads(c).length, b=bestLead(c); return n?`${n} interested · best ${b.l.name.split(' ')[0]} ${b.ch.pct}%`:'Customer checking'; }
   if(s==='payment') return c.payment?.mode==='loan'?'With '+(c.payment.bank||'bank'):'Cash from '+(c.customer?.name||'customer');
   if(s==='sold') return 'RC not started';
   if(s==='rc') return rcLabel(c);
@@ -619,7 +646,35 @@ function visible(list){
 }
 const apptText=a=>`${a.name} has scheduled an appointment to check the ${a.carTitle} on ${fmtApptDT(a)}`;
 const fmtApptDT=a=>{ const d=new Date(a.date+'T'+(a.time||'10:00')); return isNaN(d)?a.date+' '+(a.time||''):d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}); };
-const pendings=()=>[...appts.filter(a=>a.status==='new'||a.status==='confirmed').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(a=>({appt:a,a:{t:(a.status==='new'?'New appointment: ':'Visit: ')+a.name,s:apptText(a).replace(a.name+' has scheduled an appointment to check ','')+(a.phone?' · '+a.phone:''),ic:'cal',c:a.status==='new'?'orange':'blue'}})),...cars.map(c=>({c,a:needsAttention(c)})).filter(x=>x.a)];
+// ---------- leads: customers interested in a car ----------
+const LEAD_STATUS={enquired:'Enquired',negotiating:'Negotiating',payment:'Deal agreed',won:'Bought',lost:'Lost'};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function leadsOf(c){
+  if(Array.isArray(c.leads)) return c.leads;
+  // older records: build the list from the single customer + failed attempts
+  const out=[]; if(c.customer?.name){ const st=c.stage==='payment'?'payment':stageIdx(c.stage)>=stageIdx('sold')?'won':'enquired';
+    out.push({id:'legacy',name:c.customer.name,phone:c.customer.phone||'',status:st,mode:c.payment?.mode||null,bank:c.payment?.bank||'',loanStatus:c.payment?.loanStatus||null,offer:c.payment?.amount||null,expectedBy:'',createdAt:c.updatedAt||c.createdAt,lastContact:c.updatedAt||c.createdAt,source:'walk-in'}); }
+  (c.attempts||[]).forEach((a,i)=>out.push({id:'att'+i,name:a.customer||'Customer',phone:'',status:'lost',mode:a.mode==='loan'||a.mode==='cash'?a.mode:null,lostReason:a.reason||'',createdAt:a.date,lastContact:a.date,source:'walk-in'}));
+  return out;
+}
+const activeLeads=c=>leadsOf(c).filter(l=>l.status!=='won'&&l.status!=='lost');
+const daysSince=d=>d?Math.floor((Date.now()-new Date(d))/86400000):0;
+const daysUntil=d=>d?Math.ceil((new Date(d+'T23:59')-Date.now())/86400000):null;
+function chance(l,c){
+  if(l.status==='won') return {pct:100,label:'Bought',cls:'won',why:['Deal completed']};
+  if(l.status==='lost') return {pct:0,label:'Lost',cls:'lost',why:[l.lostReason||'Walked away']};
+  let p={enquired:25,negotiating:45,payment:70}[l.status]||25; const why=[];
+  if(l.mode==='cash'){ p+=15; why.push('Paying cash'); }
+  else if(l.mode==='loan'){ if(l.loanStatus==='approved'){ p+=20; why.push('Loan approved'); } else if(l.loanStatus==='rejected'){ p=Math.min(p,15); why.push('Loan rejected'); } else { p+=0; why.push('Loan applied, awaiting bank'); } }
+  else why.push('Payment mode not decided');
+  const ask=+c.listing?.price||0; if(l.offer&&ask){ const r=l.offer/ask; if(r>=0.97){ p+=10; why.push('Offer near asking price'); } else if(r<0.9){ p-=10; why.push('Offer well below asking'); } }
+  const du=daysUntil(l.expectedBy); if(du!=null){ if(du<0){ p-=15; why.push('Payment date passed '+(-du)+' day'+(du===-1?'':'s')+' ago'); } else if(du<=7){ p+=10; why.push('Payment expected in '+du+' day'+(du===1?'':'s')); } }
+  const idle=daysSince(l.lastContact||l.createdAt); if(idle>14){ p-=20; why.push('No contact for '+idle+' days'); } else if(idle>7){ p-=10; why.push('Quiet for '+idle+' days'); }
+  p=Math.max(5,Math.min(98,Math.round(p)));
+  return {pct:p,label:p>=70?'Hot':p>=40?'Warm':'Cold',cls:p>=70?'hot':p>=40?'warm':'cold',why};
+}
+const bestLead=c=>activeLeads(c).map(l=>({l,ch:chance(l,c)})).sort((a,b)=>b.ch.pct-a.ch.pct)[0]||null;
+const pendings=()=>[...appts.filter(a=>a.status==='new'||a.status==='confirmed').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(a=>({appt:a,a:{t:(a.status==='new'?'New appointment: ':'Visit: ')+a.name,s:apptText(a).replace(a.name+' has scheduled an appointment to check ','')+(a.phone?' · '+a.phone:''),ic:'cal',c:a.status==='new'?'orange':'blue'}})),...cars.flatMap(c=>activeLeads(c).filter(l=>c.stage!=='payment'||l.status!=='payment').map(l=>{ const du=daysUntil(l.expectedBy); if(l.mode==='loan'&&l.loanStatus==='applied'&&daysSince(l.lastContact||l.createdAt)>5) return {c,a:{t:'Follow up '+(l.bank||'bank')+' for '+l.name,s:c.title+' · loan applied '+daysSince(l.createdAt)+' days ago',ic:'bank',c:'blue'}}; if(du!=null&&du<0) return {c,a:{t:'Payment overdue: '+l.name,s:c.title+' · expected '+fmtDate(l.expectedBy),ic:'wallet',c:'orange'}}; return null; }).filter(Boolean)),...cars.map(c=>({c,a:needsAttention(c)})).filter(x=>x.a)];
 
 // ---------- status / nav ----------
 function setLive(kind,text){ const el=$('#live'); el.className='live '+kind; $('#liveText').textContent=text; }
@@ -711,12 +766,14 @@ function viewRC(){ const list=cars.filter(c=>c.stage==='sold'||c.stage==='rc');
   <div class="kpis">${RC_STEPS.map(([v,l],i)=>`<div class="kpi"><span class="ic ${['orange','blue','purple','green'][i]}">${I(P.doc)}</span><div><div class="v num">${list.filter(c=>(c.rc?.status||'pending')===v).length}</div><div class="l">${l}</div></div></div>`).join('')}</div>
   ${carsCard(list,'RC Transfers',{chips:false,emptyTitle:'Nothing to transfer',emptyText:'Sold cars appear here until the RC moves to the buyer’s name.'})}`; }
 function viewCustomers(){
-  const rows=[]; cars.forEach(c=>{ if(c.customer?.name) rows.push({name:c.customer.name,phone:c.customer.phone,car:c,status:stageOf(c.stage).label,cls:stageIdx(c.stage)>=stageIdx('sold')?'done':'customer',date:c.updatedAt}); (c.attempts||[]).forEach(a=>rows.push({name:a.customer||'Customer',phone:'',car:c,status:'Deal failed'+(a.reason?': '+a.reason:''),cls:'fail',date:a.date})); });
-  rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
-  const q=search.trim().toLowerCase(); const v=rows.filter(r=>!q||[r.name,r.phone,r.car.title].some(x=>String(x||'').toLowerCase().includes(q)));
-  return `<div class="greet"><div><h1>Customers</h1><p>Everyone who enquired, bought, or walked away.</p></div></div>
-  <section class="card"><div class="tscroll"><table class="table"><thead><tr><th>Customer</th><th>Phone</th><th>Car</th><th>Status</th><th>Date</th></tr></thead><tbody>
-  ${v.length?v.map(r=>`<tr class="clk" data-sel="${esc(r.car.id)}"><td><b>${esc(r.name)}</b></td><td class="num">${esc(r.phone||'—')}</td><td>${esc(r.car.title)}</td><td><span class="pill ${r.cls}">${esc(r.status)}</span></td><td class="muted">${esc(fmtDate(r.date))}</td></tr>`).join(''):`<tr><td colspan="5"><div class="empty"><h3>No customers yet</h3>Customers appear here once an enquiry is recorded on a car.</div></td></tr>`}
+  const rows=[]; cars.forEach(c=>leadsOf(c).forEach(l=>rows.push({l,c,ch:chance(l,c)})));
+  rows.sort((a,b)=>{ const o=x=>x.l.status==='payment'?0:x.l.status==='won'?2:x.l.status==='lost'?3:1; return o(a)-o(b)||b.ch.pct-a.ch.pct; });
+  const q=search.trim().toLowerCase(); const v=rows.filter(r=>!q||[r.l.name,r.l.phone,r.c.title].some(x=>String(x||'').toLowerCase().includes(q)));
+  const act=rows.filter(r=>r.l.status!=='won'&&r.l.status!=='lost');
+  return `<div class="greet"><div><h1>Customers</h1><p>Everyone interested in a car, ranked by their chance of buying.</p></div></div>
+  <div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="kpi"><span class="ic blue">${I(P.users)}</span><div><div class="v num">${act.length}</div><div class="l">Active buyers</div></div></div><div class="kpi"><span class="ic green">${I(P.trend)}</span><div><div class="v num">${act.filter(r=>r.ch.pct>=70).length}</div><div class="l">Hot (70%+)</div></div></div><div class="kpi"><span class="ic orange">${I(P.bank)}</span><div><div class="v num">${act.filter(r=>r.l.mode==='loan'&&r.l.loanStatus!=='approved').length}</div><div class="l">Loans awaiting bank</div></div></div><div class="kpi"><span class="ic purple">${I(P.check)}</span><div><div class="v num">${rows.filter(r=>r.l.status==='won').length}</div><div class="l">Bought</div></div></div></div>
+  <section class="card"><div class="tscroll"><table class="table"><thead><tr><th>Customer</th><th>Car</th><th>Payment</th><th>Expected by</th><th>Chance</th><th>Status</th></tr></thead><tbody>
+  ${v.length?v.map(({l,c,ch})=>`<tr class="clk" data-sel="${esc(c.id)}"><td><b>${esc(l.name)}</b><div class="muted num" style="font-size:12px">${esc(l.phone||'—')}</div></td><td>${esc(c.title)}<div class="muted" style="font-size:12px">${esc(stageOf(c.stage).label)}</div></td><td>${l.mode==='cash'?'Cash':l.mode==='loan'?'Loan · '+esc(l.bank||'bank')+' · '+esc(l.loanStatus||'applied'):'<span class="muted">Not decided</span>'}${l.offer?'<div class="muted num" style="font-size:12px">Offer '+lakh(l.offer)+'</div>':''}</td><td class="num">${l.expectedBy?fmtDate(l.expectedBy):'—'}</td><td><span class="minichance ${ch.cls}"><i style="--w:${ch.pct}%"></i>${ch.pct}%</span><div class="muted" style="font-size:11.5px">${ch.label}</div></td><td><span class="pill ${l.status==='won'?'done':l.status==='lost'?'fail':l.status==='payment'?'payment':'customer'}">${LEAD_STATUS[l.status]||l.status}</span></td></tr>`).join(''):`<tr><td colspan="6"><div class="empty"><h3>No customers yet</h3>Customers appear here once an enquiry is recorded on a car.</div></td></tr>`}
   </tbody></table></div></section>`;
 }
 function viewReports(){
@@ -784,11 +841,12 @@ function panelHTML(){
   const over=`<div class="prices"><div><div class="k">Purchase Price</div><div class="v num">${money(c.purchase?.price)}</div></div><div><div class="k">${soldish?'Sold Price':c.stage==='payment'?'Agreed Price':'Selling Price'}</div><div class="v num">${money(selling)}</div></div><div><div class="k">Profit ${soldish?'':'(Est.)'}</div><div class="v num ${est>0?'g':est<0?'r':''}">${selling?money(est):'—'}</div></div><div><div class="k">Updated</div><div class="v">${esc(ago(c.updatedAt))}</div></div></div>
     <div class="stagebox"><div class="it"><span class="ic">${I(P.tag,2.4)}</span><div><small>Current Stage</small><b>${st.label}</b><span class="sub">${esc(stageSub(c))}${c.listing?.link&&c.stage==='listed'?' · '+esc(c.listing.link):''}</span></div></div><div class="it"><span class="ic g">${I(P.arrow,2.4)}</span><div><small>Next Step</small><b style="font-weight:600;font-size:13px">${esc(nextStep(c))}</b></div></div></div>
     ${(()=>{ const as=appts.filter(a=>a.carId===c.id&&(a.status==='new'||a.status==='confirmed')); return as.length?`<div class="box" style="border-left:3px solid var(--orange)"><h3>Upcoming visits</h3>${as.map(a=>`<div class="hint" style="color:var(--fg-2)"><b>${esc(a.name)}</b> · ${esc(fmtApptDT(a))}${a.phone?' · '+esc(a.phone):''} <span class="pill ${a.status}" style="font-size:11px">${APPT_STATUS[a.status]}</span></div>`).join('')}<div class="frow"><button class="btn sm" data-view="appointments">Manage appointments</button></div></div>`:''; })()}
+    ${leadsBox(c)}
     ${actionsFor(c)}
     <div class="box"><h3 class="cap">Car details</h3><div class="kv">${[['Year',c.year],['Kms',kmF(c.km)],['Fuel',c.fuel],['Transmission',c.transmission],['Owner',c.owners],['Colour',c.colour],['Location',c.city],['Bought on',fmtDate(c.purchase?.date)],['Bought from',c.purchase?.from]].filter(x=>x[1]&&x[1]!=='—').map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>
       ${canWrite?`<details><summary>Edit car details</summary><div style="margin-top:10px">${carFields(c)}<div class="hint err" id="formErr" hidden></div><div class="frow" style="margin-top:10px"><button class="btn primary sm" data-act="saveDetails" style="flex:0 0 auto">Save details</button></div></div></details>`:''}</div>
     <div class="box"><h3 class="cap">Deal facts</h3><div class="kv">${facts(c).map(([k,v])=>`<div><div class="k">${k}</div><div class="v ${/₹/.test(v)?'num':''}">${esc(v)}</div></div>`).join('')}</div></div>
-    ${(c.attempts||[]).length?`<div class="box"><h3 class="cap">Failed deals</h3>${c.attempts.map(a=>`<div class="attempt"><span>${esc(a.customer||'Customer')} · ${a.mode==='loan'?'loan':a.mode==='cash'?'cash':'visit'} · ${esc(a.reason||'no reason')}</span><span class="num">${esc(fmtDate(a.date))}</span></div>`).join('')}</div>`:''}
+    ${(c.attempts||[]).length&&!Array.isArray(c.leads)?`<div class="box"><h3 class="cap">Failed deals</h3>${c.attempts.map(a=>`<div class="attempt"><span>${esc(a.customer||'Customer')} · ${a.mode==='loan'?'loan':a.mode==='cash'?'cash':'visit'} · ${esc(a.reason||'no reason')}</span><span class="num">${esc(fmtDate(a.date))}</span></div>`).join('')}</div>`:''}
     ${canWrite?`<div class="box" style="border-style:dashed">${confirmKey==='delete'?`<span class="hint err">Deletes the car, its photos and history for both of you.</span><div class="frow"><button class="btn bad sm" data-act="deleteYes">Yes, delete</button><button class="btn sm" data-act="cancelConfirm">Keep</button></div>`:`<button class="btn ghost sm" data-act="deleteAsk" style="align-self:flex-start">${I(P.trash)}Delete this car</button>`}</div>`:''}`;
   const hist=`<div class="box"><h3 class="cap">Timeline</h3><div class="tl">${(c.log||[]).map((l,i)=>`<div class="e ${i===0?'b':'g'}"><span class="d">${i===0?'':I(P.check,3)}</span><div><b>${esc(l.text)}</b><small>${esc(fmtDT(l.at))}${l.by&&names[l.by]?' · '+esc(names[l.by]):''}</small></div></div>`).join('')||'<span class="muted">No history yet.</span>'}</div></div>
     ${canWrite?`<div class="box"><h3 class="cap">Add a note</h3><div class="frow"><input id="noteIn" placeholder="e.g. Customer bringing mechanic on Sunday" style="flex:1 1 160px"><button class="btn primary sm" data-act="note" style="flex:0 0 auto">Save</button></div></div>`:''}`;
@@ -805,9 +863,47 @@ function renderPanel(){
   if(sheetOpen&&sel()&&narrow()){ sh.hidden=false; sh.innerHTML=`<div class="sheetwrap" data-unsel><div class="panel" data-stop>${html}</div></div>`; }
   else { sh.hidden=true; sh.innerHTML=''; }
 }
-function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; sheetOpen=true; renderView(); renderPanel(); }
+function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; editLead=null; addingLead=false; sheetOpen=true; renderView(); renderPanel(); }
 function unselect(){ selId=null; sheetOpen=false; renderView(); renderPanel(); }
 
+let editLead=null, addingLead=false;
+function leadsBox(c){
+  const all=leadsOf(c); if(stageIdx(c.stage)<stageIdx('listed')) return '';
+  const rows=all.map(l=>({l,ch:chance(l,c)})).sort((a,b)=>{ const o=x=>x.l.status==='won'?-1:x.l.status==='lost'?2:x.l.status==='payment'?0:1; return o(a)-o(b)||b.ch.pct-a.ch.pct; });
+  const act=activeLeads(c), best=bestLead(c), primary=c.customer?.name;
+  const canAct=canWrite&&stageIdx(c.stage)<stageIdx('sold');
+  const ask=+c.listing?.price||0;
+  const row=({l,ch})=>{ const isP=primary&&l.name===primary&&(c.stage==='payment'||stageIdx(c.stage)>=stageIdx('sold')); const closed=l.status==='won'||l.status==='lost'; const du=daysUntil(l.expectedBy);
+    const tags=[l.status==='payment'?'<span class="tag" style="background:var(--blue-soft);color:var(--blue)">Deal agreed</span>':l.status==='negotiating'?'<span class="tag">Negotiating</span>':'',
+      l.mode==='cash'?'<span class="tag cash">Cash</span>':l.mode==='loan'?`<span class="tag loan">Loan · ${esc(l.bank||'bank')}</span>`:'',
+      l.mode==='loan'&&l.loanStatus==='approved'?'<span class="tag appr">Approved</span>':l.mode==='loan'&&l.loanStatus==='rejected'?'<span class="tag rej">Rejected</span>':l.mode==='loan'?'<span class="tag">Applied</span>':'',
+      l.offer?`<span class="tag num">Offer ${lakh(l.offer)}</span>`:'',
+      l.expectedBy&&!closed?`<span class="tag ${du<0?'late':du<=7?'soon':''}">${du<0?'Overdue':'Pays by'} ${fmtDate(l.expectedBy)}</span>`:'',
+      l.source==='appointment'?'<span class="tag">Via booking</span>':''].filter(Boolean).join('');
+    const editing=editLead===l.id&&canAct;
+    return `<div class="lead ${isP?'primary':''} ${closed?'closed':''}">
+      <div class="top"><div><div class="nm">${esc(l.name)}${isP?' <span class="pill payment" style="font-size:10.5px;margin-left:4px">Active deal</span>':''}${best&&best.l.id===l.id&&!closed&&!isP?' <span class="pill listed" style="font-size:10.5px;margin-left:4px">Best chance</span>':''}</div><div class="ph">${esc(l.phone||'No phone')} · since ${esc(fmtDate(l.createdAt))}</div></div>
+        <div class="chance ${ch.cls}"><b>${ch.pct}%</b><div class="bar"><i style="width:${ch.pct}%"></i></div><small>${ch.label}</small></div></div>
+      ${tags?`<div class="tags">${tags}</div>`:''}
+      <div class="why">${esc(ch.why.join(' · '))}${l.note?' · “'+esc(l.note)+'”':''}</div>
+      ${canAct&&!closed?`<div class="acts">${!isP?`<button class="btn sm primary" data-lead="${esc(l.id)}" data-lact="deal">Deal agreed</button>`:''}<button class="btn sm" data-lead="${esc(l.id)}" data-lact="edit">${editing?'Close':'Update'}</button>${!isP?`<button class="btn sm bad" data-lead="${esc(l.id)}" data-lact="lost">Lost</button>`:''}</div>`:''}
+      ${editing?`<div class="edit form">
+        <label>Status<select id="le_status">${['enquired','negotiating'].map(s=>`<option value="${s}" ${l.status===s?'selected':''}>${LEAD_STATUS[s]}</option>`).join('')}</select></label>
+        <label>Paying by<select id="le_mode"><option value="" ${!l.mode?'selected':''}>Not decided</option><option value="cash" ${l.mode==='cash'?'selected':''}>Ready cash</option><option value="loan" ${l.mode==='loan'?'selected':''}>Bank loan</option></select></label>
+        <label>Bank<input id="le_bank" value="${esc(l.bank||'')}" placeholder="HDFC Bank"></label>
+        <label>Loan status<select id="le_loan"><option value="" ${!l.loanStatus?'selected':''}>—</option><option value="applied" ${l.loanStatus==='applied'?'selected':''}>Applied</option><option value="approved" ${l.loanStatus==='approved'?'selected':''}>Approved</option><option value="rejected" ${l.loanStatus==='rejected'?'selected':''}>Rejected</option></select></label>
+        <label>Offer (₹)<input id="le_offer" type="number" inputmode="numeric" value="${esc(l.offer||'')}" placeholder="${ask||''}"></label>
+        <label>Expected payment by<input id="le_by" type="date" value="${esc(l.expectedBy||'')}"></label>
+        <label>Phone<input id="le_phone" value="${esc(l.phone||'')}"></label>
+        <label>Note<input id="le_note" value="${esc(l.note||'')}" placeholder="e.g. wants a service record"></label>
+        <div class="full frow"><button class="btn sm primary" data-lead="${esc(l.id)}" data-lact="save" style="flex:0 0 auto">Save & mark contacted</button></div></div>`:''}
+    </div>`; };
+  return `<div class="box"><h3 class="cap">Customers interested <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">· ${act.length} active${all.length>act.length?', '+(all.length-act.length)+' closed':''}</span></h3>
+    ${best?`<div class="leadsum">Best chance: <b>${esc(best.l.name)}</b> <span class="minichance ${best.ch.cls}"><i style="--w:${best.ch.pct}%"></i>${best.ch.pct}%</span>${act.length>1?`<span>· ${act.length-1} other${act.length>2?'s':''} interested</span>`:''}</div>`:''}
+    ${rows.length?rows.map(row).join(''):'<span class="hint">No customers yet. Add the first enquiry below.</span>'}
+    ${canAct?(addingLead?`<div class="form" style="border-top:1px dashed var(--line);padding-top:10px"><label>Customer name<input id="nl_name" placeholder="Name" autofocus></label><label>Phone<input id="nl_phone" inputmode="tel" placeholder="98xxxxxxxx"></label><label>Paying by<select id="nl_mode"><option value="">Not decided</option><option value="cash">Ready cash</option><option value="loan">Bank loan</option></select></label><label>Offer (₹, optional)<input id="nl_offer" type="number" inputmode="numeric" placeholder="${ask||''}"></label><label class="full">Note<input id="nl_note" placeholder="optional"></label><div class="full frow"><button class="btn sm primary" data-act="leadAdd" style="flex:0 0 auto">Add customer</button><button class="btn sm" data-act="leadAddCancel" style="flex:0 0 auto">Cancel</button></div></div>`:`<div class="frow"><button class="btn sm" data-act="leadAddOpen" style="flex:0 0 auto">${I(P.plus,2.4)}Add interested customer</button></div>`):''}
+  </div>`;
+}
 function facts(c){
   const f=[];
   if(c.listing?.price) f.push(['Asking price',money(c.listing.price)],['Listed on',(c.listing.platform||'—')+(c.listing.date?' · '+fmtDate(c.listing.date):'')]);
@@ -829,26 +925,23 @@ function actionsFor(c){
     <div class="frow"><button class="btn primary" data-act="list">Mark as listed</button></div>`);
   if(s==='listed') return wrap('Record a customer enquiry',`<div class="form">
     <label>Customer name<input id="f_name" placeholder="Name"></label>
-    <label>Phone<input id="f_phone" inputmode="tel" placeholder="98xxxxxxxx"></label></div>
+    <label>Phone<input id="f_phone" inputmode="tel" placeholder="98xxxxxxxx"></label>
+    <label>Paying by<select id="f_lmode"><option value="">Not decided</option><option value="cash">Ready cash</option><option value="loan">Bank loan</option></select></label>
+    <label>Offer (₹, optional)<input id="f_loffer" type="number" inputmode="numeric" placeholder="${esc(c.listing?.price||'')}"></label></div>
     <div class="frow"><button class="btn primary" data-act="customer">Customer came to check</button></div>
     <details><summary>Change listing price or platform</summary><div class="form" style="margin-top:10px">
       <label>Platform<select id="f_platform2">${PLATFORMS.map(p=>`<option ${p===c.listing?.platform?'selected':''}>${p}</option>`).join('')}</select></label>
       <label>Asking price (₹)<input id="f_price2" type="number" inputmode="numeric" value="${esc(c.listing?.price||'')}"></label>
       <div class="full"><button class="btn sm" data-act="relist">Update listing</button></div></div></details>`);
-  if(s==='customer') return wrap('Customer decided?',`<div class="form">
-    <label>Paying by<select id="f_mode"><option value="cash">Ready cash</option><option value="loan">Bank loan</option></select></label>
-    <label>Agreed price (₹)<input id="f_amount" type="number" inputmode="numeric" value="${esc(c.listing?.price||'')}"></label>
-    <label class="full" id="bankWrap" hidden>Bank / financier<input id="f_bank" placeholder="e.g. HDFC Bank, Mahindra Finance"></label></div>
-    <div class="frow"><button class="btn primary" data-act="payment">Deal agreed, payment pending</button></div>
-    <div class="form"><label class="full">If the customer walked away, why?<input id="f_reason" placeholder="e.g. price too high"></label></div>
-    <div class="frow"><button class="btn bad" data-act="walk">Walked away, relist</button></div>`);
+  if(s==='customer'){ const n=activeLeads(c).length; return wrap('Close the deal',`<span class="hint">${n?`Use <b>Deal agreed</b> next to the customer who is buying. Update each customer's loan or payment status above to keep the chances accurate.`:'Nobody is interested right now.'}</span>
+    <div class="frow"><button class="btn bad" data-act="relistAll">${n?'No one is buying, relist':'Back to listed'}</button></div>`); }
   if(s==='payment'){ const loan=c.payment?.mode==='loan';
     return wrap(loan?'Bank loan in progress':'Waiting for cash',`
     ${loan?`<div class="hint">Loan with <b>${esc(c.payment.bank||'bank')}</b> · <b>${esc({applied:'applied, waiting for approval',approved:'approved, disbursement pending',rejected:'rejected'}[c.payment.loanStatus]||'applied, waiting')}</b></div>${c.payment.loanStatus!=='approved'?`<div class="frow"><button class="btn" data-act="loanApproved">Bank approved the loan</button></div>`:''}`:''}
     <div class="form"><label>Amount received (₹)<input id="f_recv" type="number" inputmode="numeric" value="${esc(c.payment?.amount||'')}"></label><label>Received on<input id="f_recvdate" type="date" value="${today()}"></label></div>
     <div class="frow"><button class="btn ok" data-act="sold">${loan?'Loan credited, mark sold':'Cash received, mark sold'}</button></div>
     <div class="form"><label class="full">If the deal failed, why?<input id="f_reason" placeholder="${loan?'e.g. loan rejected, low CIBIL':'e.g. customer backed out'}"></label></div>
-    <div class="frow"><button class="btn bad" data-act="fail">${loan?'Loan rejected, relist':'Deal failed, relist'}</button></div>`); }
+    <div class="frow"><button class="btn bad" data-act="fail">${loan?'Loan rejected, deal failed':'Deal failed'}</button></div>${activeLeads(c).filter(l=>l.status!=='payment').length?`<span class="hint">${activeLeads(c).filter(l=>l.status!=='payment').length} other customer${activeLeads(c).filter(l=>l.status!=='payment').length>1?'s are':' is'} still interested, so a failed deal goes back to them instead of relisting.</span>`:''}`); }
   if(s==='sold'||s==='rc'){ const cur=c.rc?.status||'pending';
     return wrap('RC owner name change',`<div class="form">
       <label>Status<select id="f_rc">${RC_STEPS.map(([v,l])=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`).join('')}</select></label>
@@ -931,13 +1024,34 @@ const actions={
   saveDetails(c){ const root=activePanel(); const r=readCarFields(root); const errEl=$('#formErr',root); if(r.err){ errEl.hidden=false; errEl.textContent=r.err; return; } write(c.id,r.data,'Car details updated'); },
   list(c){ const price=Number(val('#f_price')); if(!price) return toast('Enter the asking price.'); write(c.id,{stage:'listed',listing:{platform:val('#f_platform'),price,date:val('#f_date')||today(),link:val('#f_link')}},`Listed on ${val('#f_platform')} at ${money(price)}`); },
   relist(c){ const price=Number(val('#f_price2')); if(!price) return toast('Enter the asking price.'); write(c.id,{listing:{...c.listing,platform:val('#f_platform2'),price}},`Listing changed: ${val('#f_platform2')}, ${money(price)}`); },
-  customer(c){ const name=val('#f_name'); if(!name) return toast('Enter the customer name.'); write(c.id,{stage:'customer',customer:{name,phone:val('#f_phone')}},`${name} enquired and came to check`); },
+  customer(c){ const name=val('#f_name'); if(!name) return toast('Enter the customer name.'); const now=new Date().toISOString(); const mode=val('#f_lmode')||null;
+    const lead={id:uid(),name,phone:val('#f_phone'),status:'enquired',mode,bank:'',loanStatus:mode==='loan'?'applied':null,offer:Number(val('#f_loffer'))||null,expectedBy:'',note:'',createdAt:now,lastContact:now,source:'walk-in'};
+    write(c.id,{stage:'customer',leads:[...leadsOf(c),lead],customer:c.customer?.name?c.customer:{name,phone:lead.phone}},`${name} enquired and came to check`); },
+  leadAddOpen(){ addingLead=true; renderPanel(); }, leadAddCancel(){ addingLead=false; renderPanel(); },
+  leadAdd(c){ const name=val('#nl_name'); if(!name) return toast('Enter the customer name.'); const now=new Date().toISOString(); const mode=val('#nl_mode')||null;
+    const lead={id:uid(),name,phone:val('#nl_phone'),status:'enquired',mode,bank:'',loanStatus:mode==='loan'?'applied':null,offer:Number(val('#nl_offer'))||null,expectedBy:'',note:val('#nl_note'),createdAt:now,lastContact:now,source:'walk-in'};
+    addingLead=false; const patch={leads:[...leadsOf(c),lead]}; if(c.stage==='listed'){ patch.stage='customer'; patch.customer={name,phone:lead.phone}; }
+    write(c.id,patch,`${name} is interested in the car`); },
+  relistAll(c){ const leads=leadsOf(c).map(l=>l.status==='won'||l.status==='lost'?l:{...l,status:'lost',lostReason:l.lostReason||'Did not proceed'}); write(c.id,{stage:'listed',customer:{},payment:{},leads},'No buyer from current enquiries. Back to listed'); },
   payment(c){ const mode=val('#f_mode'),amount=Number(val('#f_amount')),bank=val('#f_bank'); if(!amount) return toast('Enter the agreed price.'); if(mode==='loan'&&!bank) return toast('Enter the bank name.');
     write(c.id,{stage:'payment',payment:{mode,amount,bank,loanStatus:mode==='loan'?'applied':null}},mode==='loan'?`Deal agreed at ${money(amount)}, loan applied with ${bank}`:`Deal agreed at ${money(amount)}, cash payment pending`); },
-  walk(c){ const reason=val('#f_reason'); write(c.id,{stage:'listed',customer:{},payment:{},attempts:[...(c.attempts||[]),{customer:c.customer?.name,mode:'visit',reason,date:today()}]},`${c.customer?.name||'Customer'} walked away${reason?': '+reason:''}. Back to listed`); },
-  loanApproved(c){ write(c.id,{payment:{...c.payment,loanStatus:'approved'}},`${c.payment.bank||'Bank'} approved the loan, waiting for amount`); },
-  sold(c){ const price=Number(val('#f_recv')); if(!price) return toast('Enter the amount received.'); write(c.id,{stage:'sold',sale:{price,date:val('#f_recvdate')||today()},payment:{...c.payment,loanStatus:c.payment?.mode==='loan'?'approved':null},rc:{status:'pending'}},`Sold to ${c.customer?.name||'customer'} for ${money(price)}${c.payment?.mode==='loan'?' (loan credited)':' (cash)'}`); },
-  fail(c){ const reason=val('#f_reason'); write(c.id,{stage:'listed',customer:{},payment:{},attempts:[...(c.attempts||[]),{customer:c.customer?.name,mode:c.payment?.mode,reason,date:today()}]},`Deal with ${c.customer?.name||'customer'} failed${reason?': '+reason:''}. Back to listed`); },
+  walk(c){ actions.relistAll(c); },
+  loanApproved(c){ const now=new Date().toISOString(); write(c.id,{payment:{...c.payment,loanStatus:'approved'},leads:leadsOf(c).map(l=>l.status==='payment'?{...l,loanStatus:'approved',lastContact:now}:l)},`${c.payment.bank||'Bank'} approved the loan, waiting for amount`); },
+  sold(c){ const price=Number(val('#f_recv')); if(!price) return toast('Enter the amount received.'); const leads=leadsOf(c).map(l=>l.status==='payment'?{...l,status:'won',offer:price}:(l.status==='won'||l.status==='lost')?l:{...l,status:'lost',lostReason:'Car sold to another customer'}); write(c.id,{stage:'sold',leads,sale:{price,date:val('#f_recvdate')||today()},payment:{...c.payment,loanStatus:c.payment?.mode==='loan'?'approved':null},rc:{status:'pending'}},`Sold to ${c.customer?.name||'customer'} for ${money(price)}${c.payment?.mode==='loan'?' (loan credited)':' (cash)'}`); },
+  fail(c){ const reason=val('#f_reason'); const leads=leadsOf(c).map(l=>l.status==='payment'?{...l,status:'lost',lostReason:reason||'Deal failed',loanStatus:l.mode==='loan'&&/reject/i.test(reason)?'rejected':l.loanStatus}:l);
+    const others=leads.filter(l=>l.status!=='won'&&l.status!=='lost'); const next=others.length?'customer':'listed'; const nb=others[0];
+    write(c.id,{stage:next,leads,customer:nb?{name:nb.name,phone:nb.phone||''}:{},payment:{},attempts:[...(c.attempts||[]),{customer:c.customer?.name,mode:c.payment?.mode,reason,date:today()}]},`Deal with ${c.customer?.name||'customer'} failed${reason?': '+reason:''}. ${others.length?others.length+' other customer'+(others.length>1?'s':'')+' still interested':'Back to listed'}`); },
+  // per-lead actions
+  leadEdit(c,id){ editLead=editLead===id?null:id; renderPanel(); },
+  leadSave(c,id){ const now=new Date().toISOString(); const mode=val('#le_mode')||null; const leads=leadsOf(c).map(l=>l.id!==id?l:{...l,status:val('#le_status')||l.status,mode,bank:val('#le_bank'),loanStatus:mode==='loan'?(val('#le_loan')||'applied'):null,offer:Number(val('#le_offer'))||null,expectedBy:val('#le_by'),phone:val('#le_phone'),note:val('#le_note'),lastContact:now});
+    const l=leads.find(x=>x.id===id); editLead=null; write(c.id,{leads},`Updated ${l.name}: ${LEAD_STATUS[l.status]}${l.mode?' · '+(l.mode==='loan'?'loan '+(l.loanStatus||'applied')+(l.bank?' with '+l.bank:''):'cash'):''}${l.expectedBy?' · pays by '+fmtDate(l.expectedBy):''}`); },
+  leadLost(c,id){ const leads=leadsOf(c).map(l=>l.id!==id?l:{...l,status:'lost',lostReason:'Walked away'}); const l=leadsOf(c).find(x=>x.id===id); const others=leads.filter(x=>x.status!=='won'&&x.status!=='lost');
+    const patch={leads}; if(c.stage==='customer'){ if(!others.length){ patch.stage='listed'; patch.customer={}; } else if(c.customer?.name===l.name){ patch.customer={name:others[0].name,phone:others[0].phone||''}; } }
+    write(c.id,patch,`${l.name} walked away${!others.length&&c.stage==='customer'?'. Back to listed':''}`); },
+  leadDeal(c,id){ const l=leadsOf(c).find(x=>x.id===id); if(!l) return; if(!l.mode){ editLead=id; renderPanel(); return toast('Set how '+l.name+' is paying first, then Save.'); } const amount=l.offer||+c.listing?.price||0; if(!amount){ editLead=id; renderPanel(); return toast('Enter the agreed price in Offer, then Save.'); }
+    if(l.mode==='loan'&&!l.bank){ editLead=id; renderPanel(); return toast('Enter the bank name, then Save.'); }
+    const now=new Date().toISOString(); const leads=leadsOf(c).map(x=>x.id===id?{...x,status:'payment',lastContact:now}:x.status==='payment'?{...x,status:'negotiating'}:x);
+    write(c.id,{stage:'payment',leads,customer:{name:l.name,phone:l.phone||''},payment:{mode:l.mode,amount,bank:l.bank||'',loanStatus:l.mode==='loan'?(l.loanStatus||'applied'):null}},l.mode==='loan'?`Deal agreed with ${l.name} at ${money(amount)}, loan ${l.loanStatus==='approved'?'already approved':'applied'} with ${l.bank}`:`Deal agreed with ${l.name} at ${money(amount)}, cash payment pending`); },
   rc(c){ const status=val('#f_rc'),label=(RC_STEPS.find(r=>r[0]===status)||RC_STEPS[0])[1],note=val('#f_rcnote'); write(c.id,{stage:status==='done'?'done':'rc',rc:{status,date:val('#f_rcdate')||today(),note}},`RC: ${label}${note?' · '+note:''}`); },
   note(c){ const t=val('#noteIn'); if(!t) return; write(c.id,{},t); },
   addPhotos(){ if(uploading) return; $('#fileIn').value=''; $('#fileIn').click(); },
@@ -963,8 +1077,10 @@ async function apptAction(kind,id){
     if(kind==='cancel'){ await db.collection('appointments').doc(id).update({status:'cancelled',updatedAt:new Date().toISOString()}); toast('Appointment cancelled'); return; }
     if(kind==='convert'){ const car=cars.find(c=>c.id===a.carId); if(!car) return toast('Car not found');
       await db.collection('appointments').doc(id).update({status:'converted',updatedAt:new Date().toISOString()});
-      if(car.stage==='listed'){ await write(car.id,{stage:'customer',customer:{name:a.name,phone:a.phone||''}},`${a.name} visited (from appointment) and checked the car`); }
-      else { await write(car.id,{},`${a.name} visited as per appointment`); }
+      const now=new Date().toISOString(); const existing=leadsOf(car).find(l=>l.name.toLowerCase()===a.name.toLowerCase()&&l.status!=='lost'&&l.status!=='won');
+      const leads=existing?leadsOf(car).map(l=>l===existing?{...l,lastContact:now}:l):[...leadsOf(car),{id:uid(),name:a.name,phone:a.phone||'',status:'enquired',mode:null,bank:'',loanStatus:null,offer:null,expectedBy:'',note:a.note||'',createdAt:now,lastContact:now,source:'appointment'}];
+      const patch={leads}; if(car.stage==='listed'){ patch.stage='customer'; patch.customer={name:a.name,phone:a.phone||''}; }
+      await write(car.id,patch,`${a.name} visited (from appointment) and checked the car`);
       selectCar(car.id); toast('Moved to Customer Enquiry'); }
   }catch(e){ handleErr(e); }
 }
@@ -1043,7 +1159,7 @@ document.addEventListener('click',e=>{
     if(sm.dataset.slb!==undefined){ selId=storeSel; lbIdx=Number(sm.dataset.slb); renderLightbox(); return; }
     if(sm.dataset.appt){ apptAction(sm.dataset.appt,sm.dataset.id); return; }
   }
-  const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-act]'); if(!t) return;
+  const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-lact],[data-act]'); if(!t) return;
   const c=sel();
   if(t.dataset.view){ view=t.dataset.view; filter='all'; closeOverlay(); window.scrollTo(0,0); renderNav(); renderView(); return; }
   if(t.dataset.f!==undefined){ filter=(filter===t.dataset.f&&t.classList.contains('pstage'))?'all':t.dataset.f; renderView(); return; }
@@ -1055,6 +1171,7 @@ document.addEventListener('click',e=>{
   if(t.hasAttribute('data-lbclose')){ lbIdx=-1; renderLightbox(); return; }
   if(t.dataset.lbn){ const n=photos(c).length; lbIdx=(lbIdx+Number(t.dataset.lbn)+n)%n; renderLightbox(); return; }
   if(t.dataset.lb!==undefined){ lbIdx=Number(t.dataset.lb); renderLightbox(); return; }
+  if(t.dataset.lact){ const fn=actions['lead'+t.dataset.lact[0].toUpperCase()+t.dataset.lact.slice(1)]; if(fn&&c) fn(c,t.dataset.lead); return; }
   if(t.hasAttribute('data-close')){ closeOverlay(); return; }
   if(t.hasAttribute('data-stop')) return;
   if(t.dataset.act==='copyReq'){ const txt=$('#copyTxt')?.textContent||''; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(()=>toast('Message copied'),()=>toast('Select the text and copy it')); else toast('Select the text and copy it'); return; }
