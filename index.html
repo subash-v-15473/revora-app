@@ -1079,9 +1079,13 @@ renderMe();
     async delete(id){ if(String(id).startsWith('fs:')){ await db.collection('photos').doc(String(id).slice(3)).delete(); delete photoCache[id]; } return {deleted:true}; }
   };
   user={ async id(){ const u=firebase.auth().currentUser; return u?u.uid:null; }, async profiles(ids){ const o={}; ids.forEach(i=>o[i]={name:'Admin'}); return o; } };
+  let apptUnsub=null;
   firebase.auth().onAuthStateChanged(u=>{
     const isAdmin=!!(u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL);
     canWrite=isAdmin; myId=u?u.uid:null; me={name:isAdmin?'Admin':'',avatar:'',email:u?u.email||'':''}; renderMe();
+    // appointments are readable only by the admin, so subscribe after sign-in and drop it on sign-out
+    if(isAdmin&&!apptUnsub){ apptUnsub=db.collection('appointments').onSnapshot(snap=>{ appts=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); if(mode==='admin') renderAll(); },err=>{ console.error(err); apptUnsub=null; }); }
+    if(!isAdmin&&apptUnsub){ apptUnsub(); apptUnsub=null; appts=[]; }
     if(!authReady){ authReady=true; mode=isAdmin?'admin':'store'; if(isAdmin){ document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); } renderMode(); }
     else if(!isAdmin&&mode==='admin'){ mode='store'; renderMode(); }
   });
@@ -1091,7 +1095,6 @@ renderMe();
     if(!snap.metadata.fromCache){ clearTimeout(timer); setLive('on','Live'); }
     if(mode==='admin') renderAll(); else if(mode==='store') renderStore();
   },err=>{ clearTimeout(timer); loaded=true; setLive('err','Connection lost'); if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); console.error(err); });
-  db.collection('appointments').onSnapshot(snap=>{ appts=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); if(mode==='admin') renderAll(); },err=>{ /* customers may not be allowed to read appointments */ if(mode==='admin') console.error(err); });
 })();
 })();
 </script>
