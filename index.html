@@ -91,9 +91,20 @@ svg{display:block}
   .side::-webkit-scrollbar{display:none}
   .brand,.promo,.me,.side .spacer{display:none}
   .nav{flex-direction:row;gap:2px;width:100%;justify-content:space-between}
-  .nav button{flex-direction:column;gap:4px;padding:8px 6px;font-size:10.5px;border-radius:10px;flex:1 0 auto;min-width:64px;align-items:center}
-  .nav .n{display:none}
+  .nav button{flex-direction:column;gap:4px;padding:8px 4px;font-size:10.5px;border-radius:10px;flex:1 1 0;width:auto;min-width:0;align-items:center;position:relative}
+  .nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .nav button:hover{transform:none}
+  .nav button.sec{display:none}
+  .nav .more{display:flex}
+  .nav .n{display:block;position:absolute;top:4px;right:calc(50% - 22px);margin:0;min-width:16px;height:16px;line-height:16px;padding:0 4px;font-size:9.5px;background:var(--red);color:#fff}
+  .nav button.on .n{background:#fff;color:var(--blue)}
 }
+.nav .more{display:none}
+.moremenu{display:flex;flex-direction:column;gap:4px}
+.moremenu button{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:12px;font-weight:600;font-size:15px;color:var(--fg-2);width:100%}
+.moremenu button:hover,.moremenu button.on{background:var(--blue-soft);color:var(--blue)}
+.moremenu button svg{width:20px;height:20px}
+.moremenu button.out{color:var(--red)}
 
 /* main */
 .main{min-width:0;padding:18px 24px 120px;display:flex;flex-direction:column;gap:22px;padding-right:max(24px,env(safe-area-inset-right,0px))}
@@ -608,7 +619,9 @@ const pendings=()=>[...appts.filter(a=>a.status==='new'||a.status==='confirmed')
 function setLive(kind,text){ const el=$('#live'); el.className='live '+kind; $('#liveText').textContent=text; }
 function renderNav(){
   const counts={inventory:cars.filter(c=>c.stage!=='done').length,appointments:appts.filter(a=>a.status==='new').length,payments:cars.filter(c=>c.stage==='payment').length,rc:cars.filter(c=>c.stage==='sold'||c.stage==='rc').length};
-  $('#nav').innerHTML=VIEWS.map(([id,l,ic])=>`<button class="${view===id?'on':''}" data-view="${id}">${I(P[ic])}<span>${l}</span>${counts[id]?'<span class="n">'+counts[id]+'</span>':''}</button>`).join('');
+  const SEC=['customers','rc','reports','settings'];
+  $('#nav').innerHTML=VIEWS.map(([id,l,ic])=>`<button class="${view===id?'on':''} ${SEC.includes(id)?'sec':''}" data-view="${id}">${I(P[ic])}<span>${l}</span>${counts[id]?'<span class="n">'+counts[id]+'</span>':''}</button>`).join('')
+    +`<button class="more ${SEC.includes(view)?'on':''}" data-act="moreMenu">${I('<circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>',2.4)}<span>More</span>${counts.rc?'<span class="n">'+counts.rc+'</span>':''}</button>`;
   const n=pendings().length; $('#bellN').hidden=!n; $('#bellN').textContent=n;
 }
 function renderMe(){ const nm=me.name||'Admin'; const av=me.avatar?`<img src="${esc(me.avatar)}" alt="">`:esc(initials(nm)); $('#meAv').innerHTML=av; $('#topAv').innerHTML=av; $('#meName').textContent=nm; }
@@ -928,7 +941,11 @@ const actions={
   cancelConfirm(){ confirmKey=null; renderPanel(); },
   deleteAsk(){ confirmKey='delete'; renderPanel(); },
   async deleteYes(c){ if(!db) return; const ph=photos(c); try{ await db.collection('cars').doc(c.id).delete(); unselect(); toast('Car record deleted'); if(assets){ for(const id of ph){ try{ await assets.delete(id);}catch(_){} } } }catch(e){ handleErr(e); } },
-  signOut(){ firebase.auth().signOut().catch(()=>{}); mode='store'; selId=null; sheetOpen=false; renderMode(); },
+  signOut(){ closeOverlay(); firebase.auth().signOut().catch(()=>{}); mode='store'; selId=null; sheetOpen=false; renderMode(); },
+  moreMenu(){ const items=VIEWS.filter(([id])=>['customers','rc','reports','settings'].includes(id)); const ov=$('#overlay'); ov.hidden=false;
+    ov.innerHTML=`<div class="scrim" data-close><div class="modal" role="dialog" aria-label="More" data-stop style="gap:10px"><div style="display:flex;justify-content:space-between;align-items:center"><h2>More</h2><button class="iconbtn" data-close aria-label="Close">${I(P.x,2.4)}</button></div>
+      <div class="moremenu">${items.map(([id,l,ic])=>`<button class="${view===id?'on':''}" data-view="${id}">${I(P[ic])}${l}${id==='rc'&&cars.filter(c=>c.stage==='sold'||c.stage==='rc').length?'<span class="cnt" style="margin-left:auto">'+cars.filter(c=>c.stage==='sold'||c.stage==='rc').length+'</span>':''}</button>`).join('')}
+      <button class="out" data-act="signOut">${I('<path d="M10 17l5-5-5-5M15 12H3M12 3h7a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-7"/>')}Sign out</button></div></div></div>`; },
   copyReg(c){ const t=c.reg||''; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>toast('Reg number copied'),()=>toast(t)); else toast(t); },
 };
 
@@ -1021,7 +1038,7 @@ document.addEventListener('click',e=>{
   }
   const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-act]'); if(!t) return;
   const c=sel();
-  if(t.dataset.view){ view=t.dataset.view; filter='all'; window.scrollTo(0,0); renderNav(); renderView(); return; }
+  if(t.dataset.view){ view=t.dataset.view; filter='all'; closeOverlay(); window.scrollTo(0,0); renderNav(); renderView(); return; }
   if(t.dataset.f!==undefined){ filter=(filter===t.dataset.f&&t.classList.contains('pstage'))?'all':t.dataset.f; renderView(); return; }
   if(t.dataset.sel){ selectCar(t.dataset.sel); return; }
   if(t.hasAttribute('data-unsel')){ if(narrow()){ sheetOpen=false; renderPanel(); } else unselect(); return; }
