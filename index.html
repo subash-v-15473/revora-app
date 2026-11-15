@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Revora used car business: browse cars for sale and book a visit. Admin dashboard for purchase, listing, payment, sale and RC transfer tracking.">
+<title>Revora</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232563eb'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 16h-.5a1 1 0 0 1-1-1v-3l1.8-4.1A1.5 1.5 0 0 1 7.7 7h8.6a1.5 1.5 0 0 1 1.4.9L19.5 12v3a1 1 0 0 1-1 1H18'/%3E%3Ccircle cx='8' cy='16' r='1.6'/%3E%3Ccircle cx='16' cy='16' r='1.6'/%3E%3Cpath d='M9.6 16h4.8M4.5 12h15'/%3E%3C/g%3E%3C/svg%3E">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="firebase-config.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+html,body{margin:0}
+/* Layout: dark sidebar (nav) | main column (greeting, KPI cards, pipeline strip, cars table, widgets row) | right panel (selected car). Sidebar becomes a bottom nav and the right panel a full-screen sheet on phones. */
+:root{
+  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#f6f8fb; --surface-3:#eef1f6; --line:#e5e9f0; --line-strong:#cfd6e0;
+  --fg:#0f172a; --fg-2:#334155; --muted:#64748b; --faint:#94a3b8;
+  --side:#ffffff; --side-2:#eef3ff; --side-fg:#0f172a; --side-muted:#5b6b85; --side-line:#e5e9f0;
+  --blue:#2563eb; --blue-soft:#e3ecfd; --green:#16a34a; --green-soft:#dcf5e5; --orange:#f97316; --orange-soft:#ffecd9; --purple:#7c3aed; --purple-soft:#ece4fd; --red:#dc2626; --red-soft:#fde3e3; --teal:#0d9488; --teal-soft:#d9f3ef; --amber:#d97706; --amber-soft:#fdf0d5;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.05),0 1px 6px rgba(15,23,42,.04); --shadow:0 10px 30px rgba(15,23,42,.12); --shadow-lg:0 24px 60px rgba(0,0,0,.45);
+  --r:14px; --r-sm:10px; --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0b1020; --surface:#121a2e; --surface-2:#172038; --surface-3:#1d2742; --line:#222c47; --line-strong:#34405f;
+  --fg:#eef2fa; --fg-2:#c7d0e3; --muted:#8e9ab8; --faint:#5c688a;
+  --side:#121a2e; --side-2:#1b2542; --side-fg:#eef2fa; --side-muted:#8e9ab8; --side-line:#222c47;
+  --blue:#5b8cff; --blue-soft:#172a55; --green:#3ad17a; --green-soft:#0f3322; --orange:#ff954d; --orange-soft:#3d2410; --purple:#a98bff; --purple-soft:#2a1f4d; --red:#ff6b6b; --red-soft:#3f1a1a; --teal:#2fc4b4; --teal-soft:#0f3331; --amber:#f5b041; --amber-soft:#3a2a10;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow:0 10px 30px rgba(0,0,0,.5); --shadow-lg:0 24px 60px rgba(0,0,0,.8);
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0b1020; --surface:#121a2e; --surface-2:#172038; --surface-3:#1d2742; --line:#222c47; --line-strong:#34405f;
+  --fg:#eef2fa; --fg-2:#c7d0e3; --muted:#8e9ab8; --faint:#5c688a;
+  --side:#121a2e; --side-2:#1b2542; --side-fg:#eef2fa; --side-muted:#8e9ab8; --side-line:#222c47;
+  --blue:#5b8cff; --blue-soft:#172a55; --green:#3ad17a; --green-soft:#0f3322; --orange:#ff954d; --orange-soft:#3d2410; --purple:#a98bff; --purple-soft:#2a1f4d; --red:#ff6b6b; --red-soft:#3f1a1a; --teal:#2fc4b4; --teal-soft:#0f3331; --amber:#f5b041; --amber-soft:#3a2a10;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow:0 10px 30px rgba(0,0,0,.5); --shadow-lg:0 24px 60px rgba(0,0,0,.8);
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--side)}
+h1,h2,h3{margin:0;line-height:1.25;text-wrap:balance;letter-spacing:-.01em}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+img{max-width:100%;display:block}
+svg{display:block}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+[hidden]{display:none!important}
+
+/* ---- app shell ---- */
+.app{display:grid;grid-template-columns:210px minmax(0,1fr) 300px;min-height:100%}
+@media (max-width:1180px){ .app{grid-template-columns:210px minmax(0,1fr)} #panelCol{display:none} }
+@media (max-width:760px){ .app{grid-template-columns:1fr} }
+
+/* sidebar */
+.side{background:var(--side);color:var(--side-fg);border-right:1px solid var(--side-line);display:flex;flex-direction:column;padding:18px 14px calc(18px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));position:sticky;top:0;height:100vh;height:100dvh;gap:6px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
+.brand .mark{width:40px;height:40px;border-radius:12px;background:var(--blue);display:grid;place-items:center;color:#fff;flex:none}
+.brand .mark svg{width:24px;height:24px}
+.brand b{font-size:17px;font-weight:800;display:block;line-height:1.1}
+.brand small{font-size:11.5px;color:var(--side-muted)}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;color:var(--side-muted);font-weight:600;font-size:14px;width:100%;transition:background .18s,color .18s,transform .18s}
+.nav button:hover{transform:translateX(3px)}
+.nav button:active{transform:translateX(3px) scale(.98)}
+.nav button svg{width:18px;height:18px;flex:none}
+.nav button:hover{background:var(--side-2);color:var(--side-fg)}
+.nav button.on{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}
+.nav .n{margin-left:auto;font-size:11px;background:var(--side-2);color:var(--blue);border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
+.nav button.on .n{background:rgba(255,255,255,.25)}
+.side .spacer{flex:1}
+.promo{background:linear-gradient(135deg,var(--side-2),var(--green-soft));border-radius:14px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
+.promo .em{font-size:26px}
+.promo b{font-size:14px}
+.promo small{font-size:12px;color:var(--side-muted)}
+.me{display:flex;align-items:center;gap:10px;padding:14px 8px 0;border-top:1px solid var(--side-line);margin-top:12px}
+.me .iconbtn{color:var(--side-muted)}
+.me .iconbtn:hover{color:var(--red);background:var(--red-soft)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--blue-soft);color:var(--blue);font-weight:800;font-size:13px;display:grid;place-items:center;flex:none;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.me b{display:block;font-size:14px}
+.me small{font-size:12px;color:var(--side-muted)}
+@media (max-width:760px){
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;flex-direction:row;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));z-index:40;border-top:1px solid var(--side-line);border-right:0;box-shadow:0 -4px 16px rgba(15,23,42,.06);gap:0;overflow-x:auto;scrollbar-width:none}
+  .side::-webkit-scrollbar{display:none}
+  .brand,.promo,.me,.side .spacer{display:none}
+  .nav{flex-direction:row;gap:2px;width:100%;justify-content:space-between}
+  .nav button{flex-direction:column;gap:4px;padding:8px 6px;font-size:10.5px;border-radius:10px;flex:1 0 auto;min-width:64px;align-items:center}
+  .nav .n{display:none}
+}
+
+/* main */
+.main{min-width:0;padding:18px 24px 120px;display:flex;flex-direction:column;gap:22px;padding-right:max(24px,env(safe-area-inset-right,0px))}
+#view{display:flex;flex-direction:column;gap:22px}
+/* motion */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+body.boot .topbar,body.boot #view>*{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+body.boot #view>*:nth-child(1){animation-delay:.05s} body.boot #view>*:nth-child(2){animation-delay:.12s} body.boot #view>*:nth-child(3){animation-delay:.19s} body.boot #view>*:nth-child(4){animation-delay:.26s} body.boot #view>*:nth-child(5){animation-delay:.33s}
+body.boot .kpi{animation:pop .45s cubic-bezier(.2,.8,.2,1) both} body.boot .kpi:nth-child(2){animation-delay:.08s} body.boot .kpi:nth-child(3){animation-delay:.16s} body.boot .kpi:nth-child(4){animation-delay:.24s}
+body.boot .nav button{animation:rise .4s both} body.boot .nav button:nth-child(2){animation-delay:.04s} body.boot .nav button:nth-child(3){animation-delay:.08s} body.boot .nav button:nth-child(4){animation-delay:.12s} body.boot .nav button:nth-child(5){animation-delay:.16s} body.boot .nav button:nth-child(6){animation-delay:.2s} body.boot .nav button:nth-child(7){animation-delay:.24s}
+body.boot .pstage{animation:pop .4s both} body.boot .pstage:nth-of-type(2){animation-delay:.06s} body.boot .pstage:nth-of-type(3){animation-delay:.12s} body.boot .pstage:nth-of-type(4){animation-delay:.18s} body.boot .pstage:nth-of-type(5){animation-delay:.24s} body.boot .pstage:nth-of-type(6){animation-delay:.3s} body.boot .pstage:nth-of-type(7){animation-delay:.36s}
+.row{animation:rise .3s cubic-bezier(.2,.8,.2,1) both} .row:nth-child(2){animation-delay:.04s} .row:nth-child(3){animation-delay:.08s} .row:nth-child(4){animation-delay:.12s} .row:nth-child(5){animation-delay:.16s} .row:nth-child(n+6){animation-delay:.2s}
+.pbody,.pempty{animation:rise .3s cubic-bezier(.2,.8,.2,1) both}
+.panel .ph img{animation:pop .35s both}
+.chart path[stroke]{stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1.4s .3s ease-out forwards}
+.toast{animation:rise .25s both}
+.modal{animation:pop .25s cubic-bezier(.2,.8,.2,1) both}
+.sheetwrap .panel{animation:slideIn .3s cubic-bezier(.2,.8,.2,1) both}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:760px){ .main{padding:12px max(14px,env(safe-area-inset-right,0px)) 110px max(14px,env(safe-area-inset-left,0px));gap:16px} #view{gap:16px} }
+.topbar{display:flex;align-items:center;gap:12px}
+.search{flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 14px;height:46px;box-shadow:var(--shadow-sm);min-width:0}
+.search svg{width:18px;height:18px;color:var(--muted);flex:none}
+.search input{border:0;background:transparent;padding:0;height:100%;box-shadow:none}
+.search input:focus{box-shadow:none}
+.live{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 14px;height:40px;font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);white-space:nowrap}
+.live .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.live.on .dot{background:var(--green);box-shadow:0 0 0 3px var(--green-soft);animation:livep 2s infinite}
+@keyframes livep{0%,100%{box-shadow:0 0 0 3px var(--green-soft)}50%{box-shadow:0 0 0 6px var(--green-soft)}}
+.live.err .dot{background:var(--red)}
+.bell{position:relative;width:42px;height:42px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;box-shadow:var(--shadow-sm);color:var(--fg-2);flex:none;transition:transform .2s,box-shadow .2s}
+.bell:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.bell:hover svg{animation:swing .6s ease-in-out}
+@keyframes swing{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
+.bell svg{width:19px;height:19px}
+.bell .b{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10.5px;font-weight:700;border-radius:999px;min-width:18px;height:18px;display:grid;place-items:center;padding:0 5px}
+.topbar .avatar{width:42px;height:42px}
+@media (max-width:760px){ .topbar .avatar{display:none} .live span.t{display:none} .live{padding:0 12px} #topOut{display:grid!important} }
+.brandm{display:none;align-items:center;gap:8px;font-weight:800;font-size:16px}
+.brandm .mark{width:34px;height:34px;border-radius:10px;background:var(--blue);display:grid;place-items:center;color:#fff}
+.brandm .mark svg{width:20px;height:20px}
+@media (max-width:760px){ .brandm{display:flex} }
+
+.greet{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.greet h1{font-size:26px;font-weight:800}
+.greet p{margin:2px 0 0;color:var(--muted);font-size:14.5px}
+@media (max-width:760px){ .greet h1{font-size:21px} }
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);border-radius:10px;padding:10px 14px;font-weight:600;font-size:13.5px;white-space:nowrap;box-shadow:var(--shadow-sm);transition:background .18s,transform .15s,box-shadow .18s,filter .18s}
+.btn:hover{background:var(--surface-2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,23,42,.10)}
+.btn:active{transform:translateY(0) scale(.97);box-shadow:none}
+.btn svg{transition:transform .2s}
+.btn:hover svg:last-child{transform:translateX(2px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ok{background:var(--green);border-color:var(--green);color:#fff}
+.btn.bad{background:var(--red-soft);border-color:transparent;color:var(--red);box-shadow:none}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted);box-shadow:none}
+.btn.ghost:hover{background:var(--surface-3);color:var(--fg)}
+.btn.sm{padding:7px 11px;font-size:12.5px;border-radius:8px}
+.btn.link{border:0;background:none;box-shadow:none;color:var(--blue);padding:0;font-weight:600}
+.btn svg{width:16px;height:16px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+@media (max-width:1000px){ .kpis{grid-template-columns:repeat(2,1fr)!important} }
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow-sm);min-width:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s,border-color .22s}
+.kpi:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:var(--blue-soft)}
+.kpi .ic{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;flex:none;transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.kpi:hover .ic{transform:scale(1.1) rotate(-4deg)}
+.kpi .ic svg{width:24px;height:24px}
+.kpi .ic.blue{background:var(--blue-soft);color:var(--blue)} .kpi .ic.green{background:var(--green-soft);color:var(--green)} .kpi .ic.orange{background:var(--orange-soft);color:var(--orange)} .kpi .ic.purple{background:var(--purple-soft);color:var(--purple)}
+.kpi .v{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.delta{font-size:11.5px;font-weight:700;color:var(--green);display:inline-flex;align-items:center;gap:2px}
+.delta.neg{color:var(--red)}
+@media (max-width:760px){ .kpi{padding:12px 14px;gap:10px} .kpi .ic{width:42px;height:42px;border-radius:12px} .kpi .v{font-size:18px} }
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);min-width:0;transition:box-shadow .25s,transform .25s}
+.card:hover{box-shadow:0 6px 24px rgba(15,23,42,.08)}
+.card .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:18px 20px 0;flex-wrap:wrap}
+.card .hd h2{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card .bd{padding:16px 20px 20px}
+
+/* pipeline */
+.pipe{display:flex;align-items:flex-start;gap:4px;overflow-x:auto;padding:14px 18px 20px;scrollbar-width:none}
+.pipe::-webkit-scrollbar{display:none}
+.pstage{flex:1 0 96px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;min-width:0;padding:8px 4px;border-radius:12px;transition:background .18s,transform .18s}
+.pstage:hover{background:var(--surface-2);transform:translateY(-2px)}
+.pstage.on{background:var(--surface-3)}
+.pstage .ic{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.pstage:hover .ic{transform:scale(1.15);box-shadow:0 6px 14px rgba(15,23,42,.12)}
+.pstage.on .ic{box-shadow:0 0 0 4px var(--surface),0 0 0 6px currentColor}
+.pstage .ic svg{width:20px;height:20px}
+.pstage b{font-size:13px;font-weight:700;color:var(--fg-2);line-height:1.2}
+.pstage small{font-size:12px;color:var(--muted)}
+.parrow{flex:0 0 28px;align-self:flex-start;margin-top:14px;color:var(--faint)}
+.parrow svg{width:28px;height:28px}
+.c-blue{background:var(--blue-soft);color:var(--blue)} .c-green{background:var(--green-soft);color:var(--green)} .c-orange{background:var(--orange-soft);color:var(--orange)} .c-purple{background:var(--purple-soft);color:var(--purple)} .c-teal{background:var(--teal-soft);color:var(--teal)} .c-red{background:var(--red-soft);color:var(--red)} .c-amber{background:var(--amber-soft);color:var(--amber)} .c-gray{background:var(--surface-3);color:var(--muted)}
+
+/* chips */
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 18px 4px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--fg-2);white-space:nowrap;transition:background .18s,color .18s,transform .15s,border-color .18s}
+.chip:hover{transform:translateY(-1px);border-color:var(--line-strong)}
+.chip:active{transform:scale(.96)}
+.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* car rows */
+.rows{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:92px minmax(160px,1.4fr) minmax(120px,1fr) minmax(220px,1.3fr) auto;gap:16px;align-items:center;padding:14px 20px;border-top:1px solid var(--line);cursor:pointer;transition:background .18s,box-shadow .18s;position:relative}
+.row::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--blue);transform:scaleY(0);transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+.row:hover{background:var(--surface-2)}
+.row:hover::before,.row.sel::before{transform:scaleY(1)}
+.row.sel{background:var(--blue-soft)}
+.row:hover .act .btn{background:var(--blue);color:#fff;border-color:var(--blue)}
+.thumb{width:92px;height:66px;border-radius:10px;overflow:hidden;background:var(--surface-3);display:grid;place-items:center;color:var(--faint)}
+.thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.row:hover .thumb img{transform:scale(1.08)}
+.thumb svg{width:30px;height:30px}
+.row .t{min-width:0}
+.row .t b{display:block;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .t .reg{font-size:12.5px;color:var(--fg-2);font-weight:500;margin-top:1px}
+.row .t .pr{font-size:12.5px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;border-radius:8px;padding:4px 10px;font-size:12.5px;font-weight:700;white-space:nowrap;background:var(--surface-3);color:var(--muted);transition:transform .18s}
+.row:hover .pill{transform:translateX(2px)}
+.pill.listed{background:var(--green-soft);color:var(--green)} .pill.customer{background:var(--purple-soft);color:var(--purple)} .pill.payment{background:var(--orange-soft);color:var(--orange)} .pill.sold{background:var(--blue-soft);color:var(--blue)} .pill.rc{background:var(--teal-soft);color:var(--teal)} .pill.done{background:var(--green-soft);color:var(--green)} .pill.purchased{background:var(--surface-3);color:var(--fg-2)} .pill.fail{background:var(--red-soft);color:var(--red)}
+.row .sub{font-size:12px;color:var(--muted);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini{display:flex;align-items:flex-start;min-width:0}
+.mini .s{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--muted);flex:1;min-width:0;position:relative}
+.mini .s span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mini .d{width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);display:grid;place-items:center;position:relative;z-index:1;transition:transform .2s,box-shadow .2s}
+.mini .s.now .d{box-shadow:0 0 0 0 rgba(37,99,235,.4);animation:ring 1.8s infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(37,99,235,.35)}70%{box-shadow:0 0 0 7px rgba(37,99,235,0)}100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}}
+.row:hover .mini .d{transform:scale(1.12)}
+.mini .d svg{width:10px;height:10px}
+.mini .s.done .d{background:var(--green);border-color:var(--green);color:#fff}
+.mini .s.now .d{background:var(--blue);border-color:var(--blue);color:#fff}
+.mini .s.done,.mini .s.now{color:var(--fg-2);font-weight:600}
+.mini .s:not(:last-child)::after{content:"";position:absolute;top:8px;left:50%;width:100%;height:2px;background:var(--line-strong)}
+.mini .s.done:not(:last-child)::after{background:var(--green)}
+.row .act{display:flex;align-items:center;gap:6px}
+@media (max-width:1000px){ .row{grid-template-columns:72px minmax(0,1fr) auto} .row .mini,.row .act{display:none} .thumb{width:72px;height:54px} }
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.empty h3{color:var(--fg);font-size:16px;margin-bottom:4px}
+
+/* widgets row */
+.widgets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+@media (max-width:1000px){ .widgets{grid-template-columns:1fr!important} }
+.feed{display:flex;flex-direction:column;gap:12px}
+.feed .f{display:flex;gap:10px;align-items:flex-start}
+.feed .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:800;flex:none}
+.feed b{display:block;font-size:13px;font-weight:600;line-height:1.3}
+.feed small{color:var(--muted);font-size:12px}
+.chart{position:relative}
+.chart svg{width:100%;height:auto;overflow:visible}
+.tip{position:absolute;background:var(--fg);color:var(--bg);font-size:12px;font-weight:600;padding:5px 8px;border-radius:6px;pointer-events:none;transform:translate(-50%,-120%);white-space:nowrap}
+.pend{display:flex;flex-direction:column;gap:10px}
+.pend .p{display:flex;gap:10px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:12px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.pend .p:hover{transform:translateX(3px);box-shadow:var(--shadow-sm);border-color:var(--line-strong)}
+.feed .f{transition:transform .2s;border-radius:10px;padding:4px 6px;margin:-4px -6px}
+.feed .f:hover{transform:translateX(3px);background:var(--surface-2)}
+.pend .p .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none}
+.pend .p .ic svg{width:18px;height:18px}
+.pend .p b{display:block;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pend .p small{color:var(--muted);font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pend .p .tx{flex:1;min-width:0}
+.cnt{background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px}
+
+/* ---- right panel ---- */
+.panel{background:var(--surface);border-left:1px solid var(--line);position:sticky;top:0;height:100vh;height:100dvh;overflow:auto;display:flex;flex-direction:column;padding-right:env(safe-area-inset-right,0px)}
+.panel .ph{position:relative;aspect-ratio:16/10;background:var(--surface-3);overflow:hidden;margin:12px;border-radius:12px;flex:none}
+.panel .ph img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.panel .ph .none{position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);text-align:center;font-size:12.5px;padding:10px}
+.panel .ph .none svg{width:40px;height:40px;margin:0 auto 6px}
+.panel .ph .x{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.92);color:#0f172a;display:grid;place-items:center}
+.panel .ph .x svg{width:16px;height:16px}
+.panel .ph .arr{position:absolute;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.9);color:#0f172a;display:grid;place-items:center;opacity:0;transition:opacity .2s,transform .2s}
+.panel .ph:hover .arr{opacity:1}
+.panel .ph .arr:hover{transform:translateY(-50%) scale(1.12)}
+@media (hover:none){ .panel .ph .arr{opacity:1} }
+.panel .ph .arr.l{left:8px}.panel .ph .arr.r{right:8px}
+.panel .ph .arr svg{width:16px;height:16px}
+.panel .ph .idx{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px}
+.phead{padding:4px 16px 0;display:flex;flex-direction:column;gap:6px}
+.phead .tt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.phead h2{font-size:17px;font-weight:800}
+.phead .reg{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--fg-2)}
+.phead .reg button{color:var(--muted);display:grid}
+.phead .reg svg{width:14px;height:14px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 16px;margin-top:8px}
+.tabs button{padding:10px 10px;font-weight:600;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .18s,border-color .18s}
+.tabs button:hover{color:var(--fg)}
+.tabs button.on{color:var(--blue);border-color:var(--blue)}
+.pbody{padding:14px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.prices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.prices .k{font-size:12px;color:var(--muted)} .prices .v{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.prices .v.g{color:var(--green)} .prices .v.r{color:var(--red)}
+.stagebox{background:var(--blue-soft);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.stagebox .it{display:flex;gap:10px;align-items:flex-start}
+.stagebox .it .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--surface);color:var(--blue)}
+.stagebox .it .ic.g{color:var(--green)}
+.stagebox .it .ic svg{width:13px;height:13px}
+.stagebox small{display:block;font-size:11.5px;color:var(--muted)}
+.stagebox b{display:block;font-size:13.5px}
+.stagebox .sub{font-size:12px;color:var(--fg-2)}
+.form{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.form .full{grid-column:1/-1}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600;min-width:0}
+.frow{display:flex;gap:8px;flex-wrap:wrap}
+.frow>.btn{flex:1 1 140px}
+.hint{font-size:12.5px;color:var(--muted)}
+.hint.err{color:var(--red);font-weight:600}
+.box{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,box-shadow .2s}
+.box:hover{border-color:var(--line-strong)}
+.box h3{font-size:14px;font-weight:700}
+.box h3.cap{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+details summary{list-style:none;cursor:pointer;font-weight:600;color:var(--blue);font-size:13px}
+details summary::-webkit-details-marker{display:none}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;font-size:13px}
+.kv .k{font-size:11.5px;color:var(--muted)} .kv .v{font-weight:600;overflow-wrap:anywhere}
+.tl{display:flex;flex-direction:column}
+.tl .e{display:grid;grid-template-columns:22px 1fr;gap:8px;position:relative;padding-bottom:14px}
+.tl .e:last-child{padding-bottom:0}
+.tl .e::before{content:"";position:absolute;left:10px;top:20px;bottom:0;width:2px;background:var(--line)}
+.tl .e:last-child::before{display:none}
+.tl .d{width:20px;height:20px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);display:grid;place-items:center;color:#fff;z-index:1}
+.tl .d svg{width:11px;height:11px}
+.tl .e.g .d{background:var(--green);border-color:var(--green)}
+.tl .e.b .d{border-color:var(--blue)}
+.tl b{display:block;font-size:13px;font-weight:600}
+.tl small{color:var(--muted);font-size:11.5px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pgrid button{aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--surface-3);position:relative;border:2px solid transparent;transition:transform .2s,box-shadow .2s,border-color .2s}
+.pgrid button:hover{transform:scale(1.04);box-shadow:var(--shadow-sm)}
+.pgrid button.on{border-color:var(--blue)}
+.pgrid img{width:100%;height:100%;object-fit:cover}
+.pgrid .add{display:grid;place-items:center;color:var(--muted);font-size:11.5px;font-weight:600;border:2px dashed var(--line-strong)!important;text-align:center}
+.pgrid .add svg{width:18px;height:18px;margin:0 auto 2px}
+.pgrid .cov{position:absolute;left:4px;top:4px;background:var(--blue);color:#fff;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:4px}
+.attempt{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:8px 10px;background:var(--red-soft);color:var(--red);border-radius:8px}
+.ro{background:var(--amber-soft);color:var(--amber);padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600}
+.pempty{padding:40px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px;margin:auto}
+.pempty svg{width:48px;height:48px;color:var(--faint)}
+.banner{margin:12px;border-radius:14px;background:linear-gradient(135deg,var(--blue-soft),var(--green-soft));padding:16px;position:relative;overflow:hidden}
+.banner b{font-size:15px;display:block} .banner small{color:var(--fg-2);font-size:12.5px}
+.banner .ok{position:absolute;right:14px;top:14px;width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}
+.banner .ok svg{width:15px;height:15px}
+.sheetwrap{position:fixed;inset:0;z-index:50;background:rgba(5,10,25,.5);display:flex;justify-content:flex-end;animation:fade .15s}
+.sheetwrap .panel{width:min(420px,100%);height:100%;position:relative;border-left:0;box-shadow:var(--shadow-lg);padding-top:env(safe-area-inset-top,0px)}
+@keyframes fade{from{opacity:0}}
+
+/* tables */
+.table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+.table td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.table tr:hover td{background:var(--surface-2)}
+.table tr.clk{cursor:pointer}
+.tscroll{overflow-x:auto}
+
+/* lightbox + modal + toast */
+.lb{position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.92);display:flex;flex-direction:column;color:#fff;animation:fade .15s}
+.lb .top{display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;font-size:14px;font-weight:600}
+.lb .top button{color:#fff;width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
+.lb .top svg{width:22px;height:22px}
+.lb .view{flex:1;position:relative;overflow:hidden;touch-action:pan-y}
+.lb .view img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.lb .arrow{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;display:grid;place-items:center}
+.lb .arrow.l{left:12px}.lb .arrow.r{right:12px}
+.lb .arrow svg{width:24px;height:24px}
+.lb .dots{display:flex;gap:6px;justify-content:center;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px))}
+.lb .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35)}
+.lb .dots i.on{background:#fff}
+.scrim{position:fixed;inset:0;background:rgba(5,10,25,.55);z-index:65;display:grid;place-items:end center;animation:fade .15s}
+@media (min-width:641px){ .scrim{place-items:center} }
+.modal{background:var(--surface);width:min(580px,100%);max-height:calc(100% - env(safe-area-inset-top,0px) - 24px);overflow:auto;border-radius:16px 16px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow-lg)}
+@media (min-width:641px){ .modal{border-radius:16px} }
+.modal h2{font-size:18px;font-weight:800}
+.iconbtn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--fg)}
+.iconbtn:hover{background:var(--surface-3)}
+.iconbtn svg{width:18px;height:18px}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:11px 18px;border-radius:10px;font-size:14px;font-weight:600;z-index:80;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+@media (min-width:761px){ .toast{bottom:24px} }
+
+/* ---- login ---- */
+.login{min-height:100%;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(900px 500px at 10% 0%,var(--blue-soft),transparent 60%),radial-gradient(700px 400px at 100% 100%,var(--green-soft),transparent 60%),var(--bg)}
+.lcard{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px 28px;width:min(420px,100%);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:16px;animation:pop .35s cubic-bezier(.2,.8,.2,1) both}
+.lcard .brand{padding:0;justify-content:center}
+.lcard h2{font-size:21px;font-weight:800;text-align:center}
+.lcard p{margin:0;text-align:center;color:var(--muted);font-size:13.5px}
+.lcard label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.lcard input{padding:12px 13px;border-radius:10px}
+.lcard .btn{padding:12px;border-radius:10px;font-size:14.5px}
+.lcard .foot{text-align:center;font-size:13px;color:var(--muted)}
+.lcard .foot button{color:var(--blue);font-weight:600}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+/* ---- customer storefront ---- */
+.store{min-height:100%;padding-bottom:40px}
+.shead{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.shead .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));min-height:64px}
+.shead .brand{padding:0}
+.shead .search{height:42px}
+.shead .admin{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+.shead .admin:hover{color:var(--blue)}
+.sbody{max-width:1180px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:20px}
+.hero{background:linear-gradient(135deg,var(--blue) 0%,#4f7df3 60%,#6aa0ff 100%);color:#fff;border-radius:20px;padding:28px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden;animation:rise .5s both}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
+.hero h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.hero p{margin:6px 0 0;opacity:.9;font-size:14.5px;max-width:52ch}
+.hero .pill{background:rgba(255,255,255,.18);color:#fff;font-size:13px}
+.sgrid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+@media (max-width:520px){ .sgrid{grid-template-columns:repeat(2,1fr);gap:12px} }
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-align:left;display:flex;flex-direction:column;box-shadow:var(--shadow-sm);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s;animation:rise .4s both}
+.scard:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.scard .img{aspect-ratio:4/3;background:var(--surface-3);position:relative;overflow:hidden;display:grid;place-items:center;color:var(--faint)}
+.scard .img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.scard:hover .img img{transform:scale(1.06)}
+.scard .img svg{width:44px;height:44px}
+.scard .img .n{position:absolute;right:8px;bottom:8px;background:rgba(15,23,42,.65);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px}
+.scard .img .tag{position:absolute;left:8px;top:8px;background:var(--green);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+.scard .b{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px}
+.scard .pr{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.scard .tt{font-size:14.5px;font-weight:600;color:var(--fg-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scard .sp{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scard .cta{margin-top:8px;font-size:13px;color:var(--blue);font-weight:600;display:flex;align-items:center;gap:4px}
+.scard .cta svg{width:14px;height:14px;transition:transform .2s}
+.scard:hover .cta svg{transform:translateX(3px)}
+.sdetail{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:20px;align-items:start}
+@media (max-width:860px){ .sdetail{grid-template-columns:1fr} }
+.sgal{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.sgal .main{aspect-ratio:16/10;background:var(--surface-3);position:relative;overflow:hidden;padding:0;display:grid;place-items:center;color:var(--faint)}
+.sgal .main img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;position:absolute;inset:0;animation:pop .3s both}
+.sgal .main svg{width:60px;height:60px}
+.sgal .arr{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.92);color:#0f172a;display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.sgal .arr.l{left:10px}.sgal .arr.r{right:10px}
+.sgal .arr svg{width:20px;height:20px}
+.sgal .idx{position:absolute;right:10px;bottom:10px;background:rgba(15,23,42,.65);color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:5px}
+.sgal .th{display:flex;gap:8px;padding:10px;overflow-x:auto}
+.sgal .th button{flex:none;width:80px;height:60px;border-radius:8px;overflow:hidden;border:2px solid transparent;background:var(--surface-3)}
+.sgal .th button.on{border-color:var(--blue)}
+.sgal .th img{width:100%;height:100%;object-fit:cover}
+.sinfo{display:flex;flex-direction:column;gap:16px}
+.sprice{font-size:30px;font-weight:800;letter-spacing:-.03em}
+.sprice small{font-size:13px;color:var(--muted);font-weight:500;margin-left:6px}
+.specgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.spec{background:var(--surface-2);border-radius:10px;padding:10px 12px;min-width:0}
+.spec .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.spec .v{font-size:14px;font-weight:700;margin-top:2px;overflow-wrap:anywhere}
+.regplate{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;letter-spacing:.08em;font-size:13px;background:#fff6c7;color:#3b3000;border:1.5px solid #c9b64a;border-radius:5px;padding:2px 10px}
+.ok-box{background:var(--green-soft);color:var(--green);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start;animation:pop .3s both}
+.ok-box .ic{width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;flex:none}
+.ok-box .ic svg{width:16px;height:16px}
+.ok-box b{display:block;font-size:15px}
+.ok-box span{font-size:13px;color:var(--fg-2)}
+.copybox{background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:10px 12px;font-size:13px;white-space:pre-wrap;color:var(--fg-2)}
+.sfoot{text-align:center;color:var(--muted);font-size:12.5px;padding:30px 16px 0}
+.sfoot button{color:var(--blue);font-weight:600}
+/* ---- appointments (admin) ---- */
+.appt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--line);animation:rise .3s both}
+.appt .when{background:var(--blue-soft);color:var(--blue);border-radius:12px;padding:8px 12px;text-align:center;min-width:76px}
+.appt .when b{display:block;font-size:18px;font-weight:800;line-height:1.1}
+.appt .when small{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.appt .when .t{display:block;font-size:12px;font-weight:700;margin-top:3px;color:var(--fg-2)}
+.appt .tx b{display:block;font-size:14.5px}
+.appt .tx .s{font-size:13px;color:var(--muted);margin-top:2px}
+.appt .tx .s a{color:var(--blue)}
+.appt .ac{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.appt.conv{opacity:.75}
+.pill.new{background:var(--orange-soft);color:var(--orange)} .pill.confirmed{background:var(--blue-soft);color:var(--blue)} .pill.converted{background:var(--green-soft);color:var(--green)} .pill.cancelled{background:var(--red-soft);color:var(--red)}
+@media (max-width:700px){ .appt{grid-template-columns:auto minmax(0,1fr)} .appt .ac{grid-column:1/-1;justify-content:flex-start} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+</style>
+</head>
+<body>
+<div id="setup" hidden></div>
+<div id="login" hidden></div>
+<div id="store" class="store" hidden></div>
+<div class="app" id="adminApp" hidden>
+  <aside class="side">
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h-1a1 1 0 0 1-1-1v-4l2.3-5.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.8 1.2L21 12v4a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M3 12h18"/></svg></span><div><b>Revora</b><small>Used Car Business</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="spacer"></div>
+    <div class="promo"><span class="em">🤝</span><b>Grow Together</b><small>Track. Sell. Profit.</small></div>
+    <div class="me"><span class="avatar" id="meAv">?</span><div style="min-width:0;flex:1"><b id="meName">Admin</b><small>Revora admin</small></div><button class="iconbtn" data-act="signOut" aria-label="Sign out" title="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3M12 3h7a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-7"/></svg></button></div>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="topbar">
+      <div class="brandm"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h-1a1 1 0 0 1-1-1v-4l2.3-5.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.8 1.2L21 12v4a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></svg></span></div>
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="search" type="search" placeholder="Search cars, customers…" aria-label="Search"></div>
+      <div class="live" id="live"><span class="dot"></span><span class="t" id="liveText">Connecting</span></div>
+      <button class="bell" id="bell" aria-label="Pending actions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0v4l2 3H4l2-3z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="b" id="bellN" hidden></span></button>
+      <span class="avatar" id="topAv">?</span>
+      <button class="bell" data-act="signOut" aria-label="Sign out" title="Sign out" style="display:none" id="topOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3M12 3h7a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-7"/></svg></button>
+    </div>
+    <div id="view"></div>
+  </main>
+
+  <aside id="panelCol"><div class="panel" id="panel"></div></aside>
+</div>
+<div id="sheet" hidden></div>
+<div id="overlay" hidden></div>
+<div id="lightbox" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="fileIn" accept="image/*" multiple hidden>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inrF=new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0});
+const money=n=>(n==null||n===''||isNaN(n))?'—':inrF.format(Number(n));
+const lakh=n=>{ n=Number(n); if(!n) return '₹0'; const neg=n<0; n=Math.abs(n); let s; if(n>=1e7) s='₹'+(n/1e7).toFixed(2).replace(/\.?0+$/,'')+'Cr'; else if(n>=1e5) s='₹'+(n/1e5).toFixed(n>=1e6?1:2).replace(/\.?0+$/,'')+'L'; else s=inrF.format(n); return (neg?'−':'')+s; };
+const kmF=n=>n?Number(n).toLocaleString('en-IN')+' km':'';
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtDate=d=>{ if(!d) return '—'; const x=new Date(d); return isNaN(x)?d:x.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); };
+const fmtDT=iso=>new Date(iso).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
+const ago=iso=>{ if(!iso) return ''; const s=(Date.now()-new Date(iso).getTime())/1000; if(s<60) return 'just now'; if(s<3600) return Math.floor(s/60)+' min ago'; if(s<86400) return Math.floor(s/3600)+' hours ago'; const d=Math.floor(s/86400); return d===1?'1 day ago':d+' days ago'; };
+const initials=n=>(n||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const I=(p,sw=2)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const P={car:'<path d="M5 17h-1a1 1 0 0 1-1-1v-4l2.3-5.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.8 1.2L21 12v4a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M3 12h18"/>',
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>', users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5.5"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 15h2"/>', doc:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>', gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  rupee:'<path d="M6 4h12M6 9h12M6 4c6 0 8 2 8 5s-2 5-8 5l8 6"/>', trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  cart:'<path d="M3 4h2l2.4 11h11.2L21 7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>', tag:'<path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/>', card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7"/>', arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>', l:'<path d="M15 5l-7 7 7 7"/>', r:'<path d="M9 5l7 7-7 7"/>', plus:'<path d="M12 5v14M5 12h14"/>',
+  cam:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>', copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', bank:'<path d="M3 10l9-6 9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/>',
+  flag:'<path d="M5 21V4h11l-1.5 4L16 12H5"/>', cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'};
+
+const STAGES=[
+  {id:'purchased',label:'Purchased',short:'Bought',ic:'cart',c:'blue'},
+  {id:'listed',label:'Listed',short:'Listed',ic:'tag',c:'blue'},
+  {id:'customer',label:'Customer Enquiry',short:'Enquiry',ic:'users',c:'purple'},
+  {id:'payment',label:'Payment Pending',short:'Payment',ic:'card',c:'orange'},
+  {id:'sold',label:'Sale Completed',short:'Sold',ic:'check',c:'green'},
+  {id:'rc',label:'RC Transfer Pending',short:'RC',ic:'doc',c:'purple'},
+  {id:'done',label:'Completed',short:'Done',ic:'flag',c:'teal'},
+];
+const stageIdx=id=>STAGES.findIndex(s=>s.id===id);
+const stageOf=id=>STAGES.find(s=>s.id===id)||STAGES[0];
+const PLATFORMS=['OLX','CarDekho','Cars24','Spinny','Facebook Marketplace','Droom','CarWale','Quikr','Word of mouth','Other'];
+const FUELS=['Petrol','Diesel','CNG','Electric','Hybrid'], TRANS=['Manual','Automatic'], OWNERS=['1st owner','2nd owner','3rd owner','4th+ owner'];
+const RC_STEPS=[['pending','Not started'],['forms','Form 29/30 signed'],['applied','Applied at RTO'],['done','Transferred']];
+const VIEWS=[['dashboard','Dashboard','home'],['inventory','Inventory','car'],['appointments','Appointments','cal'],['customers','Customers','users'],['payments','Payments','wallet'],['rc','RC Transfer','doc'],['reports','Reports','chart'],['settings','Settings','gear']];
+const ADMIN_EMAIL='revoraadmin@revora.com';
+const APPT_STATUS={new:'New',confirmed:'Confirmed',converted:'Visited',cancelled:'Cancelled'};
+
+let appts=[],mode='store',storeSel=null,storePh=0,booked=null,bookFail=null,authReady=false;
+let db=null,user=null,assets=null,cars=[],view='dashboard',filter='all',search='',selId=null,tab='overview',photoIdx=0,lbIdx=-1,confirmKey=null,names={},me={name:'',avatar:'',email:''},myId=null,canWrite=true,loaded=false,uploading=false,sheetOpen=false;
+const blob=id=>String(id||'');
+const photos=c=>Array.isArray(c.photos)?c.photos:[];
+const narrow=()=>window.matchMedia('(max-width:1180px)').matches;
+const sel=()=>cars.find(x=>x.id===selId);
+
+// ---------- derived ----------
+const profitOf=c=>(+c.sale?.price||0)-(+c.purchase?.price||0);
+const estProfit=c=>stageIdx(c.stage)>=stageIdx('sold')?profitOf(c):((+c.payment?.amount||+c.listing?.price||0)-(+c.purchase?.price||0));
+const rcLabel=c=>(RC_STEPS.find(r=>r[0]===(c.rc?.status||'pending'))||RC_STEPS[0])[1];
+function needsAttention(c){
+  const days=Math.floor((Date.now()-new Date(c.updatedAt||c.createdAt||Date.now()))/86400000);
+  if(c.stage==='payment'&&c.payment?.mode==='loan') return {t:'Loan approval for '+c.title,s:'Awaiting '+(c.payment.bank||'bank')+' response · '+days+' days',ic:'bank',c:'blue'};
+  if(c.stage==='payment') return {t:'Cash payment for '+c.title,s:'Pending from '+(c.customer?.name||'customer')+' · '+days+' days',ic:'wallet',c:'orange'};
+  if(c.stage==='sold') return {t:'RC transfer for '+c.title,s:'Not started yet',ic:'doc',c:'purple'};
+  if(c.stage==='rc') return {t:'RC transfer for '+c.title,s:rcLabel(c)+' · '+days+' days',ic:'doc',c:'purple'};
+  if(c.stage==='purchased'&&days>3) return {t:'List '+c.title,s:'Bought '+days+' days ago, not listed',ic:'tag',c:'amber'};
+  if(c.stage==='listed'&&days>30) return {t:'Review price of '+c.title,s:'Listed '+days+' days, no buyer',ic:'tag',c:'amber'};
+  if(c.stage==='customer'&&days>5) return {t:'Follow up '+(c.customer?.name||'customer'),s:c.title+' · enquiry '+days+' days old',ic:'users',c:'purple'};
+  return null;
+}
+function nextStep(c){
+  return {purchased:'List the car on OLX, Cars24 or another platform',listed:'Wait for a customer enquiry, or update the price if slow',
+    customer:'Agree the price and record cash or loan payment',payment:c.payment?.mode==='loan'?'Follow up with '+(c.payment.bank||'the bank')+' on loan approval':'Collect cash from '+(c.customer?.name||'the customer'),
+    sold:'Sign Form 29/30 and start the RC transfer',rc:'Follow up at the RTO until the RC is transferred',done:'Nothing pending. Deal closed.'}[c.stage];
+}
+function stageSub(c){
+  const s=c.stage;
+  if(s==='purchased') return 'Bought '+fmtDate(c.purchase?.date);
+  if(s==='listed') return 'On '+(c.listing?.platform||'market');
+  if(s==='customer') return (c.customer?.name||'Customer')+' checking';
+  if(s==='payment') return c.payment?.mode==='loan'?'With '+(c.payment.bank||'bank'):'Cash from '+(c.customer?.name||'customer');
+  if(s==='sold') return 'RC not started';
+  if(s==='rc') return rcLabel(c);
+  return 'Profit '+lakh(profitOf(c));
+}
+function miniSteps(c){
+  const i=stageIdx(c.stage);
+  const steps=i>=stageIdx('sold')?[['Sold',stageIdx('sold')],['Payment',stageIdx('sold')],['RC',stageIdx('rc')],['Done',stageIdx('done')]]
+    :[['Listed',1],['Enquiry',2],[c.payment?.mode==='loan'?'Loan':'Payment',3],['RC',5]];
+  return steps.map(([l,idx])=>{ const st=i>idx?'done':i===idx?'now':''; return `<div class="s ${st}"><div class="d">${st==='done'?I(P.check,3):''}</div><span>${l}</span></div>`; }).join('');
+}
+function visible(list){
+  const q=search.trim().toLowerCase();
+  return list.filter(c=>filter==='all'||c.stage===filter)
+    .filter(c=>!q||[c.title,c.reg,c.customer?.name,c.customer?.phone,c.listing?.platform,c.city].some(v=>String(v||'').toLowerCase().includes(q)))
+    .sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+}
+const apptText=a=>`${a.name} has scheduled an appointment to check the ${a.carTitle} on ${fmtApptDT(a)}`;
+const fmtApptDT=a=>{ const d=new Date(a.date+'T'+(a.time||'10:00')); return isNaN(d)?a.date+' '+(a.time||''):d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}); };
+const pendings=()=>[...appts.filter(a=>a.status==='new'||a.status==='confirmed').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(a=>({appt:a,a:{t:(a.status==='new'?'New appointment: ':'Visit: ')+a.name,s:apptText(a).replace(a.name+' has scheduled an appointment to check ','')+(a.phone?' · '+a.phone:''),ic:'cal',c:a.status==='new'?'orange':'blue'}})),...cars.map(c=>({c,a:needsAttention(c)})).filter(x=>x.a)];
+
+// ---------- status / nav ----------
+function setLive(kind,text){ const el=$('#live'); el.className='live '+kind; $('#liveText').textContent=text; }
+function renderNav(){
+  const counts={inventory:cars.filter(c=>c.stage!=='done').length,appointments:appts.filter(a=>a.status==='new').length,payments:cars.filter(c=>c.stage==='payment').length,rc:cars.filter(c=>c.stage==='sold'||c.stage==='rc').length};
+  $('#nav').innerHTML=VIEWS.map(([id,l,ic])=>`<button class="${view===id?'on':''}" data-view="${id}">${I(P[ic])}<span>${l}</span>${counts[id]?'<span class="n">'+counts[id]+'</span>':''}</button>`).join('');
+  const n=pendings().length; $('#bellN').hidden=!n; $('#bellN').textContent=n;
+}
+function renderMe(){ const nm=me.name||'Admin'; const av=me.avatar?`<img src="${esc(me.avatar)}" alt="">`:esc(initials(nm)); $('#meAv').innerHTML=av; $('#topAv').innerHTML=av; $('#meName').textContent=nm; }
+
+// ---------- views ----------
+function carRow(c){
+  const st=stageOf(c.stage), ph=photos(c);
+  const pr=stageIdx(c.stage)>=stageIdx('sold')?`Purchased: ${lakh(c.purchase?.price)} · Sold: ${lakh(c.sale?.price)}`:`Purchased: ${lakh(c.purchase?.price)}${c.listing?.price?' · Ask: '+lakh(c.listing.price):''}`;
+  return `<div class="row ${c.id===selId?'sel':''}" data-sel="${esc(c.id)}" role="button" tabindex="0">
+    <div class="thumb">${ph.length?`<img src="${blob(ph[0])}" alt="" loading="lazy">`:I(P.car,1.6)}</div>
+    <div class="t"><b>${esc(c.title)}${c.year?' '+esc(c.year):''}</b><div class="reg">${esc(c.reg||'No reg no')}</div><div class="pr">${pr}</div></div>
+    <div style="min-width:0"><span class="pill ${st.id}">${st.label}</span><div class="sub">${esc(stageSub(c))}</div></div>
+    <div class="mini">${miniSteps(c)}</div>
+    <div class="act"><span class="btn sm">View Details ${I(P.arrow,2.2)}</span></div>
+  </div>`;
+}
+function carsCard(list,title,opts={}){
+  const v=visible(list);
+  const chips=opts.chips!==false?`<div class="chips">${[['all','All'],...STAGES.map(s=>[s.id,s.label])].filter(([id])=>id==='all'||list.some(c=>c.stage===id)).map(([id,l])=>`<button class="chip ${filter===id?'on':''}" data-f="${id}">${l}</button>`).join('')}</div>`:'';
+  const body=!loaded?`<div class="empty"><h3>Loading…</h3>Shared records are on their way.</div>`
+    :!list.length?`<div class="empty"><h3>${opts.emptyTitle||'No cars yet'}</h3>${opts.emptyText||'Tap <b>Add Car</b> when you buy one.'}</div>`
+    :!v.length?`<div class="empty"><h3>Nothing here</h3>No cars match this filter${search?' and search':''}.</div>`
+    :v.map(carRow).join('');
+  return `<section class="card"><div class="hd"><h2>${title}</h2><div style="display:flex;gap:10px;align-items:center">${opts.viewAll?`<button class="btn link" data-view="inventory">View All ${I(P.arrow,2.2)}</button>`:''}${canWrite?`<button class="btn primary sm" data-act="openAdd">${I(P.plus,2.6)}Add Car</button>`:''}</div></div>${chips}<div class="rows">${body}</div></section>`;
+}
+function greeting(){ const h=new Date().getHours(); return h<12?'Good Morning':h<17?'Good Afternoon':'Good Evening'; }
+
+function viewDashboard(){
+  const active=cars.filter(c=>c.stage!=='done');
+  const invested=active.reduce((a,c)=>a+(+c.purchase?.price||0),0);
+  const potential=cars.reduce((a,c)=>a+Math.max(0,estProfit(c)),0);
+  const booked=cars.filter(c=>stageIdx(c.stage)>=stageIdx('sold')).reduce((a,c)=>a+profitOf(c),0);
+  const rcPend=cars.filter(c=>c.stage==='sold'||c.stage==='rc').length;
+  const added7=cars.filter(c=>c.createdAt&&(Date.now()-new Date(c.createdAt))<7*86400000).length;
+  const kpis=[['blue','car',active.length,'Total Cars',added7?`<span class="delta">↑ +${added7} this week</span>`:''],['green','rupee',lakh(invested),'Total Investment',''],['orange','trend',lakh(potential),'Potential Profit',booked?`<span class="delta ${booked<0?'neg':''}">${lakh(booked)} booked</span>`:''],['purple','clock',rcPend,'Pending RC Transfer','']];
+  const counts=STAGES.map(s=>cars.filter(c=>c.stage===s.id).length);
+  const pipe=STAGES.map((s,i)=>`<button class="pstage ${filter===s.id?'on':''}" data-f="${s.id}"><span class="ic c-${s.c}">${I(P[s.ic])}</span><b>${s.label}</b><small>${counts[i]} ${counts[i]===1?'Car':'Cars'}</small></button>${i<STAGES.length-1?`<span class="parrow">${I('<path d="M5 12h14M13 7l5 5-5 5"/>',1.5)}</span>`:''}`).join('');
+  const feed=[...cars.flatMap(c=>(c.log||[]).slice(0,5).map(l=>({...l,car:c.title}))),...appts.map(a=>({at:a.createdAt,text:'booked a visit for '+fmtApptDT(a),car:a.carTitle,who:a.name}))].sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,6);
+  const pend=pendings().slice(0,4);
+  return `<div class="greet"><div><h1>${greeting()}, ${esc((me.name||'Admin').split(' ')[0])}! 👋</h1><p>Here's what's happening with your car business today.</p></div><span class="btn" style="cursor:default">${I(P.cal)}${new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</span></div>
+  <div class="kpis">${kpis.map(([c,ic,v,l,d])=>`<div class="kpi"><span class="ic ${c}">${I(P[ic])}</span><div style="min-width:0"><div class="v num">${v}</div><div class="l">${l}${d}</div></div></div>`).join('')}</div>
+  <section class="card"><div class="hd"><h2>Business Pipeline</h2>${filter!=='all'?`<button class="btn link" data-f="all">Clear filter</button>`:''}</div><div class="pipe">${pipe}</div></section>
+  ${carsCard(cars.filter(c=>c.stage!=='done'),'My Cars',{viewAll:true})}
+  <div class="widgets">
+    <section class="card"><div class="hd"><h2>Recent Activity</h2></div><div class="bd feed">${feed.length?feed.map(l=>{ const nm=l.who||(l.by&&names[l.by])||'Admin'; return `<div class="f"><span class="av c-${['blue','purple','orange','teal'][initials(nm).charCodeAt(0)%4]}">${esc(initials(nm))}</span><div style="min-width:0"><b>${esc(nm)}: ${esc(l.text)}</b><small>${esc(l.car)} · ${esc(ago(l.at))}</small></div></div>`; }).join(''):'<span class="muted">No activity yet.</span>'}</div></section>
+    <section class="card"><div class="hd"><h2>Sales Summary</h2><span class="hint">Last 30 days</span></div><div class="bd">${salesChart()}</div></section>
+    <section class="card"><div class="hd"><h2>Pending Actions ${pend.length?`<span class="cnt">${pendings().length}</span>`:''}</h2></div><div class="bd pend">${pend.length?pend.map(({c,a})=>`<div class="p"><span class="ic c-${a.c}">${I(P[a.ic])}</span><div class="tx"><b>${esc(a.t)}</b><small>${esc(a.s)}</small></div>${c?`<button class="btn sm" data-sel="${esc(c.id)}">View ${I(P.arrow,2.2)}</button>`:`<button class="btn sm" data-view="appointments">View ${I(P.arrow,2.2)}</button>`}</div>`).join(''):`<div class="banner" style="margin:0"><b>Business on Track!</b><small>No pending actions right now.</small><span class="ok">${I(P.check,3)}</span></div>`}</div></section>
+  </div>`;
+}
+function salesChart(){
+  const days=30, now=new Date(); now.setHours(0,0,0,0);
+  const start=new Date(now); start.setDate(start.getDate()-(days-1));
+  const sold=cars.filter(c=>c.sale?.price&&c.sale?.date);
+  const daily=new Array(days).fill(0);
+  sold.forEach(c=>{ const d=Math.floor((new Date(c.sale.date)-start)/86400000); if(d>=0&&d<days) daily[d]+=+c.sale.price; });
+  const cum=[]; daily.reduce((a,v,i)=>(cum[i]=a+v),0);
+  const total=cum[days-1]||0, count=sold.filter(c=>new Date(c.sale.date)>=start).length;
+  const W=320,H=120,px=6,py=10; const max=Math.max(1,...cum);
+  const pts=cum.map((v,i)=>[px+i*(W-2*px)/(days-1), H-py-(v/max)*(H-2*py)]);
+  const path=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=path+` L${pts[pts.length-1][0].toFixed(1)} ${H-py} L${px} ${H-py} Z`;
+  const lab=i=>{ const d=new Date(start); d.setDate(d.getDate()+i); return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}); };
+  return `<div style="margin-bottom:8px"><div class="num" style="font-size:24px;font-weight:800;letter-spacing:-.02em">${lakh(total)}</div><div class="hint">Total Sales · ${count} car${count===1?'':'s'}</div></div>
+  <div class="chart" id="chart" data-cum="${cum.join(',')}" data-start="${start.toISOString()}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative sales over the last 30 days">
+    ${[0.5,1].map(f=>`<line x1="${px}" x2="${W-px}" y1="${(H-py-f*(H-2*py)).toFixed(1)}" y2="${(H-py-f*(H-2*py)).toFixed(1)}" stroke="var(--line)" stroke-dasharray="3 3"/>`).join('')}
+    <line x1="${px}" x2="${W-px}" y1="${H-py}" y2="${H-py}" stroke="var(--line-strong)"/>
+    <path d="${area}" fill="var(--green)" opacity=".14"/><path d="${path}" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${pts[days-1][0].toFixed(1)}" cy="${pts[days-1][1].toFixed(1)}" r="4" fill="var(--green)" stroke="var(--surface)" stroke-width="2"/>
+    <line id="xh" x1="0" x2="0" y1="${py}" y2="${H-py}" stroke="var(--fg)" stroke-width="1" opacity="0"/>
+    <circle id="xp" r="4" fill="var(--fg)" stroke="var(--surface)" stroke-width="2" opacity="0"/>
+  </svg><div class="tip" id="tip" hidden></div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">${[0,10,20,29].map(i=>`<span>${lab(i)}</span>`).join('')}</div></div>`;
+}
+function viewInventory(){ return `<div class="greet"><div><h1>Inventory</h1><p>Every car you hold, from purchase to RC transfer.</p></div></div>${carsCard(cars,'All Cars')}`; }
+function viewPayments(){ const list=cars.filter(c=>c.stage==='payment'); const loans=list.filter(c=>c.payment?.mode==='loan'); const cash=list.filter(c=>c.payment?.mode!=='loan');
+  return `<div class="greet"><div><h1>Payments</h1><p>Deals agreed, money not yet in hand.</p></div></div>
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span class="ic orange">${I(P.card)}</span><div><div class="v num">${lakh(list.reduce((a,c)=>a+(+c.payment?.amount||0),0))}</div><div class="l">Expected</div></div></div><div class="kpi"><span class="ic blue">${I(P.bank)}</span><div><div class="v num">${loans.length}</div><div class="l">Bank loans</div></div></div><div class="kpi"><span class="ic green">${I(P.wallet)}</span><div><div class="v num">${cash.length}</div><div class="l">Cash deals</div></div></div></div>
+  ${carsCard(list,'Awaiting Payment',{chips:false,emptyTitle:'No payments pending',emptyText:'When a customer agrees a deal, it appears here until the money arrives.'})}`; }
+function viewRC(){ const list=cars.filter(c=>c.stage==='sold'||c.stage==='rc');
+  return `<div class="greet"><div><h1>RC Transfer</h1><p>Sold cars whose registration is still in your name.</p></div></div>
+  <div class="kpis">${RC_STEPS.map(([v,l],i)=>`<div class="kpi"><span class="ic ${['orange','blue','purple','green'][i]}">${I(P.doc)}</span><div><div class="v num">${list.filter(c=>(c.rc?.status||'pending')===v).length}</div><div class="l">${l}</div></div></div>`).join('')}</div>
+  ${carsCard(list,'RC Transfers',{chips:false,emptyTitle:'Nothing to transfer',emptyText:'Sold cars appear here until the RC moves to the buyer’s name.'})}`; }
+function viewCustomers(){
+  const rows=[]; cars.forEach(c=>{ if(c.customer?.name) rows.push({name:c.customer.name,phone:c.customer.phone,car:c,status:stageOf(c.stage).label,cls:stageIdx(c.stage)>=stageIdx('sold')?'done':'customer',date:c.updatedAt}); (c.attempts||[]).forEach(a=>rows.push({name:a.customer||'Customer',phone:'',car:c,status:'Deal failed'+(a.reason?': '+a.reason:''),cls:'fail',date:a.date})); });
+  rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  const q=search.trim().toLowerCase(); const v=rows.filter(r=>!q||[r.name,r.phone,r.car.title].some(x=>String(x||'').toLowerCase().includes(q)));
+  return `<div class="greet"><div><h1>Customers</h1><p>Everyone who enquired, bought, or walked away.</p></div></div>
+  <section class="card"><div class="tscroll"><table class="table"><thead><tr><th>Customer</th><th>Phone</th><th>Car</th><th>Status</th><th>Date</th></tr></thead><tbody>
+  ${v.length?v.map(r=>`<tr class="clk" data-sel="${esc(r.car.id)}"><td><b>${esc(r.name)}</b></td><td class="num">${esc(r.phone||'—')}</td><td>${esc(r.car.title)}</td><td><span class="pill ${r.cls}">${esc(r.status)}</span></td><td class="muted">${esc(fmtDate(r.date))}</td></tr>`).join(''):`<tr><td colspan="5"><div class="empty"><h3>No customers yet</h3>Customers appear here once an enquiry is recorded on a car.</div></td></tr>`}
+  </tbody></table></div></section>`;
+}
+function viewReports(){
+  const sold=cars.filter(c=>stageIdx(c.stage)>=stageIdx('sold')).sort((a,b)=>String(b.sale?.date||'').localeCompare(String(a.sale?.date||'')));
+  const rev=sold.reduce((a,c)=>a+(+c.sale?.price||0),0), cost=sold.reduce((a,c)=>a+(+c.purchase?.price||0),0), profit=rev-cost;
+  const byMonth={}; sold.forEach(c=>{ const k=(c.sale?.date||'').slice(0,7); if(!k) return; byMonth[k]=byMonth[k]||{n:0,rev:0,profit:0}; byMonth[k].n++; byMonth[k].rev+=+c.sale.price||0; byMonth[k].profit+=profitOf(c); });
+  const months=Object.keys(byMonth).sort().reverse();
+  const avgDays=sold.length?Math.round(sold.reduce((a,c)=>a+Math.max(0,(new Date(c.sale.date)-new Date(c.purchase?.date||c.sale.date))/86400000),0)/sold.length):0;
+  const pc=v=>v<0?'var(--red)':'var(--green)';
+  return `<div class="greet"><div><h1>Reports</h1><p>What the business has earned so far.</p></div></div>
+  <div class="kpis"><div class="kpi"><span class="ic blue">${I(P.rupee)}</span><div><div class="v num">${lakh(rev)}</div><div class="l">Total sales</div></div></div><div class="kpi"><span class="ic green">${I(P.trend)}</span><div><div class="v num" style="color:${profit<0?'var(--red)':'inherit'}">${lakh(profit)}</div><div class="l">Profit booked${rev?` <span class="delta ${profit<0?'neg':''}">${(profit/rev*100).toFixed(1)}% margin</span>`:''}</div></div></div><div class="kpi"><span class="ic orange">${I(P.car)}</span><div><div class="v num">${sold.length}</div><div class="l">Cars sold</div></div></div><div class="kpi"><span class="ic purple">${I(P.clock)}</span><div><div class="v num">${avgDays}</div><div class="l">Avg days to sell</div></div></div></div>
+  <div class="widgets" style="grid-template-columns:1fr 2fr">
+    <section class="card"><div class="hd"><h2>By Month</h2></div><div class="tscroll"><table class="table"><thead><tr><th>Month</th><th>Cars</th><th>Sales</th><th>Profit</th></tr></thead><tbody>${months.length?months.map(k=>`<tr><td><b>${new Date(k+'-01').toLocaleDateString('en-IN',{month:'short',year:'numeric'})}</b></td><td class="num">${byMonth[k].n}</td><td class="num">${lakh(byMonth[k].rev)}</td><td class="num" style="color:${pc(byMonth[k].profit)};font-weight:700">${lakh(byMonth[k].profit)}</td></tr>`).join(''):'<tr><td colspan="4" class="muted" style="text-align:center;padding:24px">No sales yet.</td></tr>'}</tbody></table></div></section>
+    <section class="card"><div class="hd"><h2>Sold Cars</h2></div><div class="tscroll"><table class="table"><thead><tr><th>Car</th><th>Bought</th><th>Sold</th><th>Profit</th><th>Buyer</th><th>Mode</th><th>RC</th></tr></thead><tbody>${sold.length?sold.map(c=>`<tr class="clk" data-sel="${esc(c.id)}"><td><b>${esc(c.title)}</b><div class="muted" style="font-size:12px">${esc(c.reg||'')}</div></td><td class="num">${lakh(c.purchase?.price)}<div class="muted" style="font-size:11.5px">${fmtDate(c.purchase?.date)}</div></td><td class="num">${lakh(c.sale?.price)}<div class="muted" style="font-size:11.5px">${fmtDate(c.sale?.date)}</div></td><td class="num" style="font-weight:700;color:${pc(profitOf(c))}">${lakh(profitOf(c))}</td><td>${esc(c.customer?.name||'—')}</td><td>${c.payment?.mode==='loan'?'Loan · '+esc(c.payment.bank||''):'Cash'}</td><td><span class="pill ${c.stage==='done'?'done':'rc'}">${rcLabel(c)}</span></td></tr>`).join(''):'<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">No sales yet.</td></tr>'}</tbody></table></div></section>
+  </div>`;
+}
+function viewAppointments(){
+  const list=[...appts].sort((a,b)=>{ const o={new:0,confirmed:1,converted:2,cancelled:3}; return (o[a.status]-o[b.status])||(a.date+a.time).localeCompare(b.date+b.time); });
+  const q=search.trim().toLowerCase(); const v=list.filter(a=>!q||[a.name,a.phone,a.carTitle].some(x=>String(x||'').toLowerCase().includes(q)));
+  const n=appts.filter(a=>a.status==='new').length, up=appts.filter(a=>a.status==='confirmed').length;
+  return `<div class="greet"><div><h1>Appointments</h1><p>Customers who booked a visit from the public car list.</p></div></div>
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span class="ic orange">${I(P.cal)}</span><div><div class="v num">${n}</div><div class="l">New requests</div></div></div><div class="kpi"><span class="ic blue">${I(P.users)}</span><div><div class="v num">${up}</div><div class="l">Confirmed visits</div></div></div><div class="kpi"><span class="ic green">${I(P.check)}</span><div><div class="v num">${appts.filter(a=>a.status==='converted').length}</div><div class="l">Visited</div></div></div></div>
+  <section class="card"><div class="hd"><h2>All appointments</h2></div><div class="rows">${v.length?v.map(a=>{ const d=new Date(a.date+'T00:00'); const car=cars.find(c=>c.id===a.carId);
+    return `<div class="appt ${a.status==='converted'||a.status==='cancelled'?'conv':''}"><div class="when"><small>${isNaN(d)?'':d.toLocaleDateString('en-IN',{month:'short'})}</small><b>${isNaN(d)?'—':d.getDate()}</b><span class="t">${esc(a.time||'')}</span></div>
+      <div class="tx"><b>${esc(a.name)} <span class="pill ${a.status}" style="margin-left:6px;font-size:11px">${APPT_STATUS[a.status]||a.status}</span></b><div class="s">${esc(apptText(a))}${a.phone?' · <b>'+esc(a.phone)+'</b>':''}${a.note?'<br>“'+esc(a.note)+'”':''}<br><span class="muted">Booked ${esc(ago(a.createdAt))}${car?'':' · car no longer listed'}</span></div></div>
+      <div class="ac">${car?`<button class="btn sm" data-sel="${esc(car.id)}">Car</button>`:''}${a.status==='new'?`<button class="btn sm primary" data-appt="confirm" data-id="${esc(a.id)}">Confirm</button>`:''}${(a.status==='new'||a.status==='confirmed')&&car?`<button class="btn sm ok" data-appt="convert" data-id="${esc(a.id)}">Customer visited</button>`:''}${a.status==='new'||a.status==='confirmed'?`<button class="btn sm bad" data-appt="cancel" data-id="${esc(a.id)}">Cancel</button>`:`<button class="btn sm ghost" data-appt="remove" data-id="${esc(a.id)}">${I(P.trash)}</button>`}</div></div>`; }).join(''):`<div class="empty"><h3>No appointments yet</h3>When a customer books a visit from the shared car list, it appears here and in Pending Actions.</div>`}</div></section>`;
+}
+function viewSettings(){
+  return `<div class="greet"><div><h1>Settings</h1><p>How this tracker is shared and stored.</p></div></div>
+  <div class="widgets" style="grid-template-columns:1fr 1fr">
+    <section class="card"><div class="hd"><h2>Sharing with your partner</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
+      <p style="margin:0">Anyone who opens the link sees the <b>customer view</b>: cars listed for sale and a booking form. The admin dashboard opens only after signing in with the Revora admin email and password. Share those with your partner.</p>
+      <p style="margin:0">Customers do not need any account: they can browse cars and book a visit straight away. Only the admin login can change cars, photos and appointments. To change the admin password, use Firebase Console → Authentication → Users.</p>
+      <p style="margin:0">Every change either of you makes is saved instantly and appears live for the other. Recent Activity and each car's History show who made each update.</p>
+      <p style="margin:0">Signed in as <b>${esc(me.email||ADMIN_EMAIL)}</b>.</p></div></section>
+    <section class="card"><div class="hd"><h2>Data</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
+      <p style="margin:0"><b>${cars.length}</b> cars tracked · <b>${cars.reduce((a,c)=>a+photos(c).length,0)}</b> photos stored.</p>
+      <p style="margin:0">Photos are resized to 1600px before upload to keep storage small. Deleting a car also deletes its photos. Completed deals stay in Reports.</p>
+      <p style="margin:0">Stages: Purchased → Listed → Customer Enquiry → Payment Pending (cash or bank loan) → Sale Completed → RC Transfer → Completed. A failed deal sends the car back to Listed and is logged under the car.</p></div></section>
+  </div>`;
+}
+function renderView(){
+  $('#view').innerHTML={dashboard:viewDashboard,inventory:viewInventory,appointments:viewAppointments,customers:viewCustomers,payments:viewPayments,rc:viewRC,reports:viewReports,settings:viewSettings}[view]();
+  wireChart();
+}
+function wireChart(){
+  const ch=$('#chart'); if(!ch) return; const svg=$('svg',ch), xh=$('#xh',ch), xp=$('#xp',ch), tip=$('#tip',ch);
+  const cum=ch.dataset.cum.split(',').map(Number), start=new Date(ch.dataset.start), days=cum.length, W=320,H=120,px=6,py=10, max=Math.max(1,...cum);
+  const move=e=>{ const r=svg.getBoundingClientRect(); const x=((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width*W; const i=Math.max(0,Math.min(days-1,Math.round((x-px)/((W-2*px)/(days-1)))));
+    const cx=px+i*(W-2*px)/(days-1), cy=H-py-(cum[i]/max)*(H-2*py); xh.setAttribute('x1',cx); xh.setAttribute('x2',cx); xh.setAttribute('opacity','.4'); xp.setAttribute('cx',cx); xp.setAttribute('cy',cy); xp.setAttribute('opacity','1');
+    const d=new Date(start); d.setDate(d.getDate()+i); tip.hidden=false; tip.textContent=d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+' · '+lakh(cum[i]); tip.style.left=(cx/W*r.width)+'px'; tip.style.top=(cy/H*r.height)+'px'; };
+  const leave=()=>{ xh.setAttribute('opacity','0'); xp.setAttribute('opacity','0'); tip.hidden=true; };
+  svg.addEventListener('mousemove',move); svg.addEventListener('touchstart',move,{passive:true}); svg.addEventListener('touchmove',move,{passive:true}); svg.addEventListener('mouseleave',leave); svg.addEventListener('touchend',leave);
+}
+
+// ---------- right panel ----------
+function panelHTML(){
+  const c=sel();
+  if(!c) return `<div class="pempty">${I(P.car,1.5)}<b>Select a car</b><span class="hint">Click any car to see its details, photos, next step and history here.</span></div>
+    ${pendings().length?'':`<div class="banner"><b>Business on Track!</b><small>You're all set for a successful month ahead.</small><span class="ok">${I(P.check,3)}</span></div>`}`;
+  const st=stageOf(c.stage), ph=photos(c); if(photoIdx>=ph.length) photoIdx=Math.max(0,ph.length-1);
+  const soldish=stageIdx(c.stage)>=stageIdx('sold');
+  const selling=soldish?c.sale?.price:(c.payment?.amount||c.listing?.price);
+  const est=estProfit(c);
+  const over=`<div class="prices"><div><div class="k">Purchase Price</div><div class="v num">${money(c.purchase?.price)}</div></div><div><div class="k">${soldish?'Sold Price':c.stage==='payment'?'Agreed Price':'Selling Price'}</div><div class="v num">${money(selling)}</div></div><div><div class="k">Profit ${soldish?'':'(Est.)'}</div><div class="v num ${est>0?'g':est<0?'r':''}">${selling?money(est):'—'}</div></div><div><div class="k">Updated</div><div class="v">${esc(ago(c.updatedAt))}</div></div></div>
+    <div class="stagebox"><div class="it"><span class="ic">${I(P.tag,2.4)}</span><div><small>Current Stage</small><b>${st.label}</b><span class="sub">${esc(stageSub(c))}${c.listing?.link&&c.stage==='listed'?' · '+esc(c.listing.link):''}</span></div></div><div class="it"><span class="ic g">${I(P.arrow,2.4)}</span><div><small>Next Step</small><b style="font-weight:600;font-size:13px">${esc(nextStep(c))}</b></div></div></div>
+    ${(()=>{ const as=appts.filter(a=>a.carId===c.id&&(a.status==='new'||a.status==='confirmed')); return as.length?`<div class="box" style="border-left:3px solid var(--orange)"><h3>Upcoming visits</h3>${as.map(a=>`<div class="hint" style="color:var(--fg-2)"><b>${esc(a.name)}</b> · ${esc(fmtApptDT(a))}${a.phone?' · '+esc(a.phone):''} <span class="pill ${a.status}" style="font-size:11px">${APPT_STATUS[a.status]}</span></div>`).join('')}<div class="frow"><button class="btn sm" data-view="appointments">Manage appointments</button></div></div>`:''; })()}
+    ${actionsFor(c)}
+    <div class="box"><h3 class="cap">Car details</h3><div class="kv">${[['Year',c.year],['Kms',kmF(c.km)],['Fuel',c.fuel],['Transmission',c.transmission],['Owner',c.owners],['Colour',c.colour],['Location',c.city],['Bought on',fmtDate(c.purchase?.date)],['Bought from',c.purchase?.from]].filter(x=>x[1]&&x[1]!=='—').map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>
+      ${canWrite?`<details><summary>Edit car details</summary><div style="margin-top:10px">${carFields(c)}<div class="hint err" id="formErr" hidden></div><div class="frow" style="margin-top:10px"><button class="btn primary sm" data-act="saveDetails" style="flex:0 0 auto">Save details</button></div></div></details>`:''}</div>
+    <div class="box"><h3 class="cap">Deal facts</h3><div class="kv">${facts(c).map(([k,v])=>`<div><div class="k">${k}</div><div class="v ${/₹/.test(v)?'num':''}">${esc(v)}</div></div>`).join('')}</div></div>
+    ${(c.attempts||[]).length?`<div class="box"><h3 class="cap">Failed deals</h3>${c.attempts.map(a=>`<div class="attempt"><span>${esc(a.customer||'Customer')} · ${a.mode==='loan'?'loan':a.mode==='cash'?'cash':'visit'} · ${esc(a.reason||'no reason')}</span><span class="num">${esc(fmtDate(a.date))}</span></div>`).join('')}</div>`:''}
+    ${canWrite?`<div class="box" style="border-style:dashed">${confirmKey==='delete'?`<span class="hint err">Deletes the car, its photos and history for both of you.</span><div class="frow"><button class="btn bad sm" data-act="deleteYes">Yes, delete</button><button class="btn sm" data-act="cancelConfirm">Keep</button></div>`:`<button class="btn ghost sm" data-act="deleteAsk" style="align-self:flex-start">${I(P.trash)}Delete this car</button>`}</div>`:''}`;
+  const hist=`<div class="box"><h3 class="cap">Timeline</h3><div class="tl">${(c.log||[]).map((l,i)=>`<div class="e ${i===0?'b':'g'}"><span class="d">${i===0?'':I(P.check,3)}</span><div><b>${esc(l.text)}</b><small>${esc(fmtDT(l.at))}${l.by&&names[l.by]?' · '+esc(names[l.by]):''}</small></div></div>`).join('')||'<span class="muted">No history yet.</span>'}</div></div>
+    ${canWrite?`<div class="box"><h3 class="cap">Add a note</h3><div class="frow"><input id="noteIn" placeholder="e.g. Customer bringing mechanic on Sunday" style="flex:1 1 160px"><button class="btn primary sm" data-act="note" style="flex:0 0 auto">Save</button></div></div>`:''}`;
+  const canUp=!!assets&&canWrite;
+  const phot=`<div class="pgrid">${ph.map((id,i)=>`<button class="${i===photoIdx?'on':''}" data-thumb="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy">${i===0?'<span class="cov">Cover</span>':''}</button>`).join('')}${canUp?`<button class="add" data-act="addPhotos" ${uploading?'disabled':''}>${uploading?'Uploading…':I(P.plus,2.4)+'Add photos'}</button>`:''}</div>
+    ${ph.length?`<div class="frow"><button class="btn sm" data-lb="${photoIdx}">View full screen</button>${canUp&&photoIdx>0?`<button class="btn sm" data-act="cover">Make cover</button>`:''}${canUp?(confirmKey==='photo'?`<button class="btn sm bad" data-act="deletePhotoYes">Remove this photo</button><button class="btn sm" data-act="cancelConfirm">Keep</button>`:`<button class="btn sm ghost" data-act="deletePhotoAsk">${I(P.trash)}Remove</button>`):''}</div>`:`<span class="hint">${canUp?'Add photos so your partner can see the car.':'No photos yet.'}</span>`}`;
+  return `<div class="ph">${ph.length?`<img src="${blob(ph[photoIdx])}" alt="${esc(c.title)}" data-lb="${photoIdx}">${ph.length>1?`<button class="arr l" data-ph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-ph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${photoIdx+1}/${ph.length}</span>`:''}`:`<div class="none"><div>${I(P.cam,1.6)}No photos yet</div></div>`}<button class="x" data-unsel aria-label="Close">${I(P.x,2.6)}</button></div>
+  <div class="phead"><div class="tt"><h2>${esc(c.title)}${c.year?' '+esc(c.year):''}</h2><span class="pill ${st.id}">${st.short}</span></div><span class="reg">${esc(c.reg||'No reg no')}${c.reg?`<button data-act="copyReg" aria-label="Copy reg number">${I(P.copy)}</button>`:''}</span></div>
+  <div class="tabs">${[['overview','Overview'],['history','History'],['photos','Photos'+(ph.length?' ('+ph.length+')':'')]].map(([id,l])=>`<button class="${tab===id?'on':''}" data-tab="${id}">${l}</button>`).join('')}</div>
+  <div class="pbody">${tab==='overview'?over:tab==='history'?hist:phot}</div>`;
+}
+function renderPanel(){
+  const html=panelHTML(); $('#panel').innerHTML=html; const sh=$('#sheet');
+  if(sheetOpen&&sel()&&narrow()){ sh.hidden=false; sh.innerHTML=`<div class="sheetwrap" data-unsel><div class="panel" data-stop>${html}</div></div>`; }
+  else { sh.hidden=true; sh.innerHTML=''; }
+}
+function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; sheetOpen=true; renderView(); renderPanel(); }
+function unselect(){ selId=null; sheetOpen=false; renderView(); renderPanel(); }
+
+function facts(c){
+  const f=[];
+  if(c.listing?.price) f.push(['Asking price',money(c.listing.price)],['Listed on',(c.listing.platform||'—')+(c.listing.date?' · '+fmtDate(c.listing.date):'')]);
+  if(c.customer?.name) f.push(['Customer',c.customer.name],['Phone',c.customer.phone||'—']);
+  if(c.payment?.mode) f.push(['Payment',c.payment.mode==='loan'?'Bank loan'+(c.payment.bank?' · '+c.payment.bank:''):'Ready cash'],['Agreed amount',money(c.payment.amount)]);
+  if(c.sale?.price) f.push(['Sold for',money(c.sale.price)],['Sold on',fmtDate(c.sale.date)]);
+  if(stageIdx(c.stage)>=stageIdx('sold')) f.push(['RC status',rcLabel(c)+(c.rc?.date?' · '+fmtDate(c.rc.date):'')]);
+  if(!f.length) f.push(['Status','Not listed yet']);
+  return f;
+}
+function actionsFor(c){
+  if(!canWrite) return `<div class="ro">You can view but not update. Ask the owner to share this page with you as a Contributor or Editor.</div>`;
+  const s=c.stage, wrap=(title,inner)=>`<div class="box" style="border-left:3px solid var(--blue)"><h3>${title}</h3>${inner}</div>`;
+  if(s==='purchased') return wrap('List the car for sale',`<div class="form">
+    <label>Platform<select id="f_platform">${PLATFORMS.map(p=>`<option>${p}</option>`).join('')}</select></label>
+    <label>Asking price (₹)<input id="f_price" type="number" inputmode="numeric" placeholder="495000"></label>
+    <label>Listed on<input id="f_date" type="date" value="${today()}"></label>
+    <label>Ad ID / link<input id="f_link" placeholder="optional"></label></div>
+    <div class="frow"><button class="btn primary" data-act="list">Mark as listed</button></div>`);
+  if(s==='listed') return wrap('Record a customer enquiry',`<div class="form">
+    <label>Customer name<input id="f_name" placeholder="Name"></label>
+    <label>Phone<input id="f_phone" inputmode="tel" placeholder="98xxxxxxxx"></label></div>
+    <div class="frow"><button class="btn primary" data-act="customer">Customer came to check</button></div>
+    <details><summary>Change listing price or platform</summary><div class="form" style="margin-top:10px">
+      <label>Platform<select id="f_platform2">${PLATFORMS.map(p=>`<option ${p===c.listing?.platform?'selected':''}>${p}</option>`).join('')}</select></label>
+      <label>Asking price (₹)<input id="f_price2" type="number" inputmode="numeric" value="${esc(c.listing?.price||'')}"></label>
+      <div class="full"><button class="btn sm" data-act="relist">Update listing</button></div></div></details>`);
+  if(s==='customer') return wrap('Customer decided?',`<div class="form">
+    <label>Paying by<select id="f_mode"><option value="cash">Ready cash</option><option value="loan">Bank loan</option></select></label>
+    <label>Agreed price (₹)<input id="f_amount" type="number" inputmode="numeric" value="${esc(c.listing?.price||'')}"></label>
+    <label class="full" id="bankWrap" hidden>Bank / financier<input id="f_bank" placeholder="e.g. HDFC Bank, Mahindra Finance"></label></div>
+    <div class="frow"><button class="btn primary" data-act="payment">Deal agreed, payment pending</button></div>
+    <div class="form"><label class="full">If the customer walked away, why?<input id="f_reason" placeholder="e.g. price too high"></label></div>
+    <div class="frow"><button class="btn bad" data-act="walk">Walked away, relist</button></div>`);
+  if(s==='payment'){ const loan=c.payment?.mode==='loan';
+    return wrap(loan?'Bank loan in progress':'Waiting for cash',`
+    ${loan?`<div class="hint">Loan with <b>${esc(c.payment.bank||'bank')}</b> · <b>${esc({applied:'applied, waiting for approval',approved:'approved, disbursement pending',rejected:'rejected'}[c.payment.loanStatus]||'applied, waiting')}</b></div>${c.payment.loanStatus!=='approved'?`<div class="frow"><button class="btn" data-act="loanApproved">Bank approved the loan</button></div>`:''}`:''}
+    <div class="form"><label>Amount received (₹)<input id="f_recv" type="number" inputmode="numeric" value="${esc(c.payment?.amount||'')}"></label><label>Received on<input id="f_recvdate" type="date" value="${today()}"></label></div>
+    <div class="frow"><button class="btn ok" data-act="sold">${loan?'Loan credited, mark sold':'Cash received, mark sold'}</button></div>
+    <div class="form"><label class="full">If the deal failed, why?<input id="f_reason" placeholder="${loan?'e.g. loan rejected, low CIBIL':'e.g. customer backed out'}"></label></div>
+    <div class="frow"><button class="btn bad" data-act="fail">${loan?'Loan rejected, relist':'Deal failed, relist'}</button></div>`); }
+  if(s==='sold'||s==='rc'){ const cur=c.rc?.status||'pending';
+    return wrap('RC owner name change',`<div class="form">
+      <label>Status<select id="f_rc">${RC_STEPS.map(([v,l])=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`).join('')}</select></label>
+      <label>Date<input id="f_rcdate" type="date" value="${today()}"></label>
+      <label class="full">Note<input id="f_rcnote" placeholder="e.g. RTO Chennai South, token 1234"></label></div>
+      <div class="frow"><button class="btn primary" data-act="rc">Update RC status</button></div><span class="hint">“Transferred” completes the deal.</span>`); }
+  return wrap('Deal completed',`<span class="hint">Sold and RC transferred. Profit: <b class="num">${money(profitOf(c))}</b>.</span>`);
+}
+function carFields(c={}){
+  const s=(id,list,cur)=>`<select id="${id}">${list.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('')}</select>`;
+  return `<div class="form">
+    <label class="full">Car (make, model, variant)<input id="c_title" value="${esc(c.title||'')}" placeholder="e.g. Hyundai Creta SX"></label>
+    <label>Year<input id="c_year" type="number" inputmode="numeric" value="${esc(c.year||'')}" placeholder="2021"></label>
+    <label>Reg number<input id="c_reg" value="${esc(c.reg||'')}" placeholder="TN 09 AB 1234" style="text-transform:uppercase"></label>
+    <label>Kms driven<input id="c_km" type="number" inputmode="numeric" value="${esc(c.km||'')}" placeholder="45000"></label>
+    <label>Fuel${s('c_fuel',FUELS,c.fuel||'Petrol')}</label>
+    <label>Transmission${s('c_trans',TRANS,c.transmission||'Manual')}</label>
+    <label>Owner${s('c_owners',OWNERS,c.owners||'1st owner')}</label>
+    <label>Colour<input id="c_colour" value="${esc(c.colour||'')}" placeholder="White"></label>
+    <label>Location<input id="c_city" value="${esc(c.city||'')}" placeholder="Chennai"></label>
+    <label>Purchase price (₹)<input id="c_price" type="number" inputmode="numeric" value="${esc(c.purchase?.price||'')}" placeholder="950000"></label>
+    <label>Purchase date<input id="c_date" type="date" value="${esc(c.purchase?.date||today())}"></label>
+    <label class="full">Bought from<input id="c_from" value="${esc(c.purchase?.from||'')}" placeholder="Seller / dealer / auction"></label></div>`;
+}
+function readCarFields(root){
+  const g=id=>$(id,root); const title=g('#c_title').value.trim(), price=Number(g('#c_price').value);
+  if(!title) return {err:'Enter the car name.'}; if(!price) return {err:'Enter the purchase price.'};
+  return {data:{title,year:g('#c_year').value?Number(g('#c_year').value):null,reg:g('#c_reg').value.trim().toUpperCase(),km:g('#c_km').value?Number(g('#c_km').value):null,fuel:g('#c_fuel').value,transmission:g('#c_trans').value,owners:g('#c_owners').value,colour:g('#c_colour').value.trim(),city:g('#c_city').value.trim(),purchase:{price,date:g('#c_date').value||today(),from:g('#c_from').value.trim()}}};
+}
+// the panel may be rendered twice (sidebar + sheet); act on the one that is visible
+const activePanel=()=>(!$('#sheet').hidden?$('#sheet .panel'):$('#panel'));
+function openAdd(){ const ov=$('#overlay'); ov.hidden=false; ov.innerHTML=`<div class="scrim" data-close><div class="modal" role="dialog" aria-label="Add car" data-stop>
+  <div style="display:flex;justify-content:space-between;align-items:center"><h2>Add a purchased car</h2><button class="iconbtn" data-close aria-label="Close">${I(P.x,2.4)}</button></div>
+  ${carFields()}<div class="hint">You can add photos right after saving.</div><div class="hint err" id="formErr" hidden></div>
+  <div class="frow"><button class="btn primary" data-act="create">Add car</button><button class="btn" data-close style="flex:0 0 auto">Cancel</button></div></div></div>`; }
+function closeOverlay(){ $('#overlay').hidden=true; $('#overlay').innerHTML=''; }
+function renderLightbox(){
+  const c=sel(); const ph=c?photos(c):[]; const lb=$('#lightbox');
+  if(!c||!ph.length||lbIdx<0){ lbIdx=-1; lb.hidden=true; lb.innerHTML=''; return; }
+  if(lbIdx>=ph.length) lbIdx=ph.length-1; lb.hidden=false;
+  lb.innerHTML=`<div class="lb"><div class="top"><span>${esc(c.title)} · <span class="num">${lbIdx+1} / ${ph.length}</span></span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div>
+    <div class="view" id="lbView"><img src="${blob(ph[lbIdx])}" alt="Photo ${lbIdx+1}">${ph.length>1?`<button class="arrow l" data-lbn="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arrow r" data-lbn="1" aria-label="Next">${I(P.r,2.6)}</button>`:''}</div>
+    <div class="dots">${ph.map((_,i)=>`<i class="${i===lbIdx?'on':''}"></i>`).join('')}</div></div>`;
+}
+function renderAll(){ renderNav(); renderView(); renderPanel(); if(lbIdx>=0) renderLightbox(); }
+
+// ---------- writes ----------
+const busy=new Set();
+async function write(id,patch,logText){
+  if(!db) return toast('Not connected to shared records.'); if(busy.has(id)) return; busy.add(id);
+  const c=cars.find(x=>x.id===id); const now=new Date().toISOString();
+  const log=[{at:now,text:logText,by:myId||null},...(c?.log||[])].slice(0,200);
+  try{ await db.collection('cars').doc(id).update({...patch,log,updatedAt:now,updatedBy:myId||null}); toast(logText); }catch(e){ handleErr(e); }finally{ busy.delete(id); }
+}
+function handleErr(e){ const code=e&&e.code;
+  if(code==='permission-denied'||code==='invalid_argument'){ toast('Permission denied. Sign in as admin to update.'); }
+  else if(code==='resource-exhausted'||code==='quota_exceeded') toast('Storage quota reached. Try again later.');
+  else toast('Could not save. Check your connection and try again.'); console.error(e); }
+async function createCar(){
+  const root=$('#overlay'); const r=readCarFields(root); const errEl=$('#formErr',root);
+  if(r.err){ errEl.hidden=false; errEl.textContent=r.err; return; } if(!db) return toast('Not connected to shared records.');
+  const now=new Date().toISOString();
+  const doc={...r.data,stage:'purchased',photos:[],listing:{},customer:{},payment:{},sale:{},rc:{status:'pending'},attempts:[],log:[{at:now,text:'Purchased for '+money(r.data.purchase.price),by:myId||null}],createdAt:now,updatedAt:now,updatedBy:myId||null};
+  try{ const ref=await db.collection('cars').add(doc); closeOverlay(); toast('Car added. Now add photos.'); selectCar(ref.id); tab='photos'; renderPanel(); }catch(e){ handleErr(e); }
+}
+function shrink(file){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(file); const img=new Image();
+  img.onload=()=>{ URL.revokeObjectURL(url); const max=1600; let w=img.naturalWidth,h=img.naturalHeight; const k=Math.min(1,max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k); const cv=document.createElement('canvas'); cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); cv.toBlob(b=>b?res(b):rej(new Error('encode')),'image/jpeg',0.86); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('decode')); }; img.src=url; }); }
+async function uploadPhotos(files){
+  const c=sel(); if(!c||!assets||!files.length) return; uploading=true; renderPanel();
+  const ids=[]; let failed=0;
+  for(const f of files){ try{ let b=f; try{ b=await shrink(f);}catch(_){ } const r=await assets.upload(b,{type:b.type||'image/jpeg'}); ids.push(r.id); }catch(e){ failed++; console.error(e); if(e&&e.code==='quota_or_state'){ toast('Photo storage is full.'); break; } } }
+  uploading=false;
+  if(ids.length){ const cur=sel(); if(cur){ photoIdx=photos(cur).length; await write(cur.id,{photos:[...photos(cur),...ids]},ids.length+' photo'+(ids.length>1?'s':'')+' added'); } }
+  if(failed) toast(failed+' photo'+(failed>1?'s':'')+' could not be uploaded.'); renderPanel();
+}
+const val=id=>{ const el=$(id,activePanel()); return el?el.value.trim():''; };
+const actions={
+  openAdd, create:createCar,
+  saveDetails(c){ const root=activePanel(); const r=readCarFields(root); const errEl=$('#formErr',root); if(r.err){ errEl.hidden=false; errEl.textContent=r.err; return; } write(c.id,r.data,'Car details updated'); },
+  list(c){ const price=Number(val('#f_price')); if(!price) return toast('Enter the asking price.'); write(c.id,{stage:'listed',listing:{platform:val('#f_platform'),price,date:val('#f_date')||today(),link:val('#f_link')}},`Listed on ${val('#f_platform')} at ${money(price)}`); },
+  relist(c){ const price=Number(val('#f_price2')); if(!price) return toast('Enter the asking price.'); write(c.id,{listing:{...c.listing,platform:val('#f_platform2'),price}},`Listing changed: ${val('#f_platform2')}, ${money(price)}`); },
+  customer(c){ const name=val('#f_name'); if(!name) return toast('Enter the customer name.'); write(c.id,{stage:'customer',customer:{name,phone:val('#f_phone')}},`${name} enquired and came to check`); },
+  payment(c){ const mode=val('#f_mode'),amount=Number(val('#f_amount')),bank=val('#f_bank'); if(!amount) return toast('Enter the agreed price.'); if(mode==='loan'&&!bank) return toast('Enter the bank name.');
+    write(c.id,{stage:'payment',payment:{mode,amount,bank,loanStatus:mode==='loan'?'applied':null}},mode==='loan'?`Deal agreed at ${money(amount)}, loan applied with ${bank}`:`Deal agreed at ${money(amount)}, cash payment pending`); },
+  walk(c){ const reason=val('#f_reason'); write(c.id,{stage:'listed',customer:{},payment:{},attempts:[...(c.attempts||[]),{customer:c.customer?.name,mode:'visit',reason,date:today()}]},`${c.customer?.name||'Customer'} walked away${reason?': '+reason:''}. Back to listed`); },
+  loanApproved(c){ write(c.id,{payment:{...c.payment,loanStatus:'approved'}},`${c.payment.bank||'Bank'} approved the loan, waiting for amount`); },
+  sold(c){ const price=Number(val('#f_recv')); if(!price) return toast('Enter the amount received.'); write(c.id,{stage:'sold',sale:{price,date:val('#f_recvdate')||today()},payment:{...c.payment,loanStatus:c.payment?.mode==='loan'?'approved':null},rc:{status:'pending'}},`Sold to ${c.customer?.name||'customer'} for ${money(price)}${c.payment?.mode==='loan'?' (loan credited)':' (cash)'}`); },
+  fail(c){ const reason=val('#f_reason'); write(c.id,{stage:'listed',customer:{},payment:{},attempts:[...(c.attempts||[]),{customer:c.customer?.name,mode:c.payment?.mode,reason,date:today()}]},`Deal with ${c.customer?.name||'customer'} failed${reason?': '+reason:''}. Back to listed`); },
+  rc(c){ const status=val('#f_rc'),label=(RC_STEPS.find(r=>r[0]===status)||RC_STEPS[0])[1],note=val('#f_rcnote'); write(c.id,{stage:status==='done'?'done':'rc',rc:{status,date:val('#f_rcdate')||today(),note}},`RC: ${label}${note?' · '+note:''}`); },
+  note(c){ const t=val('#noteIn'); if(!t) return; write(c.id,{},t); },
+  addPhotos(){ if(uploading) return; $('#fileIn').value=''; $('#fileIn').click(); },
+  cover(c){ const ph=photos(c); if(photoIdx<=0||photoIdx>=ph.length) return; const id=ph[photoIdx]; photoIdx=0; write(c.id,{photos:[id,...ph.filter(x=>x!==id)]},'Cover photo changed'); },
+  deletePhotoAsk(){ confirmKey='photo'; renderPanel(); },
+  async deletePhotoYes(c){ const ph=photos(c); const id=ph[photoIdx]; if(!id) return; confirmKey=null; photoIdx=Math.max(0,photoIdx-1); await write(c.id,{photos:ph.filter(x=>x!==id)},'Photo removed'); if(assets){ try{ await assets.delete(id);}catch(e){ console.warn(e); } } },
+  cancelConfirm(){ confirmKey=null; renderPanel(); },
+  deleteAsk(){ confirmKey='delete'; renderPanel(); },
+  async deleteYes(c){ if(!db) return; const ph=photos(c); try{ await db.collection('cars').doc(c.id).delete(); unselect(); toast('Car record deleted'); if(assets){ for(const id of ph){ try{ await assets.delete(id);}catch(_){} } } }catch(e){ handleErr(e); } },
+  signOut(){ firebase.auth().signOut().catch(()=>{}); mode='store'; selId=null; sheetOpen=false; renderMode(); },
+  copyReg(c){ const t=c.reg||''; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(()=>toast('Reg number copied'),()=>toast(t)); else toast(t); },
+};
+
+async function apptAction(kind,id){
+  const a=appts.find(x=>x.id===id); if(!a||!db) return;
+  try{
+    if(kind==='remove'){ await db.collection('appointments').doc(id).delete(); toast('Appointment removed'); return; }
+    if(kind==='confirm'){ await db.collection('appointments').doc(id).update({status:'confirmed',updatedAt:new Date().toISOString()}); toast('Appointment confirmed'); return; }
+    if(kind==='cancel'){ await db.collection('appointments').doc(id).update({status:'cancelled',updatedAt:new Date().toISOString()}); toast('Appointment cancelled'); return; }
+    if(kind==='convert'){ const car=cars.find(c=>c.id===a.carId); if(!car) return toast('Car not found');
+      await db.collection('appointments').doc(id).update({status:'converted',updatedAt:new Date().toISOString()});
+      if(car.stage==='listed'){ await write(car.id,{stage:'customer',customer:{name:a.name,phone:a.phone||''}},`${a.name} visited (from appointment) and checked the car`); }
+      else { await write(car.id,{},`${a.name} visited as per appointment`); }
+      selectCar(car.id); toast('Moved to Customer Enquiry'); }
+  }catch(e){ handleErr(e); }
+}
+// ---------- auth ----------
+function renderLogin(){
+  $('#login').innerHTML=`<div class="login"><form class="lcard" id="loginForm" autocomplete="on">
+    <div class="brand"><span class="mark" aria-hidden="true">${I(P.car,2.2)}</span><div><b>Revora</b><small>Used Car Business</small></div></div>
+    <div><h2>Admin sign in</h2><p>Sign in to manage cars, payments, RC transfers and appointments.</p></div>
+    <label>Email<input id="l_email" type="email" autocomplete="username" placeholder="admin@revora.com" required></label>
+    <label>Password<input id="l_pass" type="password" autocomplete="current-password" placeholder="••••••••" required></label>
+    <div class="hint err" id="l_err" hidden>Email or password is incorrect.</div>
+    <button class="btn primary" type="submit" id="l_btn">Sign in</button>
+    <div class="foot">Just looking for a car? <button type="button" data-mode="store">Browse available cars</button></div>
+  </form></div>`;
+}
+function renderMode(){
+  $('#setup').hidden=mode!=='setup'; $('#login').hidden=mode!=='login'; $('#store').hidden=mode!=='store'; $('#adminApp').hidden=mode!=='admin';
+  if(mode==='setup'){ $('#setup').innerHTML=`<div class="login"><div class="lcard"><div class="brand"><span class="mark">${I(P.car,2.2)}</span><div><b>Revora</b><small>Used Car Business</small></div></div><h2>Almost ready</h2><p>The app is deployed but not connected to its database yet. The Firebase configuration file is still empty.</p><p class="hint">Once the config is added, this page will show the car list automatically.</p></div></div>`; return; }
+  if(mode==='login') renderLogin(); else if(mode==='store') renderStore(); else renderAll();
+  window.scrollTo(0,0);
+}
+// ---------- customer storefront ----------
+const forSale=()=>cars.filter(c=>c.stage==='listed'||c.stage==='customer').sort((a,b)=>String(b.listing?.date||'').localeCompare(String(a.listing?.date||'')));
+function storeCard(c){ const ph=photos(c); const sp=[c.year,kmF(c.km),c.fuel,c.transmission].filter(Boolean).join(' · ');
+  return `<button class="scard" data-ssel="${esc(c.id)}"><div class="img">${ph.length?`<img src="${blob(ph[0])}" alt="${esc(c.title)}" loading="lazy">`:I(P.car,1.4)}<span class="tag">Available</span>${ph.length>1?`<span class="n">${ph.length} photos</span>`:''}</div>
+    <div class="b"><div class="pr num">${lakh(c.listing?.price)}</div><div class="tt">${esc(c.title)}</div><div class="sp">${esc(sp||'Details on request')}${c.owners?' · '+esc(c.owners):''}${c.city?' · '+esc(c.city):''}</div><div class="cta">View details & book a visit ${I(P.arrow,2.4)}</div></div></button>`; }
+function renderStore(){
+  const q=search.trim().toLowerCase(); const list=forSale().filter(c=>!q||[c.title,c.fuel,c.transmission,c.city,String(c.year)].some(v=>String(v||'').toLowerCase().includes(q)));
+  const head=`<header class="shead"><div class="in"><button class="brand" data-ssel=""><span class="mark" aria-hidden="true">${I(P.car,2.2)}</span><div><b>Revora</b><small>Quality used cars</small></div></button>
+    <div class="search" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="ssearch" type="search" placeholder="Search by model, fuel, year…" value="${esc(search)}" aria-label="Search cars"></div>
+    <button class="admin" data-mode="login">Admin sign in</button></div></header>`;
+  let body;
+  const c=storeSel?cars.find(x=>x.id===storeSel):null;
+  if(c){
+    const ph=photos(c); if(storePh>=ph.length) storePh=Math.max(0,ph.length-1);
+    const specs=[['Year',c.year],['Kms driven',kmF(c.km)],['Fuel',c.fuel],['Transmission',c.transmission],['Owner',c.owners],['Colour',c.colour],['Location',c.city]].filter(x=>x[1]);
+    const soldOut=!(c.stage==='listed'||c.stage==='customer');
+    const form=booked&&booked.carId===c.id?`<div class="ok-box"><span class="ic">${I(P.check,3)}</span><div><b>Visit booked</b><span>Thanks ${esc(booked.name)}. We will confirm your visit on ${esc(fmtApptDT(booked))} shortly${booked.phone?' on '+esc(booked.phone):''}.</span></div></div>`
+      :bookFail&&bookFail.carId===c.id?`<div class="box"><h3>Almost there</h3><span class="hint">This link is view-only, so the booking could not be saved automatically. Copy the message below and send it to us, and we will confirm your visit.</span><div class="copybox" id="copyTxt">${esc(bookFail.text)}</div><div class="frow"><button class="btn primary sm" data-act="copyReq">Copy message</button><button class="btn sm" data-act="bookAgain">Edit request</button></div></div>`
+      :`<form class="box" id="bookForm" style="border-left:3px solid var(--blue)"><h3>Book a visit to check this car</h3>
+        <div class="form"><label>Your name<input id="b_name" required placeholder="Full name"></label><label>Phone<input id="b_phone" inputmode="tel" required placeholder="98xxxxxxxx"></label>
+        <label>Date<input id="b_date" type="date" required min="${today()}" value="${today()}"></label><label>Time<input id="b_time" type="time" required value="11:00"></label>
+        <label class="full">Anything to tell us? (optional)<input id="b_note" placeholder="e.g. I will bring my mechanic"></label></div>
+        <button class="btn primary" type="submit" id="b_btn">${I(P.cal)}Book appointment</button><span class="hint">We will confirm the time with you. No payment needed to book.</span></form>`;
+    body=`<div class="sbody"><button class="btn link" data-ssel="" style="align-self:flex-start">${I(P.l,2.4)} All cars</button>
+      <div class="sdetail"><div class="sgal"><div class="main">${ph.length?`<img src="${blob(ph[storePh])}" alt="${esc(c.title)}" data-slb="${storePh}">${ph.length>1?`<button class="arr l" data-sph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-sph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${storePh+1} / ${ph.length}</span>`:''}`:I(P.car,1.2)}</div>${ph.length>1?`<div class="th">${ph.map((id,i)=>`<button class="${i===storePh?'on':''}" data-sth="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div>
+      <div class="sinfo"><div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:10px"><div class="sprice num">${lakh(c.listing?.price)}<small>asking price</small></div><h2 style="font-size:20px">${esc(c.title)}${c.year?' <span class="muted" style="font-weight:500">'+esc(c.year)+'</span>':''}</h2>${c.reg?`<span class="regplate">${esc(c.reg.replace(/(\d{4})$/,'••••'))}</span>`:''}
+        ${soldOut?'<span class="pill sold">Sold</span>':'<span class="pill listed">Available for viewing</span>'}
+        <div class="specgrid">${specs.map(([k,v])=>`<div class="spec"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}</div></div>
+        ${soldOut?'<div class="ro">This car has been sold. Browse the other cars we have available.</div>':form}</div></div></div>`;
+  } else {
+    body=`<div class="sbody"><div class="hero"><div><h1>Find your next car at Revora</h1><p>Hand-picked used cars, checked by us. Browse what is available, then book a time to come and see the car in person.</p></div><span class="pill">${list.length} car${list.length===1?'':'s'} available</span></div>
+      ${!loaded?`<div class="empty"><h3>Loading cars…</h3></div>`:list.length?`<div class="sgrid">${list.map(storeCard).join('')}</div>`:`<div class="card empty"><h3>${q?'No cars match your search':'No cars listed right now'}</h3>${q?'Try a different model or fuel type.':'Please check back soon.'}</div>`}</div>`;
+  }
+  $('#store').innerHTML=head+body+`<div class="sfoot">© Revora · Used Car Business · <button data-mode="login">Admin</button></div>`;
+}
+async function bookVisit(){
+  const c=cars.find(x=>x.id===storeSel); if(!c) return;
+  const name=$('#b_name').value.trim(), phone=$('#b_phone').value.trim(), date=$('#b_date').value, time=$('#b_time').value, note=$('#b_note').value.trim();
+  if(!name||!phone||!date||!time) return toast('Please fill your name, phone, date and time.');
+  const a={carId:c.id,carTitle:[c.title,c.year,c.fuel].filter(Boolean).join(' '),name,phone,date,time,note,status:'new',createdAt:new Date().toISOString()};
+  const btn=$('#b_btn'); if(btn){ btn.disabled=true; btn.textContent='Booking…'; }
+  try{ if(!db) throw {code:'not_granted'}; await db.collection('appointments').add(a); booked=a; bookFail=null; }
+  catch(e){ console.warn(e); bookFail={carId:c.id,text:`Hi Revora, I'm ${name} (${phone}). I'd like to visit and check the ${a.carTitle}${c.reg?' ('+c.reg+')':''} on ${fmtApptDT(a)}.${note?' Note: '+note:''}`}; }
+  renderStore();
+}
+// ---------- events ----------
+document.addEventListener('click',e=>{
+  const sm=e.target.closest('[data-mode],[data-ssel],[data-sph],[data-sth],[data-slb],[data-appt]');
+  if(sm){
+    if(sm.dataset.mode){ mode=sm.dataset.mode; renderMode(); return; }
+    if(sm.dataset.ssel!==undefined){ storeSel=sm.dataset.ssel||null; storePh=0; booked=null; bookFail=null; renderStore(); window.scrollTo(0,0); return; }
+    if(sm.dataset.sph){ const n=photos(cars.find(x=>x.id===storeSel)||{}).length; storePh=(storePh+Number(sm.dataset.sph)+n)%n; renderStore(); return; }
+    if(sm.dataset.sth!==undefined){ storePh=Number(sm.dataset.sth); renderStore(); return; }
+    if(sm.dataset.slb!==undefined){ selId=storeSel; lbIdx=Number(sm.dataset.slb); renderLightbox(); return; }
+    if(sm.dataset.appt){ apptAction(sm.dataset.appt,sm.dataset.id); return; }
+  }
+  const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-act]'); if(!t) return;
+  const c=sel();
+  if(t.dataset.view){ view=t.dataset.view; filter='all'; window.scrollTo(0,0); renderNav(); renderView(); return; }
+  if(t.dataset.f!==undefined){ filter=(filter===t.dataset.f&&t.classList.contains('pstage'))?'all':t.dataset.f; renderView(); return; }
+  if(t.dataset.sel){ selectCar(t.dataset.sel); return; }
+  if(t.hasAttribute('data-unsel')){ if(narrow()){ sheetOpen=false; renderPanel(); } else unselect(); return; }
+  if(t.dataset.tab){ tab=t.dataset.tab; confirmKey=null; renderPanel(); return; }
+  if(t.dataset.ph){ const n=photos(c).length; photoIdx=(photoIdx+Number(t.dataset.ph)+n)%n; renderPanel(); return; }
+  if(t.dataset.thumb!==undefined){ photoIdx=Number(t.dataset.thumb); renderPanel(); return; }
+  if(t.hasAttribute('data-lbclose')){ lbIdx=-1; renderLightbox(); return; }
+  if(t.dataset.lbn){ const n=photos(c).length; lbIdx=(lbIdx+Number(t.dataset.lbn)+n)%n; renderLightbox(); return; }
+  if(t.dataset.lb!==undefined){ lbIdx=Number(t.dataset.lb); renderLightbox(); return; }
+  if(t.hasAttribute('data-close')){ closeOverlay(); return; }
+  if(t.hasAttribute('data-stop')) return;
+  if(t.dataset.act==='copyReq'){ const txt=$('#copyTxt')?.textContent||''; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(()=>toast('Message copied'),()=>toast('Select the text and copy it')); else toast('Select the text and copy it'); return; }
+  if(t.dataset.act==='bookAgain'){ bookFail=null; renderStore(); return; }
+  if(t.dataset.act){ const fn=actions[t.dataset.act]; if(fn) fn(c); }
+});
+document.addEventListener('submit',async e=>{
+  if(e.target.id==='loginForm'){ e.preventDefault(); const em=$('#l_email').value.trim().toLowerCase(), pw=$('#l_pass').value; const btn=$('#l_btn'); btn.disabled=true; btn.textContent='Checking…';
+    let ok=false, msg='Email or password is incorrect.';
+    try{ const cred=await firebase.auth().signInWithEmailAndPassword(em,pw); ok=!!cred.user; }
+    catch(err){ ok=false; if(err&&err.code==='auth/network-request-failed') msg='No internet connection. Try again.'; else if(err&&err.code==='auth/too-many-requests') msg='Too many attempts. Wait a few minutes and try again.'; else if(err&&err.code==='auth/operation-not-allowed') msg='Email sign-in is not enabled in Firebase yet.'; console.warn(err); }
+    if(ok){ mode='admin'; view='dashboard'; document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); renderMode(); toast('Welcome back, admin'); }
+    else { btn.disabled=false; btn.textContent='Sign in'; const er=$('#l_err'); er.hidden=false; er.textContent=msg; const card=$('.lcard'); card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); } return; }
+  if(e.target.id==='bookForm'){ e.preventDefault(); bookVisit(); }
+});
+document.addEventListener('input',e=>{ if(e.target.id==='ssearch'){ search=e.target.value; if(!storeSel){ const grid=$('#store .sgrid, #store .sbody .empty'); renderStore(); const inp=$('#ssearch'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); } } } });
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.closest&&e.target.closest('.row[data-sel]')){ selectCar(e.target.closest('.row').dataset.sel); }
+  if(e.key==='Escape'){ if(lbIdx>=0){ lbIdx=-1; renderLightbox(); } else if(!$('#overlay').hidden) closeOverlay(); else if(sheetOpen&&narrow()){ sheetOpen=false; renderPanel(); } }
+  if(lbIdx>=0&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){ const n=photos(sel()).length; if(n>1){ lbIdx=(lbIdx+(e.key==='ArrowRight'?1:-1)+n)%n; renderLightbox(); } }
+  if(e.key==='Enter'&&e.target.id==='noteIn'){ const c=sel(); if(c) actions.note(c); }
+});
+document.addEventListener('change',e=>{ if(e.target.id==='f_mode'){ const w=$('#bankWrap',e.target.closest('.box')); if(w) w.hidden=e.target.value!=='loan'; } });
+$('#fileIn').addEventListener('change',e=>{ const files=[...e.target.files].filter(f=>f.type.startsWith('image/')); if(files.length) uploadPhotos(files); });
+let sx=null,sT=null;
+document.addEventListener('touchstart',e=>{ const t=e.target.closest('#lbView,.panel .ph'); if(t){ sx=e.touches[0].clientX; sT=t.id==='lbView'?'lb':'ph'; } },{passive:true});
+document.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)<40) return; const c=sel(); const n=c?photos(c).length:0; if(n<2) return; const d=dx<0?1:-1;
+  if(sT==='lb'){ lbIdx=(lbIdx+d+n)%n; renderLightbox(); } else { photoIdx=(photoIdx+d+n)%n; renderPanel(); } },{passive:true});
+$('#search').addEventListener('input',e=>{ search=e.target.value; renderView(); });
+$('#bell').addEventListener('click',()=>{ view='dashboard'; renderNav(); renderView(); const el=document.querySelector('.pend'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); });
+window.addEventListener('resize',()=>{ if(sheetOpen) renderPanel(); });
+let toastT; function toast(msg){ const el=$('#toast'); el.textContent=msg; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,2800); }
+
+// ---------- boot ----------
+renderMe();
+(function boot(){
+  const cfg=window.REVORA_FIREBASE;
+  if(!cfg||!cfg.apiKey||/YOUR_/.test(cfg.apiKey)){ mode='setup'; loaded=true; renderMode(); return; }
+  try{ firebase.initializeApp(cfg); }catch(e){ console.error(e); mode='setup'; renderMode(); return; }
+  db=firebase.firestore(); db.settings({ignoreUndefinedProperties:true,merge:true});
+  try{ db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(_){}
+  const storage=firebase.storage();
+  // photo storage shim: ids are download URLs
+  assets={
+    async upload(b,opts){ const name='photos/'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)+'.jpg'; const ref=storage.ref(name); await ref.put(b,{contentType:(opts&&opts.type)||b.type||'image/jpeg',cacheControl:'public,max-age=31536000'}); const url=await ref.getDownloadURL(); return {id:url,url,sizeBytes:b.size,contentType:b.type}; },
+    async delete(url){ try{ await storage.refFromURL(url).delete(); }catch(e){ if(!(e&&e.code==='storage/object-not-found')) throw e; } return {deleted:true}; }
+  };
+  user={ async id(){ const u=firebase.auth().currentUser; return u?u.uid:null; }, async profiles(ids){ const o={}; ids.forEach(i=>o[i]={name:'Admin'}); return o; } };
+  firebase.auth().onAuthStateChanged(u=>{
+    const isAdmin=!!(u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL);
+    canWrite=isAdmin; myId=u?u.uid:null; me={name:isAdmin?'Admin':'',avatar:'',email:u?u.email||'':''}; renderMe();
+    if(!authReady){ authReady=true; mode=isAdmin?'admin':'store'; if(isAdmin){ document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); } renderMode(); }
+    else if(!isAdmin&&mode==='admin'){ mode='store'; renderMode(); }
+  });
+  const timer=setTimeout(()=>setLive('err','Slow connection'),10000);
+  db.collection('cars').onSnapshot(snap=>{
+    cars=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); loaded=true;
+    if(!snap.metadata.fromCache){ clearTimeout(timer); setLive('on','Live'); }
+    if(mode==='admin') renderAll(); else if(mode==='store') renderStore();
+  },err=>{ clearTimeout(timer); loaded=true; setLive('err','Connection lost'); if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); console.error(err); });
+  db.collection('appointments').onSnapshot(snap=>{ appts=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); if(mode==='admin') renderAll(); },err=>{ /* customers may not be allowed to read appointments */ if(mode==='admin') console.error(err); });
+})();
+})();
+</script>
+</body>
+</html>

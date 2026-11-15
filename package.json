@@ -1,0 +1,14 @@
+{
+  "name": "revora-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "rules": "firebase-tools deploy --only firestore:rules,storage",
+    "setup-admin": "node scripts/setup-admin.js",
+    "seed": "node scripts/seed.js"
+  },
+  "devDependencies": {
+    "firebase": "^10.14.1",
+    "firebase-tools": "^13.29.1"
+  }
+}
