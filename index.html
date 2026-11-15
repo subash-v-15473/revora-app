@@ -10,7 +10,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
@@ -549,7 +548,12 @@ const APPT_STATUS={new:'New',confirmed:'Confirmed',converted:'Visited',cancelled
 
 let appts=[],mode='store',storeSel=null,storePh=0,booked=null,bookFail=null,authReady=false;
 let db=null,user=null,assets=null,cars=[],view='dashboard',filter='all',search='',selId=null,tab='overview',photoIdx=0,lbIdx=-1,confirmKey=null,names={},me={name:'',avatar:'',email:''},myId=null,canWrite=true,loaded=false,uploading=false,sheetOpen=false;
-const blob=id=>String(id||'');
+const PH_BLANK='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+const photoCache={}, photoPending=new Set(); let photoTimer=null;
+function blob(id){ id=String(id||''); if(!id) return PH_BLANK; if(!id.startsWith('fs:')) return id;
+  if(photoCache[id]) return photoCache[id];
+  if(db&&!photoPending.has(id)){ photoPending.add(id); db.collection('photos').doc(id.slice(3)).get().then(s=>{ photoCache[id]=(s.exists&&s.data().data)||PH_BLANK; }).catch(()=>{ photoCache[id]=PH_BLANK; }).finally(()=>{ photoPending.delete(id); clearTimeout(photoTimer); photoTimer=setTimeout(()=>{ if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); },80); }); }
+  return PH_BLANK; }
 const photos=c=>Array.isArray(c.photos)?c.photos:[];
 const narrow=()=>window.matchMedia('(max-width:1180px)').matches;
 const sel=()=>cars.find(x=>x.id===selId);
@@ -731,7 +735,7 @@ function viewSettings(){
       <p style="margin:0">Signed in as <b>${esc(me.email||ADMIN_EMAIL)}</b>.</p></div></section>
     <section class="card"><div class="hd"><h2>Data</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
       <p style="margin:0"><b>${cars.length}</b> cars tracked · <b>${cars.reduce((a,c)=>a+photos(c).length,0)}</b> photos stored.</p>
-      <p style="margin:0">Photos are resized to 1600px before upload to keep storage small. Deleting a car also deletes its photos. Completed deals stay in Reports.</p>
+      <p style="margin:0">Photos are compressed to about 1280px before saving so the free database plan is enough. Deleting a car also deletes its photos. Completed deals stay in Reports.</p>
       <p style="margin:0">Stages: Purchased → Listed → Customer Enquiry → Payment Pending (cash or bank loan) → Sale Completed → RC Transfer → Completed. A failed deal sends the car back to Listed and is logged under the car.</p></div></section>
   </div>`;
 }
@@ -892,7 +896,7 @@ async function createCar(){
   try{ const ref=await db.collection('cars').add(doc); closeOverlay(); toast('Car added. Now add photos.'); selectCar(ref.id); tab='photos'; renderPanel(); }catch(e){ handleErr(e); }
 }
 function shrink(file){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(file); const img=new Image();
-  img.onload=()=>{ URL.revokeObjectURL(url); const max=1600; let w=img.naturalWidth,h=img.naturalHeight; const k=Math.min(1,max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k); const cv=document.createElement('canvas'); cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); cv.toBlob(b=>b?res(b):rej(new Error('encode')),'image/jpeg',0.86); };
+  img.onload=()=>{ URL.revokeObjectURL(url); const max=1280; let w=img.naturalWidth,h=img.naturalHeight; const k=Math.min(1,max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k); const cv=document.createElement('canvas'); cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); const tryQ=q=>cv.toBlob(b=>{ if(!b) return rej(new Error('encode')); if(b.size>650000&&q>0.5) tryQ(q-0.1); else res(b); },'image/jpeg',q); tryQ(0.82); };
   img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('decode')); }; img.src=url; }); }
 async function uploadPhotos(files){
   const c=sel(); if(!c||!assets||!files.length) return; uploading=true; renderPanel();
@@ -1068,11 +1072,11 @@ renderMe();
   try{ firebase.initializeApp(cfg); }catch(e){ console.error(e); mode='setup'; renderMode(); return; }
   db=firebase.firestore(); db.settings({ignoreUndefinedProperties:true,merge:true});
   try{ db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(_){}
-  const storage=firebase.storage();
-  // photo storage shim: ids are download URLs
+  // photo storage shim: photos live in Firestore as compressed data URLs (free plan, no Cloud Storage needed)
+  const toDataURL=b=>new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('read')); r.readAsDataURL(b); });
   assets={
-    async upload(b,opts){ const name='photos/'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)+'.jpg'; const ref=storage.ref(name); await ref.put(b,{contentType:(opts&&opts.type)||b.type||'image/jpeg',cacheControl:'public,max-age=31536000'}); const url=await ref.getDownloadURL(); return {id:url,url,sizeBytes:b.size,contentType:b.type}; },
-    async delete(url){ try{ await storage.refFromURL(url).delete(); }catch(e){ if(!(e&&e.code==='storage/object-not-found')) throw e; } return {deleted:true}; }
+    async upload(b){ const data=await toDataURL(b); if(data.length>950000) throw {code:'too_large',message:'Photo too large'}; const ref=await db.collection('photos').add({data,size:b.size,createdAt:new Date().toISOString()}); const id='fs:'+ref.id; photoCache[id]=data; return {id,url:data,sizeBytes:b.size,contentType:b.type}; },
+    async delete(id){ if(String(id).startsWith('fs:')){ await db.collection('photos').doc(String(id).slice(3)).delete(); delete photoCache[id]; } return {deleted:true}; }
   };
   user={ async id(){ const u=firebase.auth().currentUser; return u?u.uid:null; }, async profiles(ids){ const o={}; ids.forEach(i=>o[i]={name:'Admin'}); return o; } };
   firebase.auth().onAuthStateChanged(u=>{

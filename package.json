@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "rules": "firebase-tools deploy --only firestore:rules,storage",
+    "rules": "firebase-tools deploy --only firestore:rules",
     "setup-admin": "node scripts/setup-admin.js",
     "seed": "node scripts/seed.js"
   },

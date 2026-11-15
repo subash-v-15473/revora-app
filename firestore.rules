@@ -9,6 +9,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    // Photos: stored as compressed data URLs; anyone can view, only the admin can add or remove.
+    match /photos/{photoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     // Appointments: anyone can book (create) with a sane shape; only the admin can read, change or delete.
     match /appointments/{apptId} {
       allow create: if request.resource.data.keys().hasAll(['carId','carTitle','name','phone','date','time','status','createdAt'])
