@@ -22,6 +22,12 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Revora uses the camera to add car photos and documents.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Revora can save photos to your library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Revora needs your photo library to add car photos and documents.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
