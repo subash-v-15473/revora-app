@@ -132,13 +132,12 @@ body.boot #view>*:nth-child(1){animation-delay:.05s} body.boot #view>*:nth-child
 body.boot .kpi{animation:pop .45s cubic-bezier(.2,.8,.2,1) both} body.boot .kpi:nth-child(2){animation-delay:.08s} body.boot .kpi:nth-child(3){animation-delay:.16s} body.boot .kpi:nth-child(4){animation-delay:.24s}
 body.boot .nav button{animation:rise .4s both} body.boot .nav button:nth-child(2){animation-delay:.04s} body.boot .nav button:nth-child(3){animation-delay:.08s} body.boot .nav button:nth-child(4){animation-delay:.12s} body.boot .nav button:nth-child(5){animation-delay:.16s} body.boot .nav button:nth-child(6){animation-delay:.2s} body.boot .nav button:nth-child(7){animation-delay:.24s}
 body.boot .pstage{animation:pop .4s both} body.boot .pstage:nth-of-type(2){animation-delay:.06s} body.boot .pstage:nth-of-type(3){animation-delay:.12s} body.boot .pstage:nth-of-type(4){animation-delay:.18s} body.boot .pstage:nth-of-type(5){animation-delay:.24s} body.boot .pstage:nth-of-type(6){animation-delay:.3s} body.boot .pstage:nth-of-type(7){animation-delay:.36s}
-.row{animation:rise .3s cubic-bezier(.2,.8,.2,1) both} .row:nth-child(2){animation-delay:.04s} .row:nth-child(3){animation-delay:.08s} .row:nth-child(4){animation-delay:.12s} .row:nth-child(5){animation-delay:.16s} .row:nth-child(n+6){animation-delay:.2s}
-.pbody,.pempty{animation:rise .3s cubic-bezier(.2,.8,.2,1) both}
-.panel .ph img{animation:pop .35s both}
-.chart path[stroke]{stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1.4s .3s ease-out forwards}
+#view.anim .row{animation:rise .3s cubic-bezier(.2,.8,.2,1) both} #view.anim .row:nth-child(2){animation-delay:.04s} #view.anim .row:nth-child(3){animation-delay:.08s} #view.anim .row:nth-child(4){animation-delay:.12s} #view.anim .row:nth-child(5){animation-delay:.16s} #view.anim .row:nth-child(n+6){animation-delay:.2s}
+.sheetwrap.anim .pbody{animation:rise .3s cubic-bezier(.2,.8,.2,1) both}
+#view.anim .chart path[stroke]{stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1.4s .3s ease-out forwards}
 .toast{animation:rise .25s both}
 .modal{animation:pop .25s cubic-bezier(.2,.8,.2,1) both}
-.sheetwrap .panel{animation:slideIn .3s cubic-bezier(.2,.8,.2,1) both}
+.sheetwrap.anim .panel{animation:slideIn .3s cubic-bezier(.2,.8,.2,1) both}
 @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
 @media (max-width:760px){ .main{padding:12px max(14px,env(safe-area-inset-right,0px)) 110px max(14px,env(safe-area-inset-left,0px));gap:16px} #view{gap:16px} }
 .topbar{display:flex;align-items:center;gap:12px}
@@ -363,7 +362,7 @@ details summary::-webkit-details-marker{display:none}
 .pgrid .cov{position:absolute;left:4px;top:4px;background:var(--blue);color:#fff;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:4px}
 .attempt{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:8px 10px;background:var(--red-soft);color:var(--red);border-radius:8px}
 /* leads (interested customers) */
-.lead{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,box-shadow .2s;animation:rise .25s both}
+.lead{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,box-shadow .2s}
 .lead:hover{border-color:var(--line-strong)}
 .lead.primary{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
 .lead.closed{opacity:.6}
@@ -398,12 +397,14 @@ details summary::-webkit-details-marker{display:none}
 .banner b{font-size:15px;display:block} .banner small{color:var(--fg-2);font-size:12.5px}
 .banner .ok{position:absolute;right:14px;top:14px;width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center}
 .banner .ok svg{width:15px;height:15px}
-.sheetwrap{position:fixed;inset:0;z-index:50;background:rgba(5,10,25,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;justify-content:flex-end;animation:fade .15s}
+.sheetwrap{position:fixed;inset:0;z-index:50;background:rgba(5,10,25,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;justify-content:flex-end}
+.sheetwrap.anim{animation:fade .15s}
 .sheetwrap .panel{width:100%;height:100%;position:relative;border-left:0;box-shadow:var(--shadow-lg);padding-top:env(safe-area-inset-top,0px)}
 .ptop{display:flex;flex-direction:column}
 @media (min-width:761px){
   .sheetwrap{align-items:center;justify-content:center;padding:24px}
-  .sheetwrap .panel{width:min(1180px,100%);height:min(92vh,100%);border-radius:22px;padding-top:0;animation:pop .25s cubic-bezier(.2,.8,.2,1) both}
+  .sheetwrap .panel{width:min(1180px,100%);height:min(92vh,100%);border-radius:22px;padding-top:0;animation:none}
+  .sheetwrap.anim .panel{animation:pop .25s cubic-bezier(.2,.8,.2,1) both}
   .ptop{display:grid;grid-template-columns:minmax(360px,44%) 1fr;gap:0 20px;align-items:start;padding:16px 20px 0}
   .ptop .ph{margin:0;aspect-ratio:16/10}
   .ptop .phead{padding:6px 0 0}
@@ -477,14 +478,16 @@ details summary::-webkit-details-marker{display:none}
 .shead .admin{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
 .shead .admin:hover{color:var(--blue)}
 .sbody{max-width:1180px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:20px}
-.hero{background:linear-gradient(135deg,var(--blue) 0%,#4f7df3 60%,#6aa0ff 100%);color:#fff;border-radius:20px;padding:28px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden;animation:rise .5s both}
+.hero{background:linear-gradient(135deg,var(--blue) 0%,#4f7df3 60%,#6aa0ff 100%);color:#fff;border-radius:20px;padding:28px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
+#store.anim .hero{animation:rise .5s both}
 .hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
 .hero h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
 .hero p{margin:6px 0 0;opacity:.9;font-size:14.5px;max-width:52ch}
 .hero .pill{background:rgba(255,255,255,.18);color:#fff;font-size:13px}
 .sgrid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
 @media (max-width:520px){ .sgrid{grid-template-columns:repeat(2,1fr);gap:12px} }
-.scard{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-align:left;display:flex;flex-direction:column;box-shadow:var(--shadow-sm);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s;animation:rise .4s both}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-align:left;display:flex;flex-direction:column;box-shadow:var(--shadow-sm);transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s}
+#store.anim .scard{animation:rise .4s both}
 .scard:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
 .scard .img{aspect-ratio:4/3;background:var(--surface-3);position:relative;overflow:hidden;display:grid;place-items:center;color:var(--faint)}
 .scard .img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
@@ -503,7 +506,7 @@ details summary::-webkit-details-marker{display:none}
 @media (max-width:860px){ .sdetail{grid-template-columns:1fr} }
 .sgal{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm)}
 .sgal .main{aspect-ratio:16/10;background:var(--surface-3);position:relative;overflow:hidden;padding:0;display:grid;place-items:center;color:var(--faint)}
-.sgal .main img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;position:absolute;inset:0;animation:pop .3s both}
+.sgal .main img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;position:absolute;inset:0}
 .sgal .main svg{width:60px;height:60px}
 .sgal .arr{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.92);color:#0f172a;display:grid;place-items:center;box-shadow:var(--shadow-sm)}
 .sgal .arr.l{left:10px}.sgal .arr.r{right:10px}
@@ -521,7 +524,7 @@ details summary::-webkit-details-marker{display:none}
 .spec .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
 .spec .v{font-size:14px;font-weight:700;margin-top:2px;overflow-wrap:anywhere}
 .regplate{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;letter-spacing:.08em;font-size:13px;background:#fff6c7;color:#3b3000;border:1.5px solid #c9b64a;border-radius:5px;padding:2px 10px}
-.ok-box{background:var(--green-soft);color:var(--green);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start;animation:pop .3s both}
+.ok-box{background:var(--green-soft);color:var(--green);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start}
 .ok-box .ic{width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;flex:none}
 .ok-box .ic svg{width:16px;height:16px}
 .ok-box b{display:block;font-size:15px}
@@ -533,7 +536,8 @@ details summary::-webkit-details-marker{display:none}
 .consent input{width:16px;height:16px;margin-top:2px;flex:none;padding:0}
 .consent .lnk{color:var(--blue);font-weight:600;text-decoration:underline}
 /* ---- appointments (admin) ---- */
-.appt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--line);animation:rise .3s both}
+.appt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--line)}
+#view.anim .appt{animation:rise .3s both}
 .appt .when{background:var(--blue-soft);color:var(--blue);border-radius:12px;padding:8px 12px;text-align:center;min-width:76px}
 .appt .when b{display:block;font-size:18px;font-weight:800;line-height:1.1}
 .appt .when small{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
@@ -697,9 +701,11 @@ let appts=[],mode='store',storeSel=(location.hash.match(/^#car-([A-Za-z0-9_-]+)$
 let db=null,user=null,assets=null,cars=[],view='dashboard',filter='all',search='',selId=null,tab='overview',photoIdx=0,lbIdx=-1,confirmKey=null,names={},me={name:'',avatar:'',email:''},myId=null,canWrite=true,loaded=false,uploading=false,sheetOpen=false;
 const PH_BLANK='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 const photoCache={}, photoPending=new Set(); let photoTimer=null;
+// swap loaded photos into existing <img> tags instead of redrawing the page
+function patchPhotos(){ document.querySelectorAll('img[data-pid]').forEach(im=>{ const d=photoCache[im.dataset.pid]; if(d&&im.getAttribute('src')!==d) im.src=d; }); }
 function blob(id){ id=String(id||''); if(!id) return PH_BLANK; if(!id.startsWith('fs:')&&!id.startsWith('fd:')) return id;
   if(photoCache[id]) return photoCache[id];
-  if(db&&!photoPending.has(id)){ photoPending.add(id); db.collection(id.startsWith('fd:')?'files':'photos').doc(id.slice(3)).get().then(s=>{ photoCache[id]=(s.exists&&s.data().data)||PH_BLANK; }).catch(()=>{ photoCache[id]=PH_BLANK; }).finally(()=>{ photoPending.delete(id); clearTimeout(photoTimer); photoTimer=setTimeout(()=>{ if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); },80); }); }
+  if(db&&!photoPending.has(id)){ photoPending.add(id); db.collection(id.startsWith('fd:')?'files':'photos').doc(id.slice(3)).get().then(s=>{ photoCache[id]=(s.exists&&s.data().data)||PH_BLANK; }).catch(()=>{ photoCache[id]=PH_BLANK; }).finally(()=>{ photoPending.delete(id); clearTimeout(photoTimer); photoTimer=setTimeout(patchPhotos,60); }); }
   return PH_BLANK; }
 const photos=c=>Array.isArray(c.photos)?c.photos:[];
 const narrow=()=>true; const phoneW=()=>window.matchMedia('(max-width:760px)').matches;
@@ -835,7 +841,7 @@ function carRow(c){
   const st=stageOf(c.stage), ph=photos(c);
   const pr=stageIdx(c.stage)>=stageIdx('sold')?`Purchased: ${lakh(c.purchase?.price)} · Sold: ${lakh(c.sale?.price)}`:`Purchased: ${lakh(c.purchase?.price)}${c.listing?.price?' · Ask: '+lakh(c.listing.price):''}`;
   return `<div class="row ${c.id===selId?'sel':''}" data-sel="${esc(c.id)}" role="button" tabindex="0">
-    <div class="thumb">${ph.length?`<img src="${blob(ph[0])}" alt="" loading="lazy">`:I(P.car,1.6)}</div>
+    <div class="thumb">${ph.length?`<img data-pid="${ph[0]}" src="${blob(ph[0])}" alt="" loading="lazy">`:I(P.car,1.6)}</div>
     <div class="t"><b>${esc(c.title)}${c.year?' '+esc(c.year):''}</b><div class="reg">${esc(c.reg||'No reg no')}</div><div class="pr">${pr}</div></div>
     <div style="min-width:0"><span class="pill ${st.id}">${st.label}</span><div class="sub">${esc(stageSub(c))}</div></div>
     <div class="mini">${miniSteps(c)}</div>
@@ -1023,8 +1029,10 @@ function viewSettings(){
       <p style="margin:0">Signed in as <b>${esc(me.name||'Admin')}</b> · ${esc(me.email||ADMIN_EMAIL)}. Change passwords in Firebase Console → Authentication → Users.</p></div></section>`}
   </div>`;
 }
+let viewAnim=false, panelAnim=false, storeAnim=true;
 function renderView(){
-  $('#view').innerHTML={dashboard:viewDashboard,inventory:viewInventory,appointments:viewAppointments,customers:viewCustomers,payments:viewPayments,rc:viewRC,reports:viewReports,settings:viewSettings}[view]();
+  const v=$('#view'); v.classList.toggle('anim',viewAnim); viewAnim=false;
+  v.innerHTML={dashboard:viewDashboard,inventory:viewInventory,appointments:viewAppointments,customers:viewCustomers,payments:viewPayments,rc:viewRC,reports:viewReports,settings:viewSettings}[view]();
   wireChart();
 }
 function wireChart(){
@@ -1066,9 +1074,9 @@ function panelHTML(){
     <div class="box"><h3 class="cap">Timeline</h3><div class="tl">${(c.log||[]).map((l,i)=>`<div class="e ${i===0?'b':'g'}"><span class="d">${i===0?'':I(P.check,3)}</span><div><b>${esc(l.text)}</b><small>${esc(fmtDT(l.at))}${l.by&&names[l.by]?' · '+esc(names[l.by]):''}</small></div></div>`).join('')||'<span class="muted">No history yet.</span>'}</div></div>
     ${canWrite?`<div class="box"><h3 class="cap">Add a note</h3><div class="frow"><input id="noteIn" placeholder="e.g. Customer bringing mechanic on Sunday" style="flex:1 1 160px"><button class="btn primary sm" data-act="note" style="flex:0 0 auto">Save</button></div></div>`:''}`;
   const canUp=!!assets&&canWrite;
-  const phot=`<div class="pgrid">${ph.map((id,i)=>`<button class="${i===photoIdx?'on':''}" data-thumb="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy">${i===0?'<span class="cov">Cover</span>':''}</button>`).join('')}${canUp?`<button class="add" data-act="addPhotos" ${uploading?'disabled':''}>${uploading?'Uploading…':I(P.plus,2.4)+'Add photos'}</button>`:''}</div>
+  const phot=`<div class="pgrid">${ph.map((id,i)=>`<button class="${i===photoIdx?'on':''}" data-thumb="${i}" aria-label="Photo ${i+1}"><img data-pid="${id}" src="${blob(id)}" alt="" loading="lazy">${i===0?'<span class="cov">Cover</span>':''}</button>`).join('')}${canUp?`<button class="add" data-act="addPhotos" ${uploading?'disabled':''}>${uploading?'Uploading…':I(P.plus,2.4)+'Add photos'}</button>`:''}</div>
     ${ph.length?`<div class="frow"><button class="btn sm" data-lb="${photoIdx}">View full screen</button>${canUp&&photoIdx>0?`<button class="btn sm" data-act="cover">Make cover</button>`:''}${canUp?(confirmKey==='photo'?`<button class="btn sm bad" data-act="deletePhotoYes">Remove this photo</button><button class="btn sm" data-act="cancelConfirm">Keep</button>`:`<button class="btn sm ghost" data-act="deletePhotoAsk">${I(P.trash)}Remove</button>`):''}</div>`:`<span class="hint">${canUp?'Add photos so your partner can see the car.':'No photos yet.'}</span>`}`;
-  return `<div class="ptop"><div class="ph">${ph.length?`<img src="${blob(ph[photoIdx])}" alt="${esc(c.title)}" data-lb="${photoIdx}">${ph.length>1?`<button class="arr l" data-ph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-ph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${photoIdx+1}/${ph.length}</span>`:''}`:`<div class="none"><div>${I(P.cam,1.6)}No photos yet</div></div>`}<button class="x" data-unsel aria-label="Close">${I(P.x,2.6)}</button></div>
+  return `<div class="ptop"><div class="ph">${ph.length?`<img data-pid="${ph[photoIdx]}" src="${blob(ph[photoIdx])}" alt="${esc(c.title)}" data-lb="${photoIdx}">${ph.length>1?`<button class="arr l" data-ph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-ph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${photoIdx+1}/${ph.length}</span>`:''}`:`<div class="none"><div>${I(P.cam,1.6)}No photos yet</div></div>`}<button class="x" data-unsel aria-label="Close">${I(P.x,2.6)}</button></div>
   <div class="phead"><div class="tt"><h2>${esc(c.title)}${c.year?' '+esc(c.year):''}</h2><span class="pill ${st.id}">${st.short}</span></div><span class="reg">${esc(c.reg||'No reg no')}${c.reg?`<button data-act="copyReg" aria-label="Copy reg number">${I(P.copy)}</button>`:''}</span>
     <div class="tools"><button class="btn sm" data-act="copyLink">${I(P.copy)}Copy car link</button>${c.customer?.phone&&stageIdx(c.stage)>=stageIdx('customer')?`<a class="btn sm wa" href="${waLink(c.customer.phone,'Hi '+c.customer.name+', this is Revora about the '+c.title+'.')}" target="_blank" rel="noopener">WhatsApp ${esc(c.customer.name.split(' ')[0])}</a>`:''}</div>
     <div class="summary">${summary}</div></div>
@@ -1077,10 +1085,20 @@ function panelHTML(){
 }
 function renderPanel(){
   const sh=$('#sheet');
-  if(sheetOpen&&sel()){ const scrollTop=sh.querySelector('.panel')?.scrollTop||0; sh.hidden=false; sh.innerHTML=`<div class="sheetwrap" data-unsel><div class="panel" data-stop>${panelHTML()}</div></div>`; const pn=sh.querySelector('.panel'); if(pn&&scrollTop) pn.scrollTop=scrollTop; document.body.style.overflow='hidden'; }
+  if(sheetOpen&&sel()){ const scrollTop=sh.querySelector('.panel')?.scrollTop||0; sh.hidden=false; sh.innerHTML=`<div class="sheetwrap ${panelAnim?'anim':''}" data-unsel><div class="panel" data-stop>${panelHTML()}</div></div>`; panelAnim=false; const pn=sh.querySelector('.panel'); if(pn&&scrollTop) pn.scrollTop=scrollTop; document.body.style.overflow='hidden'; }
   else { sh.hidden=true; sh.innerHTML=''; document.body.style.overflow=''; }
 }
-function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; editLead=null; addingLead=false; addingExp=false; addingPay=false; addingDoc=false; tdLead=null; sheetOpen=true; renderView(); renderPanel(); }
+function swapPanelPhoto(c){ const ph=photos(c); const pn=activePanel(); if(!pn||!ph.length) return;
+  const img=pn.querySelector('.ph img'); if(img){ const id=ph[photoIdx]; img.dataset.pid=id; img.setAttribute('data-lb',photoIdx); img.src=blob(id); }
+  const idx=pn.querySelector('.ph .idx'); if(idx) idx.textContent=(photoIdx+1)+'/'+ph.length;
+  pn.querySelectorAll('[data-thumb]').forEach(b=>b.classList.toggle('on',Number(b.dataset.thumb)===photoIdx));
+  const fs=pn.querySelector('[data-lb].btn'); if(fs) fs.setAttribute('data-lb',photoIdx);
+  const cov=pn.querySelector('[data-act="cover"]'); if(cov) cov.hidden=photoIdx===0; }
+function swapStorePhoto(){ const c=listings.find(x=>x.id===storeSel); const ph=c?photos(c):[]; if(!ph.length) return;
+  const img=document.querySelector('#store .sgal .main img'); if(img){ const id=ph[storePh]; img.dataset.pid=id; img.setAttribute('data-slb',storePh); img.src=blob(id); }
+  const idx=document.querySelector('#store .sgal .idx'); if(idx) idx.textContent=(storePh+1)+' / '+ph.length;
+  document.querySelectorAll('#store [data-sth]').forEach(b=>b.classList.toggle('on',Number(b.dataset.sth)===storePh)); }
+function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; editLead=null; addingLead=false; addingExp=false; addingPay=false; addingDoc=false; tdLead=null; sheetOpen=true; panelAnim=true; renderView(); renderPanel(); }
 function unselect(){ selId=null; sheetOpen=false; renderView(); renderPanel(); }
 
 let editLead=null, addingLead=false, pendingDoc=null, lbDoc=null, lbStore=null;
@@ -1160,7 +1178,7 @@ function buyersBox(c){
 function docsTab(c){
   const list=docsOf(c); const canUp=!!assets&&canWrite;
   return `<div class="box"><h3 class="cap">Documents <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:600">· RC, insurance, PUC, service records</span></h3>
-    ${list.length?`<div class="docs">${list.map(d=>{ const e=docExpiry(d); const isPdf=(d.mime||'').includes('pdf'); return `<div class="doc"><div class="th" data-docopen="${esc(d.id)}">${isPdf?I(P.doc,1.6):`<img src="${blob(d.fileId)}" alt="" loading="lazy">`}</div><b>${esc(d.type)}${d.note?' · '+esc(d.note):''}</b>${e?`<small class="${e.cls}">${e.t}</small>`:'<small>No expiry</small>'}<div class="acts"><button class="btn sm" data-docopen="${esc(d.id)}">Open</button>${canUp?`<button class="btn sm ghost" data-docdel="${esc(d.id)}">Remove</button>`:''}</div></div>`; }).join('')}</div>`:'<span class="hint">No documents yet.</span>'}
+    ${list.length?`<div class="docs">${list.map(d=>{ const e=docExpiry(d); const isPdf=(d.mime||'').includes('pdf'); return `<div class="doc"><div class="th" data-docopen="${esc(d.id)}">${isPdf?I(P.doc,1.6):`<img data-pid="${d.fileId}" src="${blob(d.fileId)}" alt="" loading="lazy">`}</div><b>${esc(d.type)}${d.note?' · '+esc(d.note):''}</b>${e?`<small class="${e.cls}">${e.t}</small>`:'<small>No expiry</small>'}<div class="acts"><button class="btn sm" data-docopen="${esc(d.id)}">Open</button>${canUp?`<button class="btn sm ghost" data-docdel="${esc(d.id)}">Remove</button>`:''}</div></div>`; }).join('')}</div>`:'<span class="hint">No documents yet.</span>'}
     ${canUp?(addingDoc?`<div class="form" style="border-top:1px dashed var(--line);padding-top:10px"><label>Document type<select id="dc_type">${DOC_TYPES.map(t=>`<option>${t}</option>`).join('')}</select></label><label>Expiry date (if any)<input id="dc_exp" type="date"></label><label class="full">Note<input id="dc_note" placeholder="e.g. Policy no. 4432"></label><div class="full frow"><button class="btn sm primary" data-act="docPick" style="flex:0 0 auto" ${uploading?'disabled':''}>${uploading?'Uploading…':'Choose photo or PDF'}</button><button class="btn sm" data-act="docCancel" style="flex:0 0 auto">Cancel</button></div><span class="full hint">Photos are compressed. PDFs up to about 700 KB.</span></div>`
       :`<div class="frow"><button class="btn sm" data-act="docOpenForm" style="flex:0 0 auto">${I(P.plus,2.4)}Add document</button></div>`):''}</div>`;
 }
@@ -1242,12 +1260,12 @@ function openAdd(){ const ov=$('#overlay'); ov.hidden=false; ov.innerHTML=`<div 
 function closeOverlay(){ $('#overlay').hidden=true; $('#overlay').innerHTML=''; }
 function renderLightbox(){
   const lb=$('#lightbox');
-  if(lbDoc){ lb.hidden=false; lb.innerHTML=`<div class="lb"><div class="top"><span>Document</span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div><div class="view"><img src="${blob(lbDoc)}" alt="Document"></div></div>`; return; }
+  if(lbDoc){ lb.hidden=false; lb.innerHTML=`<div class="lb"><div class="top"><span>Document</span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div><div class="view"><img data-pid="${lbDoc}" src="${blob(lbDoc)}" alt="Document"></div></div>`; return; }
   const c=lbStore||sel(); const ph=c?photos(c):[];
   if(!c||!ph.length||lbIdx<0){ lbIdx=-1; lbStore=null; lb.hidden=true; lb.innerHTML=''; return; }
   if(lbIdx>=ph.length) lbIdx=ph.length-1; lb.hidden=false;
   lb.innerHTML=`<div class="lb"><div class="top"><span>${esc(c.title)} · <span class="num">${lbIdx+1} / ${ph.length}</span></span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div>
-    <div class="view" id="lbView"><img src="${blob(ph[lbIdx])}" alt="Photo ${lbIdx+1}">${ph.length>1?`<button class="arrow l" data-lbn="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arrow r" data-lbn="1" aria-label="Next">${I(P.r,2.6)}</button>`:''}</div>
+    <div class="view" id="lbView"><img data-pid="${ph[lbIdx]}" src="${blob(ph[lbIdx])}" alt="Photo ${lbIdx+1}">${ph.length>1?`<button class="arrow l" data-lbn="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arrow r" data-lbn="1" aria-label="Next">${I(P.r,2.6)}</button>`:''}</div>
     <div class="dots">${ph.map((_,i)=>`<i class="${i===lbIdx?'on':''}"></i>`).join('')}</div></div>`;
 }
 function renderAll(){ renderNav(); renderView(); renderPanel(); if(lbIdx>=0) renderLightbox(); }
@@ -1424,7 +1442,7 @@ function renderMode(){
 // ---------- customer storefront ----------
 const forSale=()=>listings.filter(c=>c.stage==='listed').sort((a,b)=>String(b.listedAt||'').localeCompare(String(a.listedAt||'')));
 function storeCard(c){ const ph=photos(c); const sp=[c.year,kmF(c.km),c.fuel,c.transmission].filter(Boolean).join(' · '); c={...c,listing:{price:c.price}};
-  return `<button class="scard" data-ssel="${esc(c.id)}"><div class="img">${ph.length?`<img src="${blob(ph[0])}" alt="${esc(c.title)}" loading="lazy">`:I(P.car,1.4)}<span class="tag">Available</span>${ph.length>1?`<span class="n">${ph.length} photos</span>`:''}</div>
+  return `<button class="scard" data-ssel="${esc(c.id)}"><div class="img">${ph.length?`<img data-pid="${ph[0]}" src="${blob(ph[0])}" alt="${esc(c.title)}" loading="lazy">`:I(P.car,1.4)}<span class="tag">Available</span>${ph.length>1?`<span class="n">${ph.length} photos</span>`:''}</div>
     <div class="b"><div class="pr num">${lakh(c.listing?.price)}</div><div class="tt">${esc(c.title)}</div><div class="sp">${esc(sp||'Details on request')}${c.owners?' · '+esc(c.owners):''}${c.city?' · '+esc(c.city):''}</div><div class="cta">View details & book a visit ${I(P.arrow,2.4)}</div></div></button>`; }
 let storeTab='visit', emiDown=null, emiMonths=60;
 function emiCalc(price){
@@ -1457,7 +1475,7 @@ function renderStore(){
         <label class="consent"><input type="checkbox" id="cb_ok" required> I agree that Revora may contact me about this car. <button type="button" class="lnk" data-mode="privacy">How my details are used</button></label>
         <button class="btn primary" type="submit" id="cb_btn">Request a call back</button><span class="hint">We call back${settings.callbackHours?' between '+esc(settings.callbackHours):' during business hours'}.</span></form>`}</div>`;
     body=`<div class="sbody"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><button class="btn link" data-ssel="">${I(P.l,2.4)} All cars</button><div class="frow"><button class="btn sm" data-act="copyStoreLink">${I(P.copy)}Copy link</button>${waCar?`<a class="btn sm wa" href="${waCar}" target="_blank" rel="noopener">Ask on WhatsApp</a>`:''}</div></div>
-      <div class="sdetail"><div style="display:flex;flex-direction:column;gap:18px;min-width:0"><div class="sgal"><div class="main">${ph.length?`<img src="${blob(ph[storePh])}" alt="${esc(c.title)}" data-slb="${storePh}">${ph.length>1?`<button class="arr l" data-sph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-sph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${storePh+1} / ${ph.length}</span>`:''}`:I(P.car,1.2)}</div>${ph.length>1?`<div class="th">${ph.map((id,i)=>`<button class="${i===storePh?'on':''}" data-sth="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div>
+      <div class="sdetail"><div style="display:flex;flex-direction:column;gap:18px;min-width:0"><div class="sgal"><div class="main">${ph.length?`<img data-pid="${ph[storePh]}" src="${blob(ph[storePh])}" alt="${esc(c.title)}" data-slb="${storePh}">${ph.length>1?`<button class="arr l" data-sph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-sph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${storePh+1} / ${ph.length}</span>`:''}`:I(P.car,1.2)}</div>${ph.length>1?`<div class="th">${ph.map((id,i)=>`<button class="${i===storePh?'on':''}" data-sth="${i}" aria-label="Photo ${i+1}"><img data-pid="${id}" src="${blob(id)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div>
         ${!soldOut&&price?`<div class="card emi" style="padding:18px 20px"><div class="stitle">EMI calculator <span>at ${e.rate}% p.a.</span></div>
           <div class="out"><div><b class="num">${inrF.format(e.emi)}</b><span> / month for ${e.n} months</span></div><span>Loan ${lakh(e.P0)}</span></div>
           <div><div class="lbl"><span>Down payment</span><b class="num">${lakh(e.down)}</b></div><input type="range" id="emi_down" min="0" max="${price}" step="10000" value="${e.down}"></div>
@@ -1471,8 +1489,9 @@ function renderStore(){
     const recent=listings.filter(c=>c.stage==='sold'&&c.soldDate&&daysSince(c.soldDate)<=90).map(c=>({...c,sale:{date:c.soldDate}})).sort((a,b)=>String(b.sale.date).localeCompare(String(a.sale.date))).slice(0,8);
     body=`<div class="sbody"><div class="hero"><div><h1>Find your next car at Revora</h1><p>Hand-picked used cars, checked by us. Browse what is available, then book a time to come and see the car in person${settings.whatsapp?', or just WhatsApp us':''}.</p></div><span class="pill">${list.length} car${list.length===1?'':'s'} available</span></div>
       ${!loaded?`<div class="empty"><h3>Loading cars…</h3></div>`:list.length?`<div class="sgrid">${list.map(storeCard).join('')}</div>`:`<div class="card empty"><h3>${q?'No cars match your search':'No cars listed right now'}</h3>${q?'Try a different model or fuel type.':'Please check back soon.'}</div>`}
-      ${recent.length&&!q?`<div><div class="stitle" style="margin-bottom:10px">Recently sold <span>${recent.length} happy buyer${recent.length>1?'s':''} in the last 3 months</span></div><div class="soldstrip">${recent.map(c=>{ const ph=photos(c); return `<div class="soldcard"><div class="img">${ph.length?`<img src="${blob(ph[0])}" alt="" loading="lazy">`:''}</div><span class="tag">Sold</span><div class="b">${esc(c.title)}<small>${esc(c.year||'')}${c.fuel?' · '+esc(c.fuel):''} · sold ${esc(fmtDate(c.sale.date))}</small></div></div>`; }).join('')}</div></div>`:''}</div>`;
+      ${recent.length&&!q?`<div><div class="stitle" style="margin-bottom:10px">Recently sold <span>${recent.length} happy buyer${recent.length>1?'s':''} in the last 3 months</span></div><div class="soldstrip">${recent.map(c=>{ const ph=photos(c); return `<div class="soldcard"><div class="img">${ph.length?`<img data-pid="${ph[0]}" src="${blob(ph[0])}" alt="" loading="lazy">`:''}</div><span class="tag">Sold</span><div class="b">${esc(c.title)}<small>${esc(c.year||'')}${c.fuel?' · '+esc(c.fuel):''} · sold ${esc(fmtDate(c.sale.date))}</small></div></div>`; }).join('')}</div></div>`:''}</div>`;
   }
+  $('#store').classList.toggle('anim',storeAnim); storeAnim=false;
   $('#store').innerHTML=head+body+`<div class="sfoot">© Revora · Used Car Business${settings.whatsapp?' · WhatsApp '+esc(settings.whatsapp):''} · <button data-mode="privacy">Privacy</button> · <button data-mode="login">Admin</button></div>`;
 }
 async function bookVisit(kind){
@@ -1498,22 +1517,22 @@ document.addEventListener('click',e=>{
       <p style="margin:0">If the enquiry does not lead to a purchase, your phone number is removed from our records after ${esc(settings.retentionDays||90)} days. You can ask us to delete your details at any time${settings.whatsapp?' by messaging '+esc(settings.whatsapp):''}.</p>
       <p style="margin:0">Prices and car details on this site are indicative; the EMI calculator is an estimate only.</p></div><div class="frow"><button class="btn" data-close style="flex:0 0 auto">Close</button></div></div></div>`; return; }
     if(sm.dataset.mode){ mode=sm.dataset.mode; renderMode(); return; }
-    if(sm.dataset.ssel!==undefined){ storeSel=sm.dataset.ssel||null; storePh=0; booked=null; bookFail=null; emiDown=null; storeTab='visit'; syncHash(); renderStore(); window.scrollTo(0,0); return; }
+    if(sm.dataset.ssel!==undefined){ storeSel=sm.dataset.ssel||null; storePh=0; booked=null; bookFail=null; emiDown=null; storeTab='visit'; syncHash(); storeAnim=true; renderStore(); window.scrollTo(0,0); return; }
     if(sm.dataset.stab){ storeTab=sm.dataset.stab; renderStore(); return; }
-    if(sm.dataset.sph){ const n=photos(listings.find(x=>x.id===storeSel)||{}).length; storePh=(storePh+Number(sm.dataset.sph)+n)%n; renderStore(); return; }
-    if(sm.dataset.sth!==undefined){ storePh=Number(sm.dataset.sth); renderStore(); return; }
+    if(sm.dataset.sph){ const n=photos(listings.find(x=>x.id===storeSel)||{}).length; storePh=(storePh+Number(sm.dataset.sph)+n)%n; swapStorePhoto(); return; }
+    if(sm.dataset.sth!==undefined){ storePh=Number(sm.dataset.sth); swapStorePhoto(); return; }
     if(sm.dataset.slb!==undefined){ lbStore=listings.find(x=>x.id===storeSel)||null; lbIdx=Number(sm.dataset.slb); renderLightbox(); return; }
     if(sm.dataset.appt){ apptAction(sm.dataset.appt,sm.dataset.id); return; }
   }
   const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-lact],[data-exp],[data-pay],[data-docopen],[data-docdel],[data-fu],[data-buyerdel],[data-act]'); if(!t) return;
   const c=sel();
-  if(t.dataset.view){ view=t.dataset.view; filter='all'; closeOverlay(); window.scrollTo(0,0); renderNav(); renderView(); return; }
-  if(t.dataset.f!==undefined){ filter=(filter===t.dataset.f&&t.classList.contains('pstage'))?'all':t.dataset.f; renderView(); return; }
+  if(t.dataset.view){ view=t.dataset.view; filter='all'; closeOverlay(); window.scrollTo(0,0); viewAnim=true; renderNav(); renderView(); return; }
+  if(t.dataset.f!==undefined){ filter=(filter===t.dataset.f&&t.classList.contains('pstage'))?'all':t.dataset.f; viewAnim=true; renderView(); return; }
   if(t.dataset.sel){ selectCar(t.dataset.sel); return; }
   if(t.hasAttribute('data-unsel')){ unselect(); return; }
   if(t.dataset.tab){ tab=t.dataset.tab; confirmKey=null; renderPanel(); return; }
-  if(t.dataset.ph){ const n=photos(c).length; photoIdx=(photoIdx+Number(t.dataset.ph)+n)%n; renderPanel(); return; }
-  if(t.dataset.thumb!==undefined){ photoIdx=Number(t.dataset.thumb); renderPanel(); return; }
+  if(t.dataset.ph){ const n=photos(c).length; photoIdx=(photoIdx+Number(t.dataset.ph)+n)%n; swapPanelPhoto(c); return; }
+  if(t.dataset.thumb!==undefined){ photoIdx=Number(t.dataset.thumb); swapPanelPhoto(c); return; }
   if(t.hasAttribute('data-lbclose')){ lbIdx=-1; lbDoc=null; lbStore=null; renderLightbox(); return; }
   if(t.dataset.lbn){ const n=photos(lbStore||c).length; lbIdx=(lbIdx+Number(t.dataset.lbn)+n)%n; renderLightbox(); return; }
   if(t.dataset.lb!==undefined){ lbIdx=Number(t.dataset.lb); renderLightbox(); return; }
@@ -1538,7 +1557,7 @@ document.addEventListener('submit',async e=>{
     catch(err){ ok=false; if(err&&err.code==='auth/network-request-failed') msg='No internet connection. Try again.'; else if(err&&err.code==='auth/too-many-requests') msg='Too many attempts. Wait a few minutes and try again.'; else if(err&&err.code==='auth/operation-not-allowed') msg='Email sign-in is not enabled in Firebase yet.'; console.warn(err); }
     if(ok){ const u=firebase.auth().currentUser; let allowed=u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL; if(!allowed){ try{ const s=await db.collection('admins').doc(u.email.toLowerCase()).get(); allowed=s.exists; }catch(_){} }
       if(!allowed){ await firebase.auth().signOut(); ok=false; msg='This account is not on the Revora team.'; }
-      else { mode='admin'; view='dashboard'; document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); renderMode(); toast('Welcome back'); } }
+      else { mode='admin'; view='dashboard'; document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); viewAnim=true; renderMode(); toast('Welcome back'); } }
     if(!ok)
     { btn.disabled=false; btn.textContent='Sign in'; const er=$('#l_err'); er.hidden=false; er.textContent=msg; const card=$('.lcard'); card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); } return; }
   if(e.target.id==='bookForm'){ e.preventDefault(); bookVisit('visit'); }
@@ -1558,7 +1577,7 @@ $('#fileIn').addEventListener('change',e=>{ const files=[...e.target.files]; if(
 let sx=null,sT=null;
 document.addEventListener('touchstart',e=>{ const t=e.target.closest('#lbView,.panel .ph'); if(t){ sx=e.touches[0].clientX; sT=t.id==='lbView'?'lb':'ph'; } },{passive:true});
 document.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)<40) return; const c=lbStore||sel(); const n=c?photos(c).length:0; if(n<2) return; const d=dx<0?1:-1;
-  if(sT==='lb'){ lbIdx=(lbIdx+d+n)%n; renderLightbox(); } else { photoIdx=(photoIdx+d+n)%n; renderPanel(); } },{passive:true});
+  if(sT==='lb'){ lbIdx=(lbIdx+d+n)%n; renderLightbox(); } else { photoIdx=(photoIdx+d+n)%n; swapPanelPhoto(c); } },{passive:true});
 $('#search').addEventListener('input',e=>{ search=e.target.value; renderView(); });
 $('#bell').addEventListener('click',()=>{ view='dashboard'; renderNav(); renderView(); const el=document.querySelector('.pend'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); });
 window.addEventListener('resize',()=>{ if(sheetOpen) renderPanel(); });
@@ -1599,7 +1618,7 @@ renderMe();
     // appointments are readable only by the admin, so subscribe after sign-in and drop it on sign-out
     if(isAdmin&&!apptUnsub){ apptUnsub=db.collection('appointments').onSnapshot(snap=>{ appts=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); if(mode==='admin') renderAll(); },err=>{ console.error(err); apptUnsub=null; }); }
     if(!isAdmin&&apptUnsub){ apptUnsub(); apptUnsub=null; appts=[]; }
-    if(!authReady){ authReady=true; mode=isAdmin?'admin':'store'; if(isAdmin){ document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); } renderMode(); }
+    if(!authReady){ authReady=true; mode=isAdmin?'admin':'store'; if(isAdmin){ document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); viewAnim=true; } storeAnim=true; renderMode(); }
     else if(!isAdmin&&mode==='admin'){ mode='store'; renderMode(); }
   }),0);
   const timer=setTimeout(()=>setLive('err','Slow connection'),10000);
