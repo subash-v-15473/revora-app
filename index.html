@@ -411,11 +411,14 @@ details summary::-webkit-details-marker{display:none}
   .ptop .tabs{grid-column:1/-1;padding:0;margin-top:16px}
   .ptop .summary{display:flex;flex-direction:column;gap:12px;margin-top:14px}
   .ptop .prices{grid-template-columns:repeat(4,1fr)}
-  .pbody{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;grid-auto-flow:dense;padding:18px 20px 28px}
+  .pbody{display:block;columns:2;column-gap:16px;padding:18px 20px 28px}
+  .pbody>*{break-inside:avoid;margin-bottom:16px}
+  .pbody>.box{display:flex}
   .pbody>.box{min-width:0}
   .pgrid{grid-template-columns:repeat(4,1fr)}
   .docs{grid-template-columns:repeat(3,1fr)}
-  .pbody.single{grid-template-columns:1fr}
+  .pbody.single{columns:1;display:flex;flex-direction:column;gap:14px}
+  .pbody.single>*{margin-bottom:0}
 }
 @keyframes fade{from{opacity:0}}
 
