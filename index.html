@@ -17,6 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
@@ -528,6 +529,9 @@ details summary::-webkit-details-marker{display:none}
 .copybox{background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:10px 12px;font-size:13px;white-space:pre-wrap;color:var(--fg-2)}
 .sfoot{text-align:center;color:var(--muted);font-size:12.5px;padding:30px 16px 0}
 .sfoot button{color:var(--blue);font-weight:600}
+.consent{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--fg-2);font-weight:500;line-height:1.4}
+.consent input{width:16px;height:16px;margin-top:2px;flex:none;padding:0}
+.consent .lnk{color:var(--blue);font-weight:600;text-decoration:underline}
 /* ---- appointments (admin) ---- */
 .appt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--line);animation:rise .3s both}
 .appt .when{background:var(--blue-soft);color:var(--blue);border-radius:12px;padding:8px 12px;text-align:center;min-width:76px}
@@ -693,14 +697,22 @@ let appts=[],mode='store',storeSel=(location.hash.match(/^#car-([A-Za-z0-9_-]+)$
 let db=null,user=null,assets=null,cars=[],view='dashboard',filter='all',search='',selId=null,tab='overview',photoIdx=0,lbIdx=-1,confirmKey=null,names={},me={name:'',avatar:'',email:''},myId=null,canWrite=true,loaded=false,uploading=false,sheetOpen=false;
 const PH_BLANK='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 const photoCache={}, photoPending=new Set(); let photoTimer=null;
-function blob(id){ id=String(id||''); if(!id) return PH_BLANK; if(!id.startsWith('fs:')) return id;
+function blob(id){ id=String(id||''); if(!id) return PH_BLANK; if(!id.startsWith('fs:')&&!id.startsWith('fd:')) return id;
   if(photoCache[id]) return photoCache[id];
-  if(db&&!photoPending.has(id)){ photoPending.add(id); db.collection('photos').doc(id.slice(3)).get().then(s=>{ photoCache[id]=(s.exists&&s.data().data)||PH_BLANK; }).catch(()=>{ photoCache[id]=PH_BLANK; }).finally(()=>{ photoPending.delete(id); clearTimeout(photoTimer); photoTimer=setTimeout(()=>{ if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); },80); }); }
+  if(db&&!photoPending.has(id)){ photoPending.add(id); db.collection(id.startsWith('fd:')?'files':'photos').doc(id.slice(3)).get().then(s=>{ photoCache[id]=(s.exists&&s.data().data)||PH_BLANK; }).catch(()=>{ photoCache[id]=PH_BLANK; }).finally(()=>{ photoPending.delete(id); clearTimeout(photoTimer); photoTimer=setTimeout(()=>{ if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); },80); }); }
   return PH_BLANK; }
 const photos=c=>Array.isArray(c.photos)?c.photos:[];
 const narrow=()=>true; const phoneW=()=>window.matchMedia('(max-width:760px)').matches;
 const sel=()=>cars.find(x=>x.id===selId);
 
+// ---------- public listing mirror (what customers can read) ----------
+function listingFrom(c){
+  const forSale=c.stage==='listed'||c.stage==='customer'; const sold=stageIdx(c.stage)>=stageIdx('sold')&&c.sale?.date&&daysSince(c.sale.date)<=120;
+  if(!forSale&&!sold) return null;
+  return {title:c.title||'',year:c.year||null,km:c.km||null,fuel:c.fuel||'',transmission:c.transmission||'',owners:c.owners||'',colour:c.colour||'',city:c.city||'',
+    regMasked:maskReg(c.reg),photos:photos(c),stage:forSale?'listed':'sold',price:forSale?(+c.listing?.price||0):null,listedAt:forSale?(c.listing?.date||''):'',soldDate:sold?c.sale.date:'',updatedAt:new Date().toISOString()};
+}
+async function syncListing(c){ if(!db||!canWrite) return; try{ const l=listingFrom(c); const ref=db.collection('listings').doc(c.id); if(l) await ref.set(l); else await ref.delete(); }catch(e){ console.warn('listing sync',e); } }
 // ---------- derived ----------
 const expensesOf=c=>Array.isArray(c.expenses)?c.expenses:[];
 const expTotal=c=>expensesOf(c).reduce((a,e)=>a+(+e.amount||0),0);
@@ -718,8 +730,9 @@ const daysInStock=c=>Math.max(0,Math.floor((new Date(stageIdx(c.stage)>=stageIdx
 const EXP_TYPES=['Refurbishment','Insurance','RC / RTO fees','Transport','Commission','Detailing','Other'];
 const DOC_TYPES=['RC copy','Insurance','PUC','Service record','NOC','Form 29/30','Invoice','Other'];
 const PAY_MODES=['Cash','UPI','Bank transfer','Loan disbursal','Cheque'];
-const DEFAULT_SETTINGS={slowDays:45,targetCars:5,targetSales:0,interestRate:9.5,whatsapp:'',commissionPct:0,callbackHours:'10 AM to 7 PM'};
-let settings={...DEFAULT_SETTINGS}, buyers=[], admins=[], installPrompt=null;
+const DEFAULT_SETTINGS={slowDays:45,targetCars:5,targetSales:0,interestRate:9.5,whatsapp:'',commissionPct:0,callbackHours:'10 AM to 7 PM',retentionDays:90};
+let settings={...DEFAULT_SETTINGS}, buyers=[], admins=[], installPrompt=null, listings=[];
+const maskReg=r=>String(r||'').replace(/(\d{4})$/,'••••');
 const thisMonth=()=>new Date().toISOString().slice(0,7);
 const waLink=(phone,text)=>{ const d=String(phone||'').replace(/\D/g,''); if(!d) return ''; const n=d.length===10?'91'+d:d; return 'https://wa.me/'+n+(text?'?text='+encodeURIComponent(text):''); };
 const PUBLIC_URL='https://subash-v-15473.github.io/revora-app/';
@@ -974,6 +987,9 @@ function viewAppointments(){
       <div class="tx"><b>${esc(a.name)} <span class="pill ${a.status}" style="margin-left:6px;font-size:11px">${APPT_STATUS[a.status]||a.status}</span></b><div class="s">${esc(apptText(a))}${a.phone?' · <b>'+esc(a.phone)+'</b>':''}${a.note?'<br>“'+esc(a.note)+'”':''}<br><span class="muted">Booked ${esc(ago(a.createdAt))}${car?'':' · car no longer listed'}</span></div></div>
       <div class="ac">${a.phone?`<a class="btn sm wa" href="${waLink(a.phone,'Hi '+a.name+', Revora here about your '+(a.type==='callback'?'enquiry':'visit')+' for the '+a.carTitle+'. ')}" target="_blank" rel="noopener">WhatsApp</a>`:''}${car?`<button class="btn sm" data-sel="${esc(car.id)}">Car</button>`:''}${a.status==='new'?`<button class="btn sm primary" data-appt="confirm" data-id="${esc(a.id)}">Confirm</button>`:''}${(a.status==='new'||a.status==='confirmed')&&car?`<button class="btn sm ok" data-appt="convert" data-id="${esc(a.id)}">Customer visited</button>`:''}${a.status==='new'||a.status==='confirmed'?`<button class="btn sm bad" data-appt="cancel" data-id="${esc(a.id)}">Cancel</button>`:`<button class="btn sm ghost" data-appt="remove" data-id="${esc(a.id)}">${I(P.trash)}</button>`}</div></div>`; }).join(''):`<div class="empty"><h3>No appointments yet</h3>When a customer books a visit from the shared car list, it appears here and in Pending Actions.</div>`}</div></section>`;
 }
+function purgeCandidates(){ const cut=new Date(Date.now()-(+settings.retentionDays||90)*86400000).toISOString(); let leads=0,ap=0;
+  cars.forEach(c=>leadsOf(c).forEach(l=>{ if(l.status==='lost'&&l.phone&&(l.lastContact||l.createdAt||'')<cut) leads++; }));
+  appts.forEach(a=>{ if((a.status==='cancelled'||a.status==='converted')&&(a.updatedAt||a.createdAt||'')<cut) ap++; }); return {leads,appts:ap}; }
 function viewSettings(){
   const s=settings;
   return `<div class="greet"><div><h1>Settings</h1><p>Business rules, team access, backup and install.</p></div></div>
@@ -986,11 +1002,17 @@ function viewSettings(){
       <label>Monthly target (cars)<input id="st_tc" type="number" inputmode="numeric" value="${esc(s.targetCars||'')}" placeholder="5"></label>
       <label>Monthly target (sales ₹)<input id="st_ts" type="number" inputmode="numeric" value="${esc(s.targetSales||'')}" placeholder="4000000"></label>
       <label>Commission on profit (%)<input id="st_comm" type="number" step="0.5" inputmode="decimal" value="${esc(s.commissionPct||'')}" placeholder="0"></label>
+      <label>Remove lost customers' phone numbers after (days)<input id="st_ret" type="number" inputmode="numeric" value="${esc(s.retentionDays||90)}"></label>
       <div class="full frow"><button class="btn primary" data-act="settingsSave" style="flex:0 0 auto">Save settings</button></div></div></section>
     <section class="card"><div class="hd"><h2>Team</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:12px">
-      <div class="team">${admins.length?admins.map(a=>`<div class="m"><span class="avatar" style="width:32px;height:32px;font-size:11px">${esc(initials(a.name))}</span><div style="flex:1;min-width:0"><b>${esc(a.name)}${a.id===myId?' <span class="muted" style="font-weight:500">(you)</span>':''}</b><small>${esc(a.email||'')}</small></div>${canWrite&&a.id!==myId?`<button class="btn sm ghost" data-act="teamRemove" data-id="${esc(a.id)}">Remove</button>`:''}</div>`).join(''):`<div class="m"><span class="avatar" style="width:32px;height:32px;font-size:11px">A</span><div><b>Revora admin</b><small>${ADMIN_EMAIL}</small></div></div>`}</div>
+      <div class="team">${admins.length?admins.map(a=>`<div class="m"><span class="avatar" style="width:32px;height:32px;font-size:11px">${esc(initials(a.name))}</span><div style="flex:1;min-width:0"><b>${esc(a.name)}${a.id===(me.email||'').toLowerCase()?' <span class="muted" style="font-weight:500">(you)</span>':''}</b><small>${esc(a.email||'')}${a.uid?'':' · not signed in yet'}</small></div>${canWrite&&a.id!==(me.email||'').toLowerCase()&&a.email!==ADMIN_EMAIL?`<button class="btn sm ghost" data-act="teamRemove" data-id="${esc(a.id)}">Remove</button>`:''}</div>`).join(''):`<div class="m"><span class="avatar" style="width:32px;height:32px;font-size:11px">A</span><div><b>Revora admin</b><small>${ADMIN_EMAIL}</small></div></div>`}</div>
       <div class="form" style="border-top:1px dashed var(--line);padding-top:12px"><label>Partner's name<input id="tm_name" placeholder="Name"></label><label>Login email<input id="tm_email" type="email" placeholder="partner@revora.com"></label><label class="full">Password (6+ characters)<input id="tm_pass" type="password" autocomplete="new-password"></label><div class="hint err" id="tm_err" hidden></div><div class="full frow"><button class="btn primary sm" data-act="teamAdd" style="flex:0 0 auto">Add team member</button></div></div>
-      <span class="hint">Each person gets their own login, and history shows who did what. The original admin account always keeps access.</span></div></section>
+      <span class="hint">Each person gets their own login, and history shows who did what. The original admin account always keeps access. If public sign-up is disabled in Firebase, create the login in the console with the same email after adding them here.</span></div></section>
+    <section class="card"><div class="hd"><h2>Privacy & data retention</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
+      <p style="margin:0">Customers see a privacy notice and tick a consent box when they book. Phone numbers of customers who did not buy are removed after <b>${esc(s.retentionDays||90)} days</b> of no contact, and cancelled or old bookings are deleted.</p>
+      <p style="margin:0">Due now: <b>${purgeCandidates().leads}</b> phone numbers and <b>${purgeCandidates().appts}</b> old bookings.</p>
+      <div class="frow"><button class="btn" data-act="purgeNow" style="flex:0 0 auto">${I(P.trash)}Run clean-up now</button></div>
+      <p style="margin:0">Customer-visible data is limited to the public <b>listings</b> copy (specs, asking price, photos, masked reg). Purchase prices, customers, payments and documents are admin-only.</p></div></section>
     <section class="card"><div class="hd"><h2>Backup</h2></div><div class="bd" style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--fg-2)">
       <p style="margin:0">Download a copy of all cars, customers, appointments, buyers and settings as a file. Photos and documents are not included to keep it small.</p>
       <div class="frow"><button class="btn" data-act="backup" style="flex:0 0 auto">${I(P.doc)}Download backup</button><button class="btn" data-act="exportCsv" style="flex:0 0 auto">${I(P.doc)}Sales CSV</button></div>
@@ -1061,7 +1083,7 @@ function renderPanel(){
 function selectCar(id){ selId=id; tab='overview'; photoIdx=0; confirmKey=null; editLead=null; addingLead=false; addingExp=false; addingPay=false; addingDoc=false; tdLead=null; sheetOpen=true; renderView(); renderPanel(); }
 function unselect(){ selId=null; sheetOpen=false; renderView(); renderPanel(); }
 
-let editLead=null, addingLead=false, pendingDoc=null, lbDoc=null;
+let editLead=null, addingLead=false, pendingDoc=null, lbDoc=null, lbStore=null;
 function leadsBox(c){
   const all=leadsOf(c); if(stageIdx(c.stage)<stageIdx('listed')) return '';
   const rows=all.map(l=>({l,ch:chance(l,c)})).sort((a,b)=>{ const o=x=>x.l.status==='won'?-1:x.l.status==='lost'?2:x.l.status==='payment'?0:1; return o(a)-o(b)||b.ch.pct-a.ch.pct; });
@@ -1221,8 +1243,8 @@ function closeOverlay(){ $('#overlay').hidden=true; $('#overlay').innerHTML=''; 
 function renderLightbox(){
   const lb=$('#lightbox');
   if(lbDoc){ lb.hidden=false; lb.innerHTML=`<div class="lb"><div class="top"><span>Document</span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div><div class="view"><img src="${blob(lbDoc)}" alt="Document"></div></div>`; return; }
-  const c=sel(); const ph=c?photos(c):[];
-  if(!c||!ph.length||lbIdx<0){ lbIdx=-1; lb.hidden=true; lb.innerHTML=''; return; }
+  const c=lbStore||sel(); const ph=c?photos(c):[];
+  if(!c||!ph.length||lbIdx<0){ lbIdx=-1; lbStore=null; lb.hidden=true; lb.innerHTML=''; return; }
   if(lbIdx>=ph.length) lbIdx=ph.length-1; lb.hidden=false;
   lb.innerHTML=`<div class="lb"><div class="top"><span>${esc(c.title)} · <span class="num">${lbIdx+1} / ${ph.length}</span></span><button data-lbclose aria-label="Close">${I(P.x,2.4)}</button></div>
     <div class="view" id="lbView"><img src="${blob(ph[lbIdx])}" alt="Photo ${lbIdx+1}">${ph.length>1?`<button class="arrow l" data-lbn="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arrow r" data-lbn="1" aria-label="Next">${I(P.r,2.6)}</button>`:''}</div>
@@ -1236,7 +1258,7 @@ async function write(id,patch,logText){
   if(!db) return toast('Not connected to shared records.'); if(busy.has(id)) return; busy.add(id);
   const c=cars.find(x=>x.id===id); const now=new Date().toISOString();
   const log=[{at:now,text:logText,by:myId||null},...(c?.log||[])].slice(0,200);
-  try{ await db.collection('cars').doc(id).update({...patch,log,updatedAt:now,updatedBy:myId||null}); toast(logText); }catch(e){ handleErr(e); }finally{ busy.delete(id); }
+  try{ await db.collection('cars').doc(id).update({...patch,log,updatedAt:now,updatedBy:myId||null}); toast(logText); syncListing({...(c||{}),...patch,id}); }catch(e){ handleErr(e); }finally{ busy.delete(id); }
 }
 function handleErr(e){ const code=e&&e.code;
   if(code==='permission-denied'||code==='invalid_argument'){ toast('Permission denied. Sign in as admin to update.'); }
@@ -1247,7 +1269,7 @@ async function createCar(){
   if(r.err){ errEl.hidden=false; errEl.textContent=r.err; return; } if(!db) return toast('Not connected to shared records.');
   const now=new Date().toISOString();
   const doc={...r.data,stage:'purchased',photos:[],listing:{},customer:{},payment:{},sale:{},rc:{status:'pending'},attempts:[],log:[{at:now,text:'Purchased for '+money(r.data.purchase.price),by:myId||null}],createdAt:now,updatedAt:now,updatedBy:myId||null};
-  try{ const ref=await db.collection('cars').add(doc); closeOverlay(); toast('Car added. Now add photos.'); selectCar(ref.id); tab='photos'; renderPanel(); }catch(e){ handleErr(e); }
+  try{ const ref=await db.collection('cars').add(doc); closeOverlay(); toast('Car added. Now add photos.'); selectCar(ref.id); tab='photos'; renderPanel(); syncListing({...doc,id:ref.id}); }catch(e){ handleErr(e); }
 }
 function shrink(file){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(file); const img=new Image();
   img.onload=()=>{ URL.revokeObjectURL(url); const max=1280; let w=img.naturalWidth,h=img.naturalHeight; const k=Math.min(1,max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k); const cv=document.createElement('canvas'); cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); const tryQ=q=>cv.toBlob(b=>{ if(!b) return rej(new Error('encode')); if(b.size>650000&&q>0.5) tryQ(q-0.1); else res(b); },'image/jpeg',q); tryQ(0.82); };
@@ -1264,7 +1286,7 @@ async function uploadDoc(f,meta){
   const c=sel(); if(!c||!assets) return; uploading=true; renderPanel();
   try{ let b=f, mime=f.type||'application/octet-stream'; if(f.type.startsWith('image/')){ try{ b=await shrink(f); mime='image/jpeg'; }catch(_){} }
     else if(f.type==='application/pdf'){ if(f.size>700000) throw {code:'too_large'}; } else throw {code:'unsupported_type'};
-    const r=await assets.upload(b,{type:mime}); const d={id:uid(),type:meta.type||'Other',expiry:meta.expiry||'',note:meta.note||'',fileId:r.id,mime,addedAt:new Date().toISOString()};
+    const r=await assets.upload(b,{type:mime,private:true}); const d={id:uid(),type:meta.type||'Other',expiry:meta.expiry||'',note:meta.note||'',fileId:r.id,mime,addedAt:new Date().toISOString()};
     uploading=false; addingDoc=false; await write(c.id,{docs:[...docsOf(c),d]},`Document added: ${d.type}${d.expiry?' · valid till '+fmtDate(d.expiry):''}`); }
   catch(e){ uploading=false; console.error(e); toast(e&&e.code==='too_large'?'File too large. Keep PDFs under 700 KB.':e&&e.code==='unsupported_type'?'Only photos and PDF files are supported.':'Could not upload the document.'); renderPanel(); }
 }
@@ -1311,7 +1333,7 @@ const actions={
   async deletePhotoYes(c){ const ph=photos(c); const id=ph[photoIdx]; if(!id) return; confirmKey=null; photoIdx=Math.max(0,photoIdx-1); await write(c.id,{photos:ph.filter(x=>x!==id)},'Photo removed'); if(assets){ try{ await assets.delete(id);}catch(e){ console.warn(e); } } },
   cancelConfirm(){ confirmKey=null; renderPanel(); },
   deleteAsk(){ confirmKey='delete'; renderPanel(); },
-  async deleteYes(c){ if(!db) return; const ph=photos(c); try{ await db.collection('cars').doc(c.id).delete(); unselect(); toast('Car record deleted'); if(assets){ for(const id of ph){ try{ await assets.delete(id);}catch(_){} } } }catch(e){ handleErr(e); } },
+  async deleteYes(c){ if(!db) return; const ph=photos(c), ds=docsOf(c); try{ await db.collection('cars').doc(c.id).delete(); try{ await db.collection('listings').doc(c.id).delete(); }catch(_){} unselect(); toast('Car record deleted'); if(assets){ for(const id of ph){ try{ await assets.delete(id);}catch(_){} } for(const d of ds){ try{ await assets.delete(d.fileId);}catch(_){} } } }catch(e){ handleErr(e); } },
   signOut(){ closeOverlay(); firebase.auth().signOut().catch(()=>{}); mode='store'; selId=null; sheetOpen=false; renderMode(); },
   moreMenu(){ const items=VIEWS.filter(([id])=>['customers','rc','reports','settings'].includes(id)); const ov=$('#overlay'); ov.hidden=false;
     ov.innerHTML=`<div class="scrim" data-close><div class="modal" role="dialog" aria-label="More" data-stop style="gap:10px"><div style="display:flex;justify-content:space-between;align-items:center"><h2>More</h2><button class="iconbtn" data-close aria-label="Close">${I(P.x,2.4)}</button></div>
@@ -1324,14 +1346,19 @@ const actions={
     const blobF=new Blob(['﻿'+rows.join('\n')],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blobF); a.download='revora-sales-'+today()+'.csv'; document.body.appendChild(a); a.click(); a.remove(); toast('CSV downloaded'); },
   printReport(){ window.print(); },
   async backup(){ const dump={exportedAt:new Date().toISOString(),cars,appointments:appts,buyers,settings}; const blobF=new Blob([JSON.stringify(dump,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blobF); a.download='revora-backup-'+today()+'.json'; document.body.appendChild(a); a.click(); a.remove(); toast('Backup downloaded (photos not included)'); },
-  async settingsSave(){ const g=id=>($(id)||{}).value||''; const s={slowDays:Number(g('#st_slow'))||45,targetCars:Number(g('#st_tc'))||0,targetSales:Number(g('#st_ts'))||0,interestRate:Number(g('#st_rate'))||9.5,whatsapp:g('#st_wa').trim(),commissionPct:Number(g('#st_comm'))||0,callbackHours:g('#st_hours').trim()};
+  async settingsSave(){ const g=id=>($(id)||{}).value||''; const s={slowDays:Number(g('#st_slow'))||45,targetCars:Number(g('#st_tc'))||0,targetSales:Number(g('#st_ts'))||0,interestRate:Number(g('#st_rate'))||9.5,whatsapp:g('#st_wa').trim(),commissionPct:Number(g('#st_comm'))||0,callbackHours:g('#st_hours').trim(),retentionDays:Number(g('#st_ret'))||90};
     try{ await db.collection('settings').doc('general').set(s,{merge:true}); toast('Settings saved'); }catch(e){ handleErr(e); } },
   async teamAdd(){ const g=id=>($(id)||{}).value||''; const name=g('#tm_name').trim(), email=g('#tm_email').trim().toLowerCase(), pw=g('#tm_pass'); const err=$('#tm_err'); err.hidden=true;
     if(!name||!email||pw.length<6){ err.hidden=false; err.textContent='Name, email and a password of 6+ characters are needed.'; return; }
-    let sec=null; try{ sec=firebase.apps.find(a=>a.name==='secondary')||firebase.initializeApp(window.REVORA_FIREBASE,'secondary'); const cred=await sec.auth().createUserWithEmailAndPassword(email,pw); const uid=cred.user.uid; await sec.auth().signOut();
-      await db.collection('admins').doc(uid).set({name,email,createdAt:new Date().toISOString(),addedBy:myId||null}); toast(name+' can now sign in'); $('#tm_name').value=''; $('#tm_email').value=''; $('#tm_pass').value=''; }
-    catch(e){ console.error(e); err.hidden=false; err.textContent=e.code==='auth/email-already-in-use'?'That email already has a login. Ask them to sign in, then add them below by their account.':e.code==='permission-denied'?'Firestore rules do not allow the admins list yet. Publish the updated rules first.':'Could not add: '+(e.code||e.message); } },
-  async teamRemove(_,uid){ if(uid===myId) return toast('You cannot remove yourself.'); try{ await db.collection('admins').doc(uid).delete(); toast('Access removed. Their login still exists in Firebase Console; delete it there if needed.'); }catch(e){ handleErr(e); } },
+    try{ await db.collection('admins').doc(email).set({name,email,createdAt:new Date().toISOString(),addedBy:myId||null},{merge:true}); }
+    catch(e){ console.error(e); err.hidden=false; err.textContent=e.code==='permission-denied'?'Firestore rules do not allow the admins list yet. Publish the updated rules first.':'Could not add: '+(e.code||e.message); return; }
+    let sec=null; try{ sec=firebase.apps.find(a=>a.name==='secondary')||firebase.initializeApp(window.REVORA_FIREBASE,'secondary'); await sec.auth().createUserWithEmailAndPassword(email,pw); await sec.auth().signOut(); toast(name+' can now sign in'); $('#tm_name').value=''; $('#tm_email').value=''; $('#tm_pass').value=''; }
+    catch(e){ console.warn(e); if(e.code==='auth/email-already-in-use'){ toast(name+' added. Their existing login now has access.'); } else if(e.code==='auth/admin-restricted-operation'||e.code==='auth/operation-not-allowed'){ err.hidden=false; err.textContent=name+' is on the team list. Sign-up is disabled, so create their login in Firebase Console → Authentication → Add user with this email, then they can sign in.'; } else { err.hidden=false; err.textContent='Added to the team list, but the login could not be created: '+(e.code||e.message); } } },
+  async teamRemove(_,id){ if(id===(me.email||'').toLowerCase()) return toast('You cannot remove yourself.'); try{ await db.collection('admins').doc(id).delete(); toast('Access removed. Their login still exists in Firebase Console; delete it there if needed.'); }catch(e){ handleErr(e); } },
+  async purgeNow(){ const cut=new Date(Date.now()-(+settings.retentionDays||90)*86400000).toISOString(); let n=0,m=0;
+    for(const c of cars){ const leads=leadsOf(c); const next=leads.map(l=>(l.status==='lost'&&l.phone&&(l.lastContact||l.createdAt||'')<cut)?{...l,phone:'',purgedAt:new Date().toISOString()}:l); const changed=next.filter((l,i)=>l!==leads[i]).length; if(changed){ n+=changed; try{ await db.collection('cars').doc(c.id).update({leads:next}); }catch(e){ console.warn(e); } } }
+    for(const a of appts){ if((a.status==='cancelled'||a.status==='converted')&&(a.updatedAt||a.createdAt||'')<cut){ try{ await db.collection('appointments').doc(a.id).delete(); m++; }catch(e){ console.warn(e); } } }
+    toast(`Clean-up done: ${n} phone number${n===1?'':'s'} removed, ${m} old booking${m===1?'':'s'} deleted`); },
   installApp(){ if(!installPrompt) return; installPrompt.prompt(); installPrompt.userChoice.then(()=>{ installPrompt=null; renderView(); }); },
   buyerNew(){ openBuyerForm({}); },
   async buyerSave(){ const g=id=>($(id,$('#overlay'))||{}).value||''; const name=g('#by_name').trim(); const max=Number(g('#by_max')); const err=$('#formErr',$('#overlay')); if(!name){ err.hidden=false; err.textContent='Enter the buyer name.'; return; } if(!max){ err.hidden=false; err.textContent='Enter the maximum budget.'; return; }
@@ -1348,7 +1375,7 @@ const actions={
   docOpenForm(){ addingDoc=true; renderPanel(); }, docCancel(){ addingDoc=false; renderPanel(); },
   docPick(){ if(uploading) return; pendingDoc={type:val('#dc_type'),expiry:val('#dc_exp'),note:val('#dc_note')}; const fi=$('#fileIn'); fi.value=''; fi.accept='image/*,application/pdf'; fi.multiple=false; fi.click(); },
   docDel(c,id){ const d=docsOf(c).find(x=>x.id===id); write(c.id,{docs:docsOf(c).filter(x=>x.id!==id)},`Removed document ${d?d.type:''}`); if(d&&assets) assets.delete(d.fileId).catch(()=>{}); },
-  async docOpen(c,id){ const d=docsOf(c).find(x=>x.id===id); if(!d) return; let data=photoCache[d.fileId]; if(!data){ try{ const s=await db.collection('photos').doc(d.fileId.slice(3)).get(); data=s.exists?s.data().data:null; if(data) photoCache[d.fileId]=data; }catch(_){} } if(!data) return toast('Could not load the document.');
+  async docOpen(c,id){ const d=docsOf(c).find(x=>x.id===id); if(!d) return; let data=photoCache[d.fileId]; if(!data){ try{ const s=await db.collection(d.fileId.startsWith('fd:')?'files':'photos').doc(d.fileId.slice(3)).get(); data=s.exists?s.data().data:null; if(data) photoCache[d.fileId]=data; }catch(_){} } if(!data) return toast('Could not load the document.');
     if((d.mime||'').includes('pdf')){ const bin=atob(data.split(',')[1]); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); const url=URL.createObjectURL(new Blob([arr],{type:'application/pdf'})); window.open(url,'_blank'); } else { lbDoc=d.fileId; renderLightbox(); } },
   leadTd(c,id){ tdLead=tdLead===id?null:id; editLead=null; renderPanel(); },
   leadTdSave(c,id){ const l=leadsOf(c).find(x=>x.id===id); const t={id:uid(),leadId:id,name:l?l.name:'',date:val('#td_date')||today(),licence:val('#td_lic'),startKm:Number(val('#td_s'))||null,endKm:Number(val('#td_e'))||null,note:val('#td_note')}; tdLead=null; const now=new Date().toISOString(); write(c.id,{testDrives:[...tdOf(c),t],leads:leadsOf(c).map(x=>x.id===id?{...x,lastContact:now,status:x.status==='enquired'?'negotiating':x.status}:x)},`${t.name||'Customer'} took a test drive${t.startKm&&t.endKm?' ('+(t.endKm-t.startKm)+' km)':''}${t.note?' · '+t.note:''}`); },
@@ -1395,8 +1422,8 @@ function renderMode(){
   window.scrollTo(0,0);
 }
 // ---------- customer storefront ----------
-const forSale=()=>cars.filter(c=>c.stage==='listed'||c.stage==='customer').sort((a,b)=>String(b.listing?.date||'').localeCompare(String(a.listing?.date||'')));
-function storeCard(c){ const ph=photos(c); const sp=[c.year,kmF(c.km),c.fuel,c.transmission].filter(Boolean).join(' · ');
+const forSale=()=>listings.filter(c=>c.stage==='listed').sort((a,b)=>String(b.listedAt||'').localeCompare(String(a.listedAt||'')));
+function storeCard(c){ const ph=photos(c); const sp=[c.year,kmF(c.km),c.fuel,c.transmission].filter(Boolean).join(' · '); c={...c,listing:{price:c.price}};
   return `<button class="scard" data-ssel="${esc(c.id)}"><div class="img">${ph.length?`<img src="${blob(ph[0])}" alt="${esc(c.title)}" loading="lazy">`:I(P.car,1.4)}<span class="tag">Available</span>${ph.length>1?`<span class="n">${ph.length} photos</span>`:''}</div>
     <div class="b"><div class="pr num">${lakh(c.listing?.price)}</div><div class="tt">${esc(c.title)}</div><div class="sp">${esc(sp||'Details on request')}${c.owners?' · '+esc(c.owners):''}${c.city?' · '+esc(c.city):''}</div><div class="cta">View details & book a visit ${I(P.arrow,2.4)}</div></div></button>`; }
 let storeTab='visit', emiDown=null, emiMonths=60;
@@ -1412,11 +1439,11 @@ function renderStore(){
     ${wa?`<a class="btn sm wa" href="${wa}" target="_blank" rel="noopener" style="flex:0 0 auto">WhatsApp</a>`:''}
     <button class="admin" data-mode="login">Admin sign in</button></div></header>`;
   let body;
-  const c=storeSel?cars.find(x=>x.id===storeSel):null;
+  const c0=storeSel?listings.find(x=>x.id===storeSel):null; const c=c0?{...c0,listing:{price:c0.price},reg:c0.regMasked}:null;
   if(c){
     const ph=photos(c); if(storePh>=ph.length) storePh=Math.max(0,ph.length-1);
     const specs=[['Year',c.year],['Kms driven',kmF(c.km)],['Fuel',c.fuel],['Transmission',c.transmission],['Owner',c.owners],['Colour',c.colour],['Location',c.city]].filter(x=>x[1]);
-    const soldOut=!(c.stage==='listed'||c.stage==='customer'); const price=+c.listing?.price||0; const e=emiCalc(price);
+    const soldOut=c.stage!=='listed'; const price=+c.listing?.price||0; const e=emiCalc(price);
     const waCar=settings.whatsapp?waLink(settings.whatsapp,'Hi Revora, I am interested in the '+c.title+' '+(c.year||'')+' ('+lakh(price)+'). '+carLink(c)):'';
     const done=booked&&booked.carId===c.id?`<div class="ok-box"><span class="ic">${I(P.check,3)}</span><div><b>${booked.type==='callback'?'We will call you':'Visit booked'}</b><span>Thanks ${esc(booked.name)}. ${booked.type==='callback'?'We will call you'+(booked.phone?' on '+esc(booked.phone):'')+(settings.callbackHours?' between '+esc(settings.callbackHours):'')+'.':'We will confirm your visit on '+esc(fmtApptDT(booked))+' shortly'+(booked.phone?' on '+esc(booked.phone):'')+'.'}</span></div></div>`:null;
     const fail=bookFail&&bookFail.carId===c.id?`<div class="box"><h3>Almost there</h3><span class="hint">The request could not be saved right now. Copy the message below and send it to us${wa?' on WhatsApp':''}.</span><div class="copybox" id="copyTxt">${esc(bookFail.text)}</div><div class="frow"><button class="btn primary sm" data-act="copyReq">Copy message</button>${wa?`<a class="btn sm wa" href="${waLink(settings.whatsapp,bookFail.text)}" target="_blank" rel="noopener">Send on WhatsApp</a>`:''}<button class="btn sm" data-act="bookAgain">Edit request</button></div></div>`:null;
@@ -1424,8 +1451,10 @@ function renderStore(){
       ${storeTab==='visit'?`<form id="bookForm" style="display:flex;flex-direction:column;gap:10px"><div class="form"><label>Your name<input id="b_name" required placeholder="Full name"></label><label>Phone<input id="b_phone" inputmode="tel" required placeholder="98xxxxxxxx"></label>
         <label>Date<input id="b_date" type="date" required min="${today()}" value="${today()}"></label><label>Time<input id="b_time" type="time" required value="11:00"></label>
         <label class="full">Anything to tell us? (optional)<input id="b_note" placeholder="e.g. I will bring my mechanic"></label></div>
+        <label class="consent"><input type="checkbox" id="b_ok" required> I agree that Revora may contact me about this car. <button type="button" class="lnk" data-mode="privacy">How my details are used</button></label>
         <button class="btn primary" type="submit" id="b_btn">${I(P.cal)}Book appointment</button><span class="hint">We will confirm the time with you. No payment needed to book.</span></form>`
       :`<form id="callForm" style="display:flex;flex-direction:column;gap:10px"><div class="form"><label>Your name<input id="cb_name" required placeholder="Full name"></label><label>Phone<input id="cb_phone" inputmode="tel" required placeholder="98xxxxxxxx"></label><label class="full">What would you like to know? (optional)<input id="cb_note" placeholder="e.g. Is the price negotiable? Loan available?"></label></div>
+        <label class="consent"><input type="checkbox" id="cb_ok" required> I agree that Revora may contact me about this car. <button type="button" class="lnk" data-mode="privacy">How my details are used</button></label>
         <button class="btn primary" type="submit" id="cb_btn">Request a call back</button><span class="hint">We call back${settings.callbackHours?' between '+esc(settings.callbackHours):' during business hours'}.</span></form>`}</div>`;
     body=`<div class="sbody"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><button class="btn link" data-ssel="">${I(P.l,2.4)} All cars</button><div class="frow"><button class="btn sm" data-act="copyStoreLink">${I(P.copy)}Copy link</button>${waCar?`<a class="btn sm wa" href="${waCar}" target="_blank" rel="noopener">Ask on WhatsApp</a>`:''}</div></div>
       <div class="sdetail"><div style="display:flex;flex-direction:column;gap:18px;min-width:0"><div class="sgal"><div class="main">${ph.length?`<img src="${blob(ph[storePh])}" alt="${esc(c.title)}" data-slb="${storePh}">${ph.length>1?`<button class="arr l" data-sph="-1" aria-label="Previous">${I(P.l,2.6)}</button><button class="arr r" data-sph="1" aria-label="Next">${I(P.r,2.6)}</button><span class="idx num">${storePh+1} / ${ph.length}</span>`:''}`:I(P.car,1.2)}</div>${ph.length>1?`<div class="th">${ph.map((id,i)=>`<button class="${i===storePh?'on':''}" data-sth="${i}" aria-label="Photo ${i+1}"><img src="${blob(id)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div>
@@ -1434,26 +1463,27 @@ function renderStore(){
           <div><div class="lbl"><span>Down payment</span><b class="num">${lakh(e.down)}</b></div><input type="range" id="emi_down" min="0" max="${price}" step="10000" value="${e.down}"></div>
           <div><div class="lbl"><span>Tenure</span><b>${e.n} months</b></div><input type="range" id="emi_months" min="12" max="84" step="12" value="${e.n}"></div>
           <span class="hint">Indicative only. Final EMI depends on the bank and your profile. Total payable ${lakh(e.total+e.down)}.</span></div>`:''}</div>
-      <div class="sinfo"><div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:10px"><div class="sprice num">${lakh(price)}<small>asking price</small></div><h2 style="font-size:20px">${esc(c.title)}${c.year?' <span class="muted" style="font-weight:500">'+esc(c.year)+'</span>':''}</h2>${c.reg?`<span class="regplate">${esc(c.reg.replace(/(\d{4})$/,'••••'))}</span>`:''}
+      <div class="sinfo"><div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:10px"><div class="sprice num">${lakh(price)}<small>asking price</small></div><h2 style="font-size:20px">${esc(c.title)}${c.year?' <span class="muted" style="font-weight:500">'+esc(c.year)+'</span>':''}</h2>${c.reg?`<span class="regplate">${esc(c.reg)}</span>`:''}
         ${soldOut?'<span class="pill sold">Sold</span>':'<span class="pill listed">Available for viewing</span>'}
         <div class="specgrid">${specs.map(([k,v])=>`<div class="spec"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}</div></div>
         ${soldOut?'<div class="ro">This car has been sold. Browse the other cars we have available.</div>':(done||fail||forms)}</div></div></div>`;
   } else {
-    const recent=cars.filter(c=>stageIdx(c.stage)>=stageIdx('sold')&&c.sale?.date&&daysSince(c.sale.date)<=90).sort((a,b)=>String(b.sale.date).localeCompare(String(a.sale.date))).slice(0,8);
+    const recent=listings.filter(c=>c.stage==='sold'&&c.soldDate&&daysSince(c.soldDate)<=90).map(c=>({...c,sale:{date:c.soldDate}})).sort((a,b)=>String(b.sale.date).localeCompare(String(a.sale.date))).slice(0,8);
     body=`<div class="sbody"><div class="hero"><div><h1>Find your next car at Revora</h1><p>Hand-picked used cars, checked by us. Browse what is available, then book a time to come and see the car in person${settings.whatsapp?', or just WhatsApp us':''}.</p></div><span class="pill">${list.length} car${list.length===1?'':'s'} available</span></div>
       ${!loaded?`<div class="empty"><h3>Loading cars…</h3></div>`:list.length?`<div class="sgrid">${list.map(storeCard).join('')}</div>`:`<div class="card empty"><h3>${q?'No cars match your search':'No cars listed right now'}</h3>${q?'Try a different model or fuel type.':'Please check back soon.'}</div>`}
       ${recent.length&&!q?`<div><div class="stitle" style="margin-bottom:10px">Recently sold <span>${recent.length} happy buyer${recent.length>1?'s':''} in the last 3 months</span></div><div class="soldstrip">${recent.map(c=>{ const ph=photos(c); return `<div class="soldcard"><div class="img">${ph.length?`<img src="${blob(ph[0])}" alt="" loading="lazy">`:''}</div><span class="tag">Sold</span><div class="b">${esc(c.title)}<small>${esc(c.year||'')}${c.fuel?' · '+esc(c.fuel):''} · sold ${esc(fmtDate(c.sale.date))}</small></div></div>`; }).join('')}</div></div>`:''}</div>`;
   }
-  $('#store').innerHTML=head+body+`<div class="sfoot">© Revora · Used Car Business${settings.whatsapp?' · WhatsApp '+esc(settings.whatsapp):''} · <button data-mode="login">Admin</button></div>`;
+  $('#store').innerHTML=head+body+`<div class="sfoot">© Revora · Used Car Business${settings.whatsapp?' · WhatsApp '+esc(settings.whatsapp):''} · <button data-mode="privacy">Privacy</button> · <button data-mode="login">Admin</button></div>`;
 }
 async function bookVisit(kind){
-  const c=cars.find(x=>x.id===storeSel); if(!c) return; const cb=kind==='call';
+  const c=listings.find(x=>x.id===storeSel); if(!c) return; const cb=kind==='call';
+  const consent=cb?$('#cb_ok'):$('#b_ok'); if(consent&&!consent.checked) return toast('Please tick the consent box so we can contact you.');
   const name=(cb?$('#cb_name'):$('#b_name')).value.trim(), phone=(cb?$('#cb_phone'):$('#b_phone')).value.trim(), date=cb?'':$('#b_date').value, time=cb?'':$('#b_time').value, note=(cb?$('#cb_note'):$('#b_note')).value.trim();
   if(!name||!phone||(!cb&&(!date||!time))) return toast(cb?'Please enter your name and phone.':'Please fill your name, phone, date and time.');
   const a={carId:c.id,carTitle:[c.title,c.year,c.fuel].filter(Boolean).join(' '),name,phone,date,time,note,type:cb?'callback':'visit',status:'new',createdAt:new Date().toISOString()};
   const btn=cb?$('#cb_btn'):$('#b_btn'); if(btn){ btn.disabled=true; btn.textContent=cb?'Sending…':'Booking…'; }
   try{ if(!db) throw {code:'not_granted'}; await db.collection('appointments').add(a); booked=a; bookFail=null; }
-  catch(e){ console.warn(e); bookFail={carId:c.id,text:cb?`Hi Revora, I'm ${name} (${phone}). Please call me back about the ${a.carTitle}.${note?' '+note:''}`:`Hi Revora, I'm ${name} (${phone}). I'd like to visit and check the ${a.carTitle}${c.reg?' ('+c.reg+')':''} on ${fmtApptDT(a)}.${note?' Note: '+note:''}`}; }
+  catch(e){ console.warn(e); bookFail={carId:c.id,text:cb?`Hi Revora, I'm ${name} (${phone}). Please call me back about the ${a.carTitle}.${note?' '+note:''}`:`Hi Revora, I'm ${name} (${phone}). I'd like to visit and check the ${a.carTitle} on ${fmtApptDT(a)}.${note?' Note: '+note:''}`}; }
   renderStore();
 }
 function syncHash(){ const want=storeSel?'#car-'+storeSel:''; if(location.hash!==want){ try{ history.replaceState(null,'',location.pathname+location.search+want); }catch(_){} } }
@@ -1462,12 +1492,17 @@ function readHash(){ const m=location.hash.match(/^#car-([A-Za-z0-9_-]+)$/); ret
 document.addEventListener('click',e=>{
   const sm=e.target.closest('[data-mode],[data-ssel],[data-sph],[data-sth],[data-slb],[data-appt],[data-stab]');
   if(sm){
+    if(sm.dataset.mode==='privacy'){ const ov=$('#overlay'); ov.hidden=false; ov.innerHTML=`<div class="scrim" data-close><div class="modal" role="dialog" aria-label="Privacy" data-stop><div style="display:flex;justify-content:space-between;align-items:center"><h2>How Revora uses your details</h2><button class="iconbtn" data-close aria-label="Close">${I(P.x,2.4)}</button></div>
+      <div style="font-size:14px;color:var(--fg-2);display:flex;flex-direction:column;gap:10px"><p style="margin:0">When you book a visit or request a call back we store your <b>name, phone number and message</b> together with the car you asked about, so that we can contact you and arrange the visit.</p>
+      <p style="margin:0">Your details are seen only by the Revora team. We do not sell or share them with anyone else, and we do not use them for marketing unrelated to your enquiry.</p>
+      <p style="margin:0">If the enquiry does not lead to a purchase, your phone number is removed from our records after ${esc(settings.retentionDays||90)} days. You can ask us to delete your details at any time${settings.whatsapp?' by messaging '+esc(settings.whatsapp):''}.</p>
+      <p style="margin:0">Prices and car details on this site are indicative; the EMI calculator is an estimate only.</p></div><div class="frow"><button class="btn" data-close style="flex:0 0 auto">Close</button></div></div></div>`; return; }
     if(sm.dataset.mode){ mode=sm.dataset.mode; renderMode(); return; }
     if(sm.dataset.ssel!==undefined){ storeSel=sm.dataset.ssel||null; storePh=0; booked=null; bookFail=null; emiDown=null; storeTab='visit'; syncHash(); renderStore(); window.scrollTo(0,0); return; }
     if(sm.dataset.stab){ storeTab=sm.dataset.stab; renderStore(); return; }
-    if(sm.dataset.sph){ const n=photos(cars.find(x=>x.id===storeSel)||{}).length; storePh=(storePh+Number(sm.dataset.sph)+n)%n; renderStore(); return; }
+    if(sm.dataset.sph){ const n=photos(listings.find(x=>x.id===storeSel)||{}).length; storePh=(storePh+Number(sm.dataset.sph)+n)%n; renderStore(); return; }
     if(sm.dataset.sth!==undefined){ storePh=Number(sm.dataset.sth); renderStore(); return; }
-    if(sm.dataset.slb!==undefined){ selId=storeSel; lbIdx=Number(sm.dataset.slb); renderLightbox(); return; }
+    if(sm.dataset.slb!==undefined){ lbStore=listings.find(x=>x.id===storeSel)||null; lbIdx=Number(sm.dataset.slb); renderLightbox(); return; }
     if(sm.dataset.appt){ apptAction(sm.dataset.appt,sm.dataset.id); return; }
   }
   const t=e.target.closest('[data-view],[data-f],[data-sel],[data-unsel],[data-stop],[data-tab],[data-ph],[data-thumb],[data-lb],[data-lbn],[data-lbclose],[data-close],[data-lact],[data-exp],[data-pay],[data-docopen],[data-docdel],[data-fu],[data-buyerdel],[data-act]'); if(!t) return;
@@ -1479,8 +1514,8 @@ document.addEventListener('click',e=>{
   if(t.dataset.tab){ tab=t.dataset.tab; confirmKey=null; renderPanel(); return; }
   if(t.dataset.ph){ const n=photos(c).length; photoIdx=(photoIdx+Number(t.dataset.ph)+n)%n; renderPanel(); return; }
   if(t.dataset.thumb!==undefined){ photoIdx=Number(t.dataset.thumb); renderPanel(); return; }
-  if(t.hasAttribute('data-lbclose')){ lbIdx=-1; lbDoc=null; renderLightbox(); return; }
-  if(t.dataset.lbn){ const n=photos(c).length; lbIdx=(lbIdx+Number(t.dataset.lbn)+n)%n; renderLightbox(); return; }
+  if(t.hasAttribute('data-lbclose')){ lbIdx=-1; lbDoc=null; lbStore=null; renderLightbox(); return; }
+  if(t.dataset.lbn){ const n=photos(lbStore||c).length; lbIdx=(lbIdx+Number(t.dataset.lbn)+n)%n; renderLightbox(); return; }
   if(t.dataset.lb!==undefined){ lbIdx=Number(t.dataset.lb); renderLightbox(); return; }
   if(t.dataset.lact){ const fn=actions['lead'+t.dataset.lact[0].toUpperCase()+t.dataset.lact.slice(1)]; if(fn&&c) fn(c,t.dataset.lead); return; }
   if(t.dataset.exp){ if(c) actions.expDel(c,t.dataset.exp); return; }
@@ -1493,7 +1528,7 @@ document.addEventListener('click',e=>{
   if(t.hasAttribute('data-stop')) return;
   if(t.dataset.act==='copyReq'){ const txt=$('#copyTxt')?.textContent||''; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(()=>toast('Message copied'),()=>toast('Select the text and copy it')); else toast('Select the text and copy it'); return; }
   if(t.dataset.act==='bookAgain'){ bookFail=null; renderStore(); return; }
-  if(t.dataset.act==='copyStoreLink'){ const c=cars.find(x=>x.id===storeSel); const u=c?carLink(c):location.href; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(()=>toast('Link copied'),()=>toast(u)); else toast(u); return; }
+  if(t.dataset.act==='copyStoreLink'){ const c=listings.find(x=>x.id===storeSel); const u=c?carLink(c):location.href; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(()=>toast('Link copied'),()=>toast(u)); else toast(u); return; }
   if(t.dataset.act){ const fn=actions[t.dataset.act]; if(fn) fn(c,t.dataset.id); }
 });
 document.addEventListener('submit',async e=>{
@@ -1501,7 +1536,7 @@ document.addEventListener('submit',async e=>{
     let ok=false, msg='Email or password is incorrect.';
     try{ const cred=await firebase.auth().signInWithEmailAndPassword(em,pw); ok=!!cred.user; }
     catch(err){ ok=false; if(err&&err.code==='auth/network-request-failed') msg='No internet connection. Try again.'; else if(err&&err.code==='auth/too-many-requests') msg='Too many attempts. Wait a few minutes and try again.'; else if(err&&err.code==='auth/operation-not-allowed') msg='Email sign-in is not enabled in Firebase yet.'; console.warn(err); }
-    if(ok){ const u=firebase.auth().currentUser; let allowed=u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL; if(!allowed){ try{ const s=await db.collection('admins').doc(u.uid).get(); allowed=s.exists; }catch(_){} }
+    if(ok){ const u=firebase.auth().currentUser; let allowed=u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL; if(!allowed){ try{ const s=await db.collection('admins').doc(u.email.toLowerCase()).get(); allowed=s.exists; }catch(_){} }
       if(!allowed){ await firebase.auth().signOut(); ok=false; msg='This account is not on the Revora team.'; }
       else { mode='admin'; view='dashboard'; document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); renderMode(); toast('Welcome back'); } }
     if(!ok)
@@ -1510,19 +1545,19 @@ document.addEventListener('submit',async e=>{
   if(e.target.id==='callForm'){ e.preventDefault(); bookVisit('call'); }
 });
 document.addEventListener('input',e=>{
-  if(e.target.id==='emi_down'||e.target.id==='emi_months'){ if(e.target.id==='emi_down') emiDown=Number(e.target.value); else emiMonths=Number(e.target.value); const c=cars.find(x=>x.id===storeSel); if(!c) return; const ev=emiCalc(+c.listing?.price||0); const box=e.target.closest('.emi'); if(box){ box.querySelector('.out b').textContent=inrF.format(ev.emi); box.querySelector('.out span').textContent=' / month for '+ev.n+' months'; box.querySelectorAll('.out > span')[0].textContent='Loan '+lakh(ev.P0); box.querySelectorAll('.lbl b')[0].textContent=lakh(ev.down); box.querySelectorAll('.lbl b')[1].textContent=ev.n+' months'; box.querySelector('.hint').textContent='Indicative only. Final EMI depends on the bank and your profile. Total payable '+lakh(ev.total+ev.down)+'.'; } return; }
+  if(e.target.id==='emi_down'||e.target.id==='emi_months'){ if(e.target.id==='emi_down') emiDown=Number(e.target.value); else emiMonths=Number(e.target.value); const c=listings.find(x=>x.id===storeSel); if(!c) return; const ev=emiCalc(+c.price||0); const box=e.target.closest('.emi'); if(box){ box.querySelector('.out b').textContent=inrF.format(ev.emi); box.querySelector('.out span').textContent=' / month for '+ev.n+' months'; box.querySelectorAll('.out > span')[0].textContent='Loan '+lakh(ev.P0); box.querySelectorAll('.lbl b')[0].textContent=lakh(ev.down); box.querySelectorAll('.lbl b')[1].textContent=ev.n+' months'; box.querySelector('.hint').textContent='Indicative only. Final EMI depends on the bank and your profile. Total payable '+lakh(ev.total+ev.down)+'.'; } return; }
   if(e.target.id==='ssearch'){ search=e.target.value; if(!storeSel){ const grid=$('#store .sgrid, #store .sbody .empty'); renderStore(); const inp=$('#ssearch'); if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); } } } });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.closest&&e.target.closest('.row[data-sel]')){ selectCar(e.target.closest('.row').dataset.sel); }
   if(e.key==='Escape'){ if(lbIdx>=0||lbDoc){ lbIdx=-1; lbDoc=null; renderLightbox(); } else if(!$('#overlay').hidden) closeOverlay(); else if(sheetOpen){ unselect(); } }
-  if(lbIdx>=0&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){ const n=photos(sel()).length; if(n>1){ lbIdx=(lbIdx+(e.key==='ArrowRight'?1:-1)+n)%n; renderLightbox(); } }
+  if(lbIdx>=0&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){ const n=photos(lbStore||sel()||{}).length; if(n>1){ lbIdx=(lbIdx+(e.key==='ArrowRight'?1:-1)+n)%n; renderLightbox(); } }
   if(e.key==='Enter'&&e.target.id==='noteIn'){ const c=sel(); if(c) actions.note(c); }
 });
 document.addEventListener('change',e=>{ if(e.target.id==='f_mode'){ const w=$('#bankWrap',e.target.closest('.box')); if(w) w.hidden=e.target.value!=='loan'; } });
 $('#fileIn').addEventListener('change',e=>{ const files=[...e.target.files]; if(pendingDoc){ const f=files[0]; if(f) uploadDoc(f,pendingDoc); pendingDoc=null; return; } const imgs=files.filter(f=>f.type.startsWith('image/')); if(imgs.length) uploadPhotos(imgs); });
 let sx=null,sT=null;
 document.addEventListener('touchstart',e=>{ const t=e.target.closest('#lbView,.panel .ph'); if(t){ sx=e.touches[0].clientX; sT=t.id==='lbView'?'lb':'ph'; } },{passive:true});
-document.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)<40) return; const c=sel(); const n=c?photos(c).length:0; if(n<2) return; const d=dx<0?1:-1;
+document.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)<40) return; const c=lbStore||sel(); const n=c?photos(c).length:0; if(n<2) return; const d=dx<0?1:-1;
   if(sT==='lb'){ lbIdx=(lbIdx+d+n)%n; renderLightbox(); } else { photoIdx=(photoIdx+d+n)%n; renderPanel(); } },{passive:true});
 $('#search').addEventListener('input',e=>{ search=e.target.value; renderView(); });
 $('#bell').addEventListener('click',()=>{ view='dashboard'; renderNav(); renderView(); const el=document.querySelector('.pend'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}); });
@@ -1538,24 +1573,26 @@ renderMe();
   const cfg=window.REVORA_FIREBASE;
   if(!cfg||!cfg.apiKey||/YOUR_/.test(cfg.apiKey)){ mode='setup'; loaded=true; renderMode(); return; }
   try{ firebase.initializeApp(cfg); }catch(e){ console.error(e); mode='setup'; renderMode(); return; }
+  if(cfg.recaptchaSiteKey){ try{ firebase.appCheck().activate(cfg.recaptchaSiteKey,true); }catch(e){ console.warn('App Check',e); } }
   db=firebase.firestore(); db.settings({ignoreUndefinedProperties:true,merge:true});
   try{ db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(_){}
   // photo storage shim: photos live in Firestore as compressed data URLs (free plan, no Cloud Storage needed)
   const toDataURL=b=>new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('read')); r.readAsDataURL(b); });
   assets={
-    async upload(b){ const data=await toDataURL(b); if(data.length>950000) throw {code:'too_large',message:'Photo too large'}; const ref=await db.collection('photos').add({data,size:b.size,createdAt:new Date().toISOString()}); const id='fs:'+ref.id; photoCache[id]=data; return {id,url:data,sizeBytes:b.size,contentType:b.type}; },
-    async delete(id){ if(String(id).startsWith('fs:')){ await db.collection('photos').doc(String(id).slice(3)).delete(); delete photoCache[id]; } return {deleted:true}; }
+    async upload(b,opts){ const data=await toDataURL(b); if(data.length>950000) throw {code:'too_large',message:'File too large'}; const priv=!!(opts&&opts.private); const ref=await db.collection(priv?'files':'photos').add({data,size:b.size,createdAt:new Date().toISOString()}); const id=(priv?'fd:':'fs:')+ref.id; photoCache[id]=data; return {id,url:data,sizeBytes:b.size,contentType:b.type}; },
+    async delete(id){ id=String(id); if(id.startsWith('fs:')||id.startsWith('fd:')){ await db.collection(id.startsWith('fd:')?'files':'photos').doc(id.slice(3)).delete(); delete photoCache[id]; } return {deleted:true}; }
   };
   user={ async id(){ const u=firebase.auth().currentUser; return u?u.uid:null; }, async profiles(ids){ const o={}; ids.forEach(i=>o[i]={name:names[i]||'Admin'}); return o; } };
   // settings are public (EMI rate, WhatsApp number); defaults apply until the rules allow reading them
   db.collection('settings').doc('general').onSnapshot(s=>{ settings={...DEFAULT_SETTINGS,...(s.exists?s.data():{})}; if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); },()=>{});
   let apptUnsub=null, adminUnsubs=[];
-  firebase.auth().onAuthStateChanged(async u=>{
-    let adminDoc=null; if(u&&u.email){ try{ const s=await db.collection('admins').doc(u.uid).get(); if(s.exists) adminDoc=s.data(); }catch(_){} }
+  setTimeout(()=>firebase.auth().onAuthStateChanged(async u=>{
+    let adminDoc=null; if(u&&u.email){ try{ const s=await db.collection('admins').doc(u.email.toLowerCase()).get(); if(s.exists){ adminDoc=s.data(); if(adminDoc.uid!==u.uid) db.collection('admins').doc(u.email.toLowerCase()).set({uid:u.uid,lastSignIn:new Date().toISOString()},{merge:true}).catch(()=>{}); } }catch(_){} }
     const isAdmin=!!(u&&u.email&&(u.email.toLowerCase()===ADMIN_EMAIL||adminDoc));
     canWrite=isAdmin; myId=u?u.uid:null; me={name:isAdmin?(adminDoc?.name||'Admin'):'',avatar:'',email:u?u.email||'':''}; if(myId&&isAdmin) names[myId]=me.name; renderMe();
+    if(isAdmin) window.__subscribeCars?.(); else window.__unsubscribeCars?.();
     if(isAdmin&&!adminUnsubs.length){
-      adminUnsubs.push(db.collection('admins').onSnapshot(s=>{ admins=s.docs.map(d=>({id:d.id,...d.data()})); admins.forEach(a=>names[a.id]=a.name||'Admin'); if(mode==='admin') renderAll(); },()=>{}));
+      adminUnsubs.push(db.collection('admins').onSnapshot(s=>{ admins=s.docs.map(d=>({id:d.id,...d.data()})); admins.forEach(a=>{ if(a.uid) names[a.uid]=a.name||'Admin'; }); if(mode==='admin') renderAll(); },()=>{}));
       adminUnsubs.push(db.collection('buyers').onSnapshot(s=>{ buyers=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))); if(mode==='admin') renderAll(); },()=>{}));
     }
     if(!isAdmin&&adminUnsubs.length){ adminUnsubs.forEach(f=>f()); adminUnsubs=[]; buyers=[]; admins=[]; }
@@ -1564,13 +1601,22 @@ renderMe();
     if(!isAdmin&&apptUnsub){ apptUnsub(); apptUnsub=null; appts=[]; }
     if(!authReady){ authReady=true; mode=isAdmin?'admin':'store'; if(isAdmin){ document.body.classList.add('boot'); setTimeout(()=>document.body.classList.remove('boot'),2500); } renderMode(); }
     else if(!isAdmin&&mode==='admin'){ mode='store'; renderMode(); }
-  });
+  }),0);
   const timer=setTimeout(()=>setLive('err','Slow connection'),10000);
-  db.collection('cars').onSnapshot({includeMetadataChanges:true},snap=>{
-    cars=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); loaded=true;
+  // public listings: what customers see
+  db.collection('listings').onSnapshot({includeMetadataChanges:true},snap=>{
+    listings=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); if(mode!=='admin') loaded=true;
     if(!snap.metadata.fromCache){ clearTimeout(timer); setLive('on','Live'); }
-    if(mode==='admin') renderAll(); else if(mode==='store') renderStore();
-  },err=>{ clearTimeout(timer); loaded=true; setLive('err','Connection lost'); if(mode==='admin') renderAll(); else if(mode==='store') renderStore(); console.error(err); });
+    if(mode==='store') renderStore();
+  },err=>{ clearTimeout(timer); loaded=true; setLive('err','Connection lost'); if(mode==='store') renderStore(); console.error(err); });
+  // full car records: admins only, subscribed after sign-in
+  let carsUnsub=null;
+  window.__subscribeCars=()=>{ if(carsUnsub) return; carsUnsub=db.collection('cars').onSnapshot({includeMetadataChanges:true},snap=>{
+      cars=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); loaded=true;
+      if(!snap.metadata.fromCache){ clearTimeout(timer); setLive('on','Live'); }
+      if(mode==='admin') renderAll();
+    },err=>{ loaded=true; setLive('err','Connection lost'); if(mode==='admin') renderAll(); console.error(err); carsUnsub=null; }); };
+  window.__unsubscribeCars=()=>{ if(carsUnsub){ carsUnsub(); carsUnsub=null; cars=[]; } };
 })();
 })();
 </script>

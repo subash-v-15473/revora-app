@@ -2,22 +2,29 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAdmin() {
-      return request.auth != null && (
+      return request.auth != null && request.auth.token.email != null && (
         request.auth.token.email == 'revoraadmin@revora.com'
-        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        || exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
       );
     }
-    match /cars/{carId}     { allow read: if true; allow write: if isAdmin(); }
-    match /photos/{photoId} { allow read: if true; allow write: if isAdmin(); }
-    match /settings/{id}    { allow read: if true; allow write: if isAdmin(); }
-    match /admins/{uid}     { allow read, write: if isAdmin(); }
-    match /buyers/{id}      { allow read, write: if isAdmin(); }
+    // PUBLIC: the listing copy customers browse (specs, asking price, photos, masked reg), car photos, and business settings.
+    match /listings/{carId}  { allow read: if true; allow write: if isAdmin(); }
+    match /photos/{photoId}  { allow get: if true; allow list: if isAdmin(); allow write: if isAdmin(); }
+    match /settings/{id}     { allow read: if true; allow write: if isAdmin(); }
+    // PRIVATE: full car records, documents, customers, team, buyer pool.
+    match /cars/{carId}      { allow read, write: if isAdmin(); }
+    match /files/{fileId}    { allow read, write: if isAdmin(); }
+    match /admins/{email}    { allow read, write: if isAdmin(); }
+    match /buyers/{id}       { allow read, write: if isAdmin(); }
+    // Bookings: anyone may create one well-formed request; only the team reads or changes them.
     match /appointments/{apptId} {
       allow create: if request.resource.data.keys().hasAll(['carId','carTitle','name','phone','date','time','status','createdAt'])
                     && request.resource.data.status == 'new'
                     && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 120
                     && request.resource.data.phone is string && request.resource.data.phone.size() < 40
-                    && (!('note' in request.resource.data) || request.resource.data.note.size() < 500);
+                    && request.resource.data.carTitle is string && request.resource.data.carTitle.size() < 160
+                    && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() < 500))
+                    && exists(/databases/$(database)/documents/listings/$(request.resource.data.carId));
       allow read, update, delete: if isAdmin();
     }
   }
