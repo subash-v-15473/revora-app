@@ -359,8 +359,10 @@ details summary::-webkit-details-marker{display:none}
 .lead.primary{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
 .lead.closed{opacity:.6}
 .lead .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.lead .top>div:first-child{min-width:0;flex:1}
+.lead .nm{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .lead .nm{font-weight:700;font-size:14px}
-.lead .ph{font-size:12.5px;color:var(--muted)}
+.lead .phn{font-size:12.5px;color:var(--muted)}
 .lead .tags{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px}
 .lead .tag{background:var(--surface-2);color:var(--fg-2);border-radius:6px;padding:2px 8px;font-weight:600}
 .lead .tag.cash{background:var(--green-soft);color:var(--green)} .lead .tag.loan{background:var(--blue-soft);color:var(--blue)} .lead .tag.rej{background:var(--red-soft);color:var(--red)} .lead .tag.appr{background:var(--green-soft);color:var(--green)} .lead .tag.late{background:var(--red-soft);color:var(--red)} .lead .tag.soon{background:var(--amber-soft);color:var(--amber)}
@@ -882,7 +884,7 @@ function leadsBox(c){
       l.source==='appointment'?'<span class="tag">Via booking</span>':''].filter(Boolean).join('');
     const editing=editLead===l.id&&canAct;
     return `<div class="lead ${isP?'primary':''} ${closed?'closed':''}">
-      <div class="top"><div><div class="nm">${esc(l.name)}${isP?' <span class="pill payment" style="font-size:10.5px;margin-left:4px">Active deal</span>':''}${best&&best.l.id===l.id&&!closed&&!isP?' <span class="pill listed" style="font-size:10.5px;margin-left:4px">Best chance</span>':''}</div><div class="ph">${esc(l.phone||'No phone')} · since ${esc(fmtDate(l.createdAt))}</div></div>
+      <div class="top"><div><div class="nm">${esc(l.name)}${isP?' <span class="pill payment" style="font-size:10.5px;margin-left:4px">Active deal</span>':''}${best&&best.l.id===l.id&&!closed&&!isP?' <span class="pill listed" style="font-size:10.5px;margin-left:4px">Best chance</span>':''}</div><div class="phn">${esc(l.phone||'No phone')} · since ${esc(fmtDate(l.createdAt))}</div></div>
         <div class="chance ${ch.cls}"><b>${ch.pct}%</b><div class="bar"><i style="width:${ch.pct}%"></i></div><small>${ch.label}</small></div></div>
       ${tags?`<div class="tags">${tags}</div>`:''}
       <div class="why">${esc(ch.why.join(' · '))}${l.note?' · “'+esc(l.note)+'”':''}</div>
