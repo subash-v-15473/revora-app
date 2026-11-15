@@ -1090,7 +1090,7 @@ renderMe();
     else if(!isAdmin&&mode==='admin'){ mode='store'; renderMode(); }
   });
   const timer=setTimeout(()=>setLive('err','Slow connection'),10000);
-  db.collection('cars').onSnapshot(snap=>{
+  db.collection('cars').onSnapshot({includeMetadataChanges:true},snap=>{
     cars=snap.docs.filter(x=>x.exists).map(x=>({id:x.id,...x.data()})); loaded=true;
     if(!snap.metadata.fromCache){ clearTimeout(timer); setLive('on','Live'); }
     if(mode==='admin') renderAll(); else if(mode==='store') renderStore();
