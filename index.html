@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#0b0b0d">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Revora">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2">
 <meta name="description" content="Revora used car business: browse cars for sale and book a visit. Admin dashboard for purchase, listing, payment, sale and RC transfer tracking.">
 <title>Revora</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232563eb'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 16h-.5a1 1 0 0 1-1-1v-3l1.8-4.1A1.5 1.5 0 0 1 7.7 7h8.6a1.5 1.5 0 0 1 1.4.9L19.5 12v3a1 1 0 0 1-1 1H18'/%3E%3Ccircle cx='8' cy='16' r='1.6'/%3E%3Ccircle cx='16' cy='16' r='1.6'/%3E%3Cpath d='M9.6 16h4.8M4.5 12h15'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -24,25 +24,25 @@
 html,body{margin:0}
 /* Layout: dark sidebar (nav) | main column (greeting, KPI cards, pipeline strip, cars table, widgets row) | right panel (selected car). Sidebar becomes a bottom nav and the right panel a full-screen sheet on phones. */
 :root{
-  --bg:#f3f5f9; --surface:#ffffff; --surface-2:#f6f8fb; --surface-3:#eef1f6; --line:#e5e9f0; --line-strong:#cfd6e0;
-  --fg:#0f172a; --fg-2:#334155; --muted:#64748b; --faint:#94a3b8;
-  --side:#ffffff; --side-2:#eef3ff; --side-fg:#0f172a; --side-muted:#5b6b85; --side-line:#e5e9f0;
-  --blue:#2563eb; --blue-soft:#e3ecfd; --green:#16a34a; --green-soft:#dcf5e5; --orange:#f97316; --orange-soft:#ffecd9; --purple:#7c3aed; --purple-soft:#ece4fd; --red:#dc2626; --red-soft:#fde3e3; --teal:#0d9488; --teal-soft:#d9f3ef; --amber:#d97706; --amber-soft:#fdf0d5;
-  --shadow-sm:0 1px 2px rgba(15,23,42,.05),0 1px 6px rgba(15,23,42,.04); --shadow:0 10px 30px rgba(15,23,42,.12); --shadow-lg:0 24px 60px rgba(0,0,0,.45);
+  --bg:#f4f4f6; --surface:#ffffff; --surface-2:#f7f7f9; --surface-3:#efeff2; --line:#e6e6ea; --line-strong:#cfcfd6;
+  --fg:#0b0b0d; --fg-2:#2a2a30; --muted:#6b6b76; --faint:#9a9aa4;
+  --side:#0b0b0d; --side-2:#1c1c21; --side-fg:#ffffff; --side-muted:#a2a2ad; --side-line:#232328;
+  --blue:#e3121b; --blue-soft:#fde6e7; --green:#16a34a; --green-soft:#dcf5e5; --orange:#f97316; --orange-soft:#ffecd9; --purple:#7c3aed; --purple-soft:#ece4fd; --red:#b91c1c; --red-soft:#fde3e3; --teal:#0d9488; --teal-soft:#d9f3ef; --amber:#d97706; --amber-soft:#fdf0d5;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05),0 1px 6px rgba(0,0,0,.04); --shadow:0 10px 30px rgba(0,0,0,.12); --shadow-lg:0 24px 60px rgba(0,0,0,.45);
   --r:14px; --r-sm:10px; --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0b1020; --surface:#121a2e; --surface-2:#172038; --surface-3:#1d2742; --line:#222c47; --line-strong:#34405f;
-  --fg:#eef2fa; --fg-2:#c7d0e3; --muted:#8e9ab8; --faint:#5c688a;
-  --side:#121a2e; --side-2:#1b2542; --side-fg:#eef2fa; --side-muted:#8e9ab8; --side-line:#222c47;
-  --blue:#5b8cff; --blue-soft:#172a55; --green:#3ad17a; --green-soft:#0f3322; --orange:#ff954d; --orange-soft:#3d2410; --purple:#a98bff; --purple-soft:#2a1f4d; --red:#ff6b6b; --red-soft:#3f1a1a; --teal:#2fc4b4; --teal-soft:#0f3331; --amber:#f5b041; --amber-soft:#3a2a10;
+  --bg:#09090b; --surface:#141417; --surface-2:#1b1b1f; --surface-3:#222227; --line:#2a2a30; --line-strong:#3d3d45;
+  --fg:#f4f4f6; --fg-2:#d0d0d6; --muted:#8e8e99; --faint:#5f5f6a;
+  --side:#000000; --side-2:#1b1b1f; --side-fg:#f4f4f6; --side-muted:#8e8e99; --side-line:#2a2a30;
+  --blue:#ff2d3a; --blue-soft:#3a1215; --green:#3ad17a; --green-soft:#0f3322; --orange:#ff954d; --orange-soft:#3d2410; --purple:#a98bff; --purple-soft:#2a1f4d; --red:#ff6b6b; --red-soft:#3f1a1a; --teal:#2fc4b4; --teal-soft:#0f3331; --amber:#f5b041; --amber-soft:#3a2a10;
   --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow:0 10px 30px rgba(0,0,0,.5); --shadow-lg:0 24px 60px rgba(0,0,0,.8);
   color-scheme:dark } }
 :root[data-theme="dark"]{
-  --bg:#0b1020; --surface:#121a2e; --surface-2:#172038; --surface-3:#1d2742; --line:#222c47; --line-strong:#34405f;
-  --fg:#eef2fa; --fg-2:#c7d0e3; --muted:#8e9ab8; --faint:#5c688a;
-  --side:#121a2e; --side-2:#1b2542; --side-fg:#eef2fa; --side-muted:#8e9ab8; --side-line:#222c47;
-  --blue:#5b8cff; --blue-soft:#172a55; --green:#3ad17a; --green-soft:#0f3322; --orange:#ff954d; --orange-soft:#3d2410; --purple:#a98bff; --purple-soft:#2a1f4d; --red:#ff6b6b; --red-soft:#3f1a1a; --teal:#2fc4b4; --teal-soft:#0f3331; --amber:#f5b041; --amber-soft:#3a2a10;
+  --bg:#09090b; --surface:#141417; --surface-2:#1b1b1f; --surface-3:#222227; --line:#2a2a30; --line-strong:#3d3d45;
+  --fg:#f4f4f6; --fg-2:#d0d0d6; --muted:#8e8e99; --faint:#5f5f6a;
+  --side:#000000; --side-2:#1b1b1f; --side-fg:#f4f4f6; --side-muted:#8e8e99; --side-line:#2a2a30;
+  --blue:#ff2d3a; --blue-soft:#3a1215; --green:#3ad17a; --green-soft:#0f3322; --orange:#ff954d; --orange-soft:#3d2410; --purple:#a98bff; --purple-soft:#2a1f4d; --red:#ff6b6b; --red-soft:#3f1a1a; --teal:#2fc4b4; --teal-soft:#0f3331; --amber:#f5b041; --amber-soft:#3a2a10;
   --shadow-sm:0 1px 2px rgba(0,0,0,.4); --shadow:0 10px 30px rgba(0,0,0,.5); --shadow-lg:0 24px 60px rgba(0,0,0,.8);
   color-scheme:dark }
 
@@ -71,6 +71,9 @@ svg{display:block}
 .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
 .brand .mark{width:40px;height:40px;border-radius:12px;background:var(--blue);display:grid;place-items:center;color:#fff;flex:none}
 .brand .mark svg{width:24px;height:24px}
+.brand .logo{display:block;width:100%;max-width:190px;height:auto;border-radius:10px}
+.lhead{margin:-30px -28px 4px;background:#000;border-radius:20px 20px 0 0;padding:22px 20px 18px}
+.lhead img{display:block;width:100%;height:auto}
 .brand b{font-size:17px;font-weight:800;display:block;line-height:1.1}
 .brand small{font-size:11.5px;color:var(--side-muted)}
 .nav{display:flex;flex-direction:column;gap:4px}
@@ -79,18 +82,18 @@ svg{display:block}
 .nav button:active{transform:translateX(3px) scale(.98)}
 .nav button svg{width:18px;height:18px;flex:none}
 .nav button:hover{background:var(--side-2);color:var(--side-fg)}
-.nav button.on{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.28)}
-.nav .n{margin-left:auto;font-size:11px;background:var(--side-2);color:var(--blue);border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
+.nav button.on{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(227,18,27,.28)}
+.nav .n{margin-left:auto;font-size:11px;background:var(--side-2);color:#fff;border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
 .nav button.on .n{background:rgba(255,255,255,.25)}
 .side .spacer{flex:1}
-.promo{background:linear-gradient(135deg,var(--side-2),var(--green-soft));border-radius:14px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
+.promo{background:linear-gradient(135deg,var(--side-2),#2a1013);border-radius:14px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
 .promo .em{font-size:26px}
 .promo b{font-size:14px}
 .promo small{font-size:12px;color:var(--side-muted)}
 .me{display:flex;align-items:center;gap:10px;padding:14px 8px 0;border-top:1px solid var(--side-line);margin-top:12px}
 .me .iconbtn{color:var(--side-muted)}
-.me .iconbtn:hover{color:var(--red);background:var(--red-soft)}
-.avatar{width:38px;height:38px;border-radius:50%;background:var(--blue-soft);color:var(--blue);font-weight:800;font-size:13px;display:grid;place-items:center;flex:none;overflow:hidden}
+.me .iconbtn:hover{color:#ff6b6b;background:rgba(227,18,27,.18)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;flex:none;overflow:hidden}
 .avatar img{width:100%;height:100%;object-fit:cover}
 .me b{display:block;font-size:14px}
 .me small{font-size:12px;color:var(--side-muted)}
@@ -108,11 +111,13 @@ svg{display:block}
   .nav button.on .n{background:#fff;color:var(--blue)}
 }
 .nav .more{display:none}
-.splash{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--fg)}
+.splash{position:fixed;inset:0;z-index:90;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--fg)}
 .splash .mark{width:56px;height:56px;border-radius:16px;background:var(--blue);color:#fff;display:grid;place-items:center;animation:pulseLogo 1.2s ease-in-out infinite}
 .splash .mark svg{width:32px;height:32px}
 .splash b{font-size:18px;font-weight:800;letter-spacing:-.01em}
-@keyframes pulseLogo{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,.35)}50%{transform:scale(1.06);box-shadow:0 0 0 14px rgba(37,99,235,0)}}
+.splash .slogo{width:min(360px,78vw);height:auto;animation:pulseLogo2 1.4s ease-in-out infinite}
+@keyframes pulseLogo2{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
+@keyframes pulseLogo{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(227,18,27,.35)}50%{transform:scale(1.06);box-shadow:0 0 0 14px rgba(227,18,27,0)}}
 .moremenu{display:flex;flex-direction:column;gap:4px}
 .moremenu button{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:12px;font-weight:600;font-size:15px;color:var(--fg-2);width:100%}
 .moremenu button:hover,.moremenu button.on{background:var(--blue-soft);color:var(--blue)}
@@ -161,6 +166,7 @@ body.boot .pstage{animation:pop .4s both} body.boot .pstage:nth-of-type(2){anima
 .brandm{display:none;align-items:center;gap:8px;font-weight:800;font-size:16px}
 .brandm .mark{width:34px;height:34px;border-radius:10px;background:var(--blue);display:grid;place-items:center;color:#fff}
 .brandm .mark svg{width:20px;height:20px}
+.brandm .logo{height:40px;width:auto;display:block;border-radius:9px}
 @media (max-width:760px){ .brandm{display:flex} }
 
 .greet{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
@@ -251,8 +257,8 @@ body.boot .pstage{animation:pop .4s both} body.boot .pstage:nth-of-type(2){anima
 .mini .s{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--muted);flex:1;min-width:0;position:relative}
 .mini .s span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .mini .d{width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);display:grid;place-items:center;position:relative;z-index:1;transition:transform .2s,box-shadow .2s}
-.mini .s.now .d{box-shadow:0 0 0 0 rgba(37,99,235,.4);animation:ring 1.8s infinite}
-@keyframes ring{0%{box-shadow:0 0 0 0 rgba(37,99,235,.35)}70%{box-shadow:0 0 0 7px rgba(37,99,235,0)}100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}}
+.mini .s.now .d{box-shadow:0 0 0 0 rgba(227,18,27,.4);animation:ring 1.8s infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(227,18,27,.35)}70%{box-shadow:0 0 0 7px rgba(227,18,27,0)}100%{box-shadow:0 0 0 0 rgba(227,18,27,0)}}
 .row:hover .mini .d{transform:scale(1.12)}
 .mini .d svg{width:10px;height:10px}
 .mini .s.done .d{background:var(--green);border-color:var(--green);color:#fff}
@@ -457,7 +463,7 @@ details summary::-webkit-details-marker{display:none}
 @media (min-width:761px){ .toast{bottom:24px} }
 
 /* ---- login ---- */
-.login{min-height:100%;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(900px 500px at 10% 0%,var(--blue-soft),transparent 60%),radial-gradient(700px 400px at 100% 100%,var(--green-soft),transparent 60%),var(--bg)}
+.login{min-height:100%;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:radial-gradient(900px 500px at 10% 0%,var(--blue-soft),transparent 60%),radial-gradient(700px 400px at 100% 100%,#e6e6ea,transparent 60%),var(--bg)}
 .lcard{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px 28px;width:min(420px,100%);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:16px;animation:pop .35s cubic-bezier(.2,.8,.2,1) both}
 .lcard .brand{padding:0;justify-content:center}
 .lcard h2{font-size:21px;font-weight:800;text-align:center}
@@ -471,14 +477,19 @@ details summary::-webkit-details-marker{display:none}
 @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 /* ---- customer storefront ---- */
 .store{min-height:100%;padding-bottom:40px}
-.shead{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.shead{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:#0b0b0d;border-bottom:1px solid #232328;color:#fff}
+.shead .brand .logo{height:48px;width:auto;max-width:none}
+.shead .search{background:#1b1b1f;border-color:#2a2a30;box-shadow:none;color:#fff}
+.shead .search input{color:#fff}
+.shead .search input::placeholder{color:#8e8e99}
+.shead .search svg{color:#8e8e99}
 .shead .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));min-height:64px}
 .shead .brand{padding:0}
 .shead .search{height:42px}
-.shead .admin{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap}
-.shead .admin:hover{color:var(--blue)}
+.shead .admin{font-size:12.5px;color:#a2a2ad;font-weight:600;white-space:nowrap}
+.shead .admin:hover{color:#fff}
 .sbody{max-width:1180px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:20px}
-.hero{background:linear-gradient(135deg,var(--blue) 0%,#4f7df3 60%,#6aa0ff 100%);color:#fff;border-radius:20px;padding:28px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
+.hero{background:linear-gradient(135deg,#0b0b0d 0%,#2a0d10 45%,var(--blue) 100%);color:#fff;border-radius:20px;padding:28px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
 #store.anim .hero{animation:rise .5s both}
 .hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
 .hero h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
@@ -565,7 +576,7 @@ details summary::-webkit-details-marker{display:none}
 .sumrow .v{font-size:15px;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
 .sumrow .v.g{color:var(--green)} .sumrow .v.r{color:var(--red)} .sumrow .v.o{color:var(--orange)}
 .pbar{height:8px;border-radius:4px;background:var(--surface-3);overflow:hidden}
-.pbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.pbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#8a0b12,var(--blue));transition:width .5s cubic-bezier(.2,.8,.2,1)}
 .target{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width:700px){ .target{grid-template-columns:1fr} }
 .target .t{display:flex;flex-direction:column;gap:8px}
@@ -621,13 +632,13 @@ details summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
-<div id="splash" class="splash" aria-label="Loading"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h-1a1 1 0 0 1-1-1v-4l2.3-5.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.8 1.2L21 12v4a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M3 12h18"/></svg></span><b>Revora</b></div>
+<div id="splash" class="splash" aria-label="Loading"><img class="slogo" src="brand/logo-full.png" alt="Revora Motors"></div>
 <div id="setup" hidden></div>
 <div id="login" hidden></div>
 <div id="store" class="store" hidden></div>
 <div class="app" id="adminApp" hidden>
   <aside class="side">
-    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h-1a1 1 0 0 1-1-1v-4l2.3-5.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.8 1.2L21 12v4a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M3 12h18"/></svg></span><div><b>Revora</b><small>Used Car Business</small></div></div>
+    <div class="brand"><img class="logo" src="brand/logo-wide.png" alt="Revora Motors"></div>
     <nav class="nav" id="nav"></nav>
     <div class="spacer"></div>
     <div class="promo"><span class="em">🤝</span><b>Grow Together</b><small>Track. Sell. Profit.</small></div>
@@ -636,7 +647,7 @@ details summary::-webkit-details-marker{display:none}
 
   <main class="main" id="main">
     <div class="topbar">
-      <div class="brandm"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h-1a1 1 0 0 1-1-1v-4l2.3-5.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.8 1.2L21 12v4a1 1 0 0 1-1 1h-1"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/></svg></span></div>
+      <div class="brandm"><img class="logo" src="brand/logo-wide.png" alt="Revora Motors"></div>
       <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="search" type="search" placeholder="Search cars, customers…" aria-label="Search"></div>
       <div class="live" id="live"><span class="dot"></span><span class="t" id="liveText">Connecting</span></div>
       <button class="bell" id="bell" aria-label="Pending actions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0v4l2 3H4l2-3z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="b" id="bellN" hidden></span></button>
@@ -1423,7 +1434,7 @@ async function apptAction(kind,id){
 // ---------- auth ----------
 function renderLogin(){
   $('#login').innerHTML=`<div class="login"><form class="lcard" id="loginForm" autocomplete="on">
-    <div class="brand"><span class="mark" aria-hidden="true">${I(P.car,2.2)}</span><div><b>Revora</b><small>Used Car Business</small></div></div>
+    <div class="lhead"><img src="brand/logo-full.png" alt="Revora Motors"></div>
     <div><h2>Admin sign in</h2><p>Sign in to manage cars, payments, RC transfers and appointments.</p></div>
     <label>Email<input id="l_email" type="email" autocomplete="username" placeholder="admin@revora.com" required></label>
     <label>Password<input id="l_pass" type="password" autocomplete="current-password" placeholder="••••••••" required></label>
@@ -1435,7 +1446,7 @@ function renderLogin(){
 function renderMode(){
   const sp=$('#splash'); if(sp) sp.hidden=true;
   $('#setup').hidden=mode!=='setup'; $('#login').hidden=mode!=='login'; $('#store').hidden=mode!=='store'; $('#adminApp').hidden=mode!=='admin';
-  if(mode==='setup'){ $('#setup').innerHTML=`<div class="login"><div class="lcard"><div class="brand"><span class="mark">${I(P.car,2.2)}</span><div><b>Revora</b><small>Used Car Business</small></div></div><h2>Almost ready</h2><p>The app is deployed but not connected to its database yet. The Firebase configuration file is still empty.</p><p class="hint">Once the config is added, this page will show the car list automatically.</p></div></div>`; return; }
+  if(mode==='setup'){ $('#setup').innerHTML=`<div class="login"><div class="lcard"><div class="lhead"><img src="brand/logo-full.png" alt="Revora Motors"></div><h2>Almost ready</h2><p>The app is deployed but not connected to its database yet. The Firebase configuration file is still empty.</p><p class="hint">Once the config is added, this page will show the car list automatically.</p></div></div>`; return; }
   if(mode==='login') renderLogin(); else if(mode==='store') renderStore(); else renderAll();
   window.scrollTo(0,0);
 }
@@ -1452,7 +1463,7 @@ function emiCalc(price){
 function renderStore(){
   const q=search.trim().toLowerCase(); const list=forSale().filter(c=>!q||[c.title,c.fuel,c.transmission,c.city,String(c.year)].some(v=>String(v||'').toLowerCase().includes(q)));
   const wa=settings.whatsapp?waLink(settings.whatsapp,'Hi Revora, I saw your cars online. '):'';
-  const head=`<header class="shead"><div class="in"><button class="brand" data-ssel=""><span class="mark" aria-hidden="true">${I(P.car,2.2)}</span><div><b>Revora</b><small>Quality used cars</small></div></button>
+  const head=`<header class="shead"><div class="in"><button class="brand" data-ssel="" aria-label="Revora Motors home"><img class="logo" src="brand/logo-wide.png" alt="Revora Motors"></button>
     <div class="search" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="ssearch" type="search" placeholder="Search by model, fuel, year…" value="${esc(search)}" aria-label="Search cars"></div>
     ${wa?`<a class="btn sm wa" href="${wa}" target="_blank" rel="noopener" style="flex:0 0 auto">WhatsApp</a>`:''}
     <button class="admin" data-mode="login">Admin sign in</button></div></header>`;
@@ -1492,7 +1503,7 @@ function renderStore(){
       ${recent.length&&!q?`<div><div class="stitle" style="margin-bottom:10px">Recently sold <span>${recent.length} happy buyer${recent.length>1?'s':''} in the last 3 months</span></div><div class="soldstrip">${recent.map(c=>{ const ph=photos(c); return `<div class="soldcard"><div class="img">${ph.length?`<img data-pid="${ph[0]}" src="${blob(ph[0])}" alt="" loading="lazy">`:''}</div><span class="tag">Sold</span><div class="b">${esc(c.title)}<small>${esc(c.year||'')}${c.fuel?' · '+esc(c.fuel):''} · sold ${esc(fmtDate(c.sale.date))}</small></div></div>`; }).join('')}</div></div>`:''}</div>`;
   }
   $('#store').classList.toggle('anim',storeAnim); storeAnim=false;
-  $('#store').innerHTML=head+body+`<div class="sfoot">© Revora · Used Car Business${settings.whatsapp?' · WhatsApp '+esc(settings.whatsapp):''} · <button data-mode="privacy">Privacy</button> · <button data-mode="login">Admin</button></div>`;
+  $('#store').innerHTML=head+body+`<div class="sfoot">© Revora Motors · Every car has a new beginning.${settings.whatsapp?' · WhatsApp '+esc(settings.whatsapp):''} · <button data-mode="privacy">Privacy</button> · <button data-mode="login">Admin</button></div>`;
 }
 async function bookVisit(kind){
   const c=listings.find(x=>x.id===storeSel); if(!c) return; const cb=kind==='call';

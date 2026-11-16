@@ -1,6 +1,6 @@
 // Revora service worker: app shell cached for instant load and offline viewing of the last data.
-const VERSION = 'revora-v1';
-const SHELL = ['./', './index.html', './firebase-config.js', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
+const VERSION = 'revora-v2';
+const SHELL = ['./', './index.html', './firebase-config.js', './manifest.json', './icons/icon-192.png', './icons/icon-512.png', './brand/logo-wide.png', './brand/logo-full.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
